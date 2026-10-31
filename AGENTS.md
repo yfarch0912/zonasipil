@@ -46,6 +46,8 @@ Short version of the non-negotiables:
 
 ## Stack
 
-Dependency-free static site (HTML + CSS + vanilla JS) so it can be served
-by GitHub Pages at the custom domain with no build step. Do not add a
-framework or runtime dependency without a recorded reason in this file.
+Dependency-free static site (HTML + CSS + vanilla JS), hosted on Vercel
+(project `zonasipil`) at the custom domain zonasipil.web.id with no build
+step (user decision 2026-11-01; GitHub repo remains the source of code).
+Do not add a framework or runtime dependency without a recorded reason in
+this file.
