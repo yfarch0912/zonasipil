@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ZonaSipil — Pengetahuan &amp; Alat Teknik Sipil</title>
+<meta name="description" content="ZonaSipil: platform pengetahuan dan alat hitung teknik sipil berbahasa Indonesia. Jalur beban, potongan balok, kubikasi beton, dan berat tulangan — dijelaskan dengan gambar orisinal dan rumus yang terbuka.">
+<link rel="icon" type="image/svg+xml" href="assets/brand/logo.svg">
+<link rel="stylesheet" href="assets/css/site.css">
+</head>
+<body>
+<a class="skip" href="#kalkulator">Lewati ke kalkulator</a>
+
+<header class="site-head">
+  <a class="brand" href="#atas" aria-label="ZonaSipil — beranda">
+    <img src="assets/brand/logo.svg" alt="" width="40" height="40">
+    <span class="brand-name">Zona<em>Sipil</em></span>
+  </a>
+  <button class="nav-toggle" id="navToggle" aria-expanded="false" aria-controls="navMain">
+    <svg class="ic" aria-hidden="true"><use id="navToggleIcon" href="assets/icons/icons.svg#i-menu"/></svg>
+    <span class="visually-hidden">Buka menu</span>
+  </button>
+  <nav class="nav" id="navMain" aria-label="Navigasi utama">
+    <a href="#bidang">Bidang</a>
+    <a href="#kalkulator">Kalkulator</a>
+    <a href="#diagram">Diagram</a>
+    <a href="#artikel">Artikel</a>
+    <a class="nav-cta" href="#kalkulator">Hitung Sekarang
+      <svg class="ic" aria-hidden="true"><use href="assets/icons/icons.svg#i-arrow"/></svg></a>
+  </nav>
+</header>
+
+<main id="atas">
+
+  <!-- ============ HERO ============ -->
+  <section class="hero">
+    <div class="hero-copy reveal">
+      <p class="eyebrow">Pengetahuan &amp; alat teknik sipil</p>
+      <h1>Setiap bangunan berdiri di atas <span class="hl">jalur beban</span> yang bisa dijelaskan.</h1>
+      <p class="lede">ZonaSipil membedah struktur beton bertulang dengan gambar teknis orisinal dan kalkulator yang membuka rumusnya — bukan kotak hitam. Untuk belajar, memeriksa kubikasi, dan memahami kenapa detail tulangan disusun begitu.</p>
+      <div class="hero-actions">
+        <a class="btn btn-solid" href="#kalkulator">Coba Kalkulator
+          <svg class="ic" aria-hidden="true"><use href="assets/icons/icons.svg#i-arrow"/></svg></a>
+        <a class="btn btn-ghost" href="#diagram">Lihat Potongan Balok</a>
+      </div>
+      <p class="hero-note">Semua alat di halaman ini bersifat konseptual dan edukatif — bukan pengganti perhitungan desain oleh insinyur struktur.</p>
+    </div>
+    <figure class="hero-art reveal">
+      <img src="assets/engineering/frame-load.svg" alt="Rangka portal dua lantai: beban diteruskan dari balok atap dan balok lantai melalui kolom ke fondasi telapak dan tanah dasar" width="560" height="430">
+      <figcaption>Jalur beban pada rangka portal — beban selalu mencari jalan paling kaku menuju tanah.</figcaption>
+    </figure>
+  </section>
+
+  <!-- ============ BIDANG ============ -->
+  <section class="bidang" id="bidang">
+    <div class="section-head reveal">
+      <p class="eyebrow">Bidang kajian</p>
+      <h2>Empat hal yang paling sering ditanyakan di lapangan</h2>
+    </div>
+    <ol class="index-list">
+      <li class="reveal">
+        <span class="idx">01</span>
+        <svg class="ic ic-lg" aria-hidden="true"><use href="assets/icons/icons.svg#i-beam"/></svg>
+        <div>
+          <h3>Struktur Beton Bertulang</h3>
+          <p>Balok, kolom, dan pelat bekerja sebagai satu rangka. Yang menentukan bukan betonnya saja, melainkan di mana tulangan diletakkan terhadap daerah tarik dan tekan.</p>
+        </div>
+        <a class="row-link" href="#diagram">Ke diagram <svg class="ic" aria-hidden="true"><use href="assets/icons/icons.svg#i-arrow"/></svg></a>
+      </li>
+      <li class="reveal">
+        <span class="idx">02</span>
+        <svg class="ic ic-lg" aria-hidden="true"><use href="assets/icons/icons.svg#i-footing"/></svg>
+        <div>
+          <h3>Fondasi &amp; Tanah</h3>
+          <p>Semua beban akhirnya berhenti di tanah. Fondasi telapak menyebarkan beban kolom ke area yang cukup luas agar tekanan tanah tidak melampaui daya dukungnya.</p>
+        </div>
+        <a class="row-link" href="#artikel">Baca artikel <svg class="ic" aria-hidden="true"><use href="assets/icons/icons.svg#i-arrow"/></svg></a>
+      </li>
+      <li class="reveal">
+        <span class="idx">03</span>
+        <svg class="ic ic-lg" aria-hidden="true"><use href="assets/icons/icons.svg#i-quantity"/></svg>
+        <div>
+          <h3>Kubikasi &amp; Estimasi</h3>
+          <p>Volume beton dan berat besi dihitung dari geometri gambar — panjang, lebar, tinggi, diameter. Angka yang bisa ditelusur balik ke gambar tidak mudah dimanipulasi.</p>
+        </div>
+        <a class="row-link" href="#kalkulator">Ke kalkulator <svg class="ic" aria-hidden="true"><use href="assets/icons/icons.svg#i-arrow"/></svg></a>
+      </li>
+      <li class="reveal">
+        <span class="idx">04</span>
+        <svg class="ic ic-lg" aria-hidden="true"><use href="assets/icons/icons.svg#i-detail"/></svg>
+        <div>
+          <h3>Detail &amp; Gambar Kerja</h3>
+          <p>Selimut beton, jarak sengkang, dan panjang penyaluran adalah detail kecil yang menentukan umur struktur. Gambar konseptual di sini menandai mana yang tidak boleh disederhanakan.</p>
+        </div>
+        <a class="row-link" href="#diagram">Ke diagram <svg class="ic" aria-hidden="true"><use href="assets/icons/icons.svg#i-arrow"/></svg></a>
+      </li>
+    </ol>
+  </section>
+
+  <!-- ============ KALKULATOR ============ -->
+  <section class="calc-wrap" id="kalkulator">
+    <div class="calc-intro reveal">
+      <p class="eyebrow">Alat hitung</p>
+      <h2>Kalkulator beton &amp; tulangan</h2>
+      <p>Dua perhitungan yang paling sering muncul saat membaca gambar dan menyusun kebutuhan material. Rumusnya ditampilkan terbuka — ubah angkanya, lihat hasilnya, dan periksa sendiri dari mana angka itu datang.</p>
+      <div class="formula-block">
+        <p><strong>Volume beton</strong></p>
+        <p class="formula">V = p × l × t × n</p>
+        <p class="formula-note">p = panjang elemen (m), l = lebar (m), t = tinggi (m), n = jumlah elemen sejenis. Faktor cadangan mengantisipasi tumpahan dan pemadatan — besarnya asumsi pengguna.</p>
+        <p><strong>Berat tulangan per meter</strong></p>
+        <p class="formula">w = 0,006165 × d²</p>
+        <p class="formula-note">d = diameter nominal (mm), w dalam kg/m. Konstanta ini bukan angka hafalan: ia berasal dari luas penampang lingkaran × massa jenis baja 7.850 kg/m³. Turunannya ada di artikel nomor 02.</p>
+      </div>
+      <p class="disclaimer">Hasil kalkulator adalah estimasi konseptual untuk belajar dan pemeriksaan awal. Dimensi, mutu, dan detail akhir struktur wajib ditentukan lewat perhitungan desain oleh insinyur yang berwenang.</p>
+    </div>
+
+    <form class="calc-panel reveal" id="calcForm" novalidate>
+      <fieldset>
+        <legend><svg class="ic" aria-hidden="true"><use href="assets/icons/icons.svg#i-calc"/></svg> Volume Beton</legend>
+        <div class="field-grid">
+          <label>Panjang elemen (m)
+            <input type="number" id="inP" value="4" min="0" step="0.1" inputmode="decimal"></label>
+          <label>Lebar (m)
+            <input type="number" id="inL" value="0.25" min="0" step="0.01" inputmode="decimal"></label>
+          <label>Tinggi (m)
+            <input type="number" id="inT" value="0.5" min="0" step="0.01" inputmode="decimal"></label>
+          <label>Jumlah elemen
+            <input type="number" id="inN" value="6" min="0" step="1" inputmode="numeric"></label>
+          <label>Cadangan / waste (%)
+            <input type="number" id="inW" value="5" min="0" step="1" inputmode="numeric"></label>
+        </div>
+        <p class="result" aria-live="polite">Volume bersih <strong id="outVolNet">3,00 m³</strong> · dengan cadangan <strong id="outVol">3,15 m³</strong></p>
+      </fieldset>
+      <fieldset>
+        <legend><svg class="ic" aria-hidden="true"><use href="assets/icons/icons.svg#i-beam"/></svg> Berat Tulangan</legend>
+        <div class="field-grid">
+          <label>Diameter (mm)
+            <input type="number" id="inD" value="13" min="1" step="1" inputmode="numeric"></label>
+          <label>Panjang total (m)
+            <input type="number" id="inLen" value="120" min="0" step="1" inputmode="decimal"></label>
+        </div>
+        <p class="result" aria-live="polite">Berat per meter <strong id="outWm">1,042 kg/m</strong> · total <strong id="outW">125,0 kg</strong></p>
+      </fieldset>
+      <p class="calc-foot">Panjang total tulangan = panjang satu batang × jumlah batang, termasuk tekukan dan sambungan yang kamu rencanakan. Kalkulator ini tidak menebak detail itu untukmu.</p>
+    </form>
+  </section>
+
+  <!-- ============ DIAGRAM ============ -->
+  <section class="diagram" id="diagram">
+    <div class="diagram-copy reveal">
+      <p class="eyebrow eyebrow-dark">Diagram struktur</p>
+      <h2>Membaca satu potongan balok</h2>
+      <p>Potongan melintang adalah bahasa paling ringkas di gambar struktur. Tiga hal yang selalu bisa dibaca darinya:</p>
+      <ul class="check-list">
+        <li><svg class="ic" aria-hidden="true"><use href="assets/icons/icons.svg#i-check"/></svg><span><strong>Tulangan bawah lebih banyak</strong> — di tengah bentang, sisi bawah balok tertarik, dan beton lemah menahan tarik. Di situlah baja bekerja.</span></li>
+        <li><svg class="ic" aria-hidden="true"><use href="assets/icons/icons.svg#i-check"/></svg><span><strong>Sengkang menutup mengelilingi tulangan utama</strong> — ia menahan gaya geser dan mengekang beton, bukan sekadar pengikat saat pengecoran.</span></li>
+        <li><svg class="ic" aria-hidden="true"><use href="assets/icons/icons.svg#i-check"/></svg><span><strong>Selimut beton melindungi baja dari karat dan api</strong> — tulangan yang terlalu dekat ke permukaan adalah awal kerusakan, bukan penghematan.</span></li>
+      </ul>
+      <p class="disclaimer disclaimer-dark">Gambar konseptual untuk membaca notasi — jumlah dan diameter batang pada proyek nyata berasal dari perhitungan, bukan dari contoh ini.</p>
+    </div>
+    <figure class="diagram-art reveal">
+      <img src="assets/engineering/beam-section.svg" alt="Potongan balok beton bertulang: sengkang teal mengelilingi dua tulangan atas dan tiga tulangan bawah, dengan penanda selimut beton" width="420" height="340" loading="lazy">
+    </figure>
+  </section>
+
+  <!-- ============ ARTIKEL ============ -->
+  <section class="artikel" id="artikel">
+    <div class="section-head reveal">
+      <p class="eyebrow">Artikel pengetahuan</p>
+      <h2>Ditulis dari rumus dan gambar, bukan dari slogan</h2>
+    </div>
+    <div class="article-list">
+      <article class="reveal">
+        <span class="idx">01</span>
+        <div>
+          <h3>Kenapa sengkang dirapatkan di dekat tumpuan?</h3>
+          <p>Gaya geser pada balok paling besar di ujung bentang, dekat kolom — diagram gesernya tertinggi tepat di sana. Karena beton sendiri terbatas menahan geser, sengkang mengambil alih, dan kebutuhannya paling rapat justru di daerah tumpuan. Merenggangkan sengkang secara merata di seluruh bentang berarti membuang baja di tengah dan kekurangan di tempat yang paling membutuhkan.</p>
+        </div>
+      </article>
+      <article class="reveal">
+        <span class="idx">02</span>
+        <div>
+          <h3>Asal-usul angka 0,006165 pada berat besi</h3>
+          <p>Berat satu meter batang besi = luas penampang × massa jenis baja. Luas lingkaran berdiameter d mm adalah π/4 × d² mm²; dikalikan 7.850 kg/m³ dan dikonversi satuannya, hasilnya w = 0,006165 × d² kg/m. Coba D13: 0,006165 × 169 = 1,042 kg/m — angka yang sama dengan tabel berat tulangan mana pun, karena memang dari turunan yang sama.</p>
+        </div>
+      </article>
+      <article class="reveal">
+        <span class="idx">03</span>
+        <div>
+          <h3>Dari gambar ke kubikasi: urutan yang tidak menipu</h3>
+          <p>Kubikasi yang bisa dipercaya selalu berurutan: daftar elemen dari gambar denah dan potongan, ambil dimensi dari gambar (bukan dari ingatan lapangan), hitung per jenis elemen, lalu jumlahkan. Kesalahan paling umum bukan pada perkaliannya, melainkan pada elemen yang terlewat — balok anak, bordes tangga, dan ring balok adalah tiga yang paling sering hilang dari daftar.</p>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <!-- ============ TENTANG ============ -->
+  <section class="tentang reveal">
+    <svg class="ic ic-lg" aria-hidden="true"><use href="assets/icons/icons.svg#i-article"/></svg>
+    <div>
+      <h2>Tentang ZonaSipil</h2>
+      <p>ZonaSipil adalah platform pengetahuan dan alat teknik sipil berbahasa Indonesia yang dibangun di zonasipil.web.id. Prinsipnya sederhana: setiap gambar digambar khusus untuk konsep yang dijelaskannya, setiap kalkulator membuka rumusnya, dan setiap klaim teknis bisa ditelusur ke rumus atau gambar. Konten di situs ini adalah materi edukasi konseptual — untuk keputusan struktur yang nyata, selalu libatkan insinyur struktur yang berwenang.</p>
+    </div>
+  </section>
+
+</main>
+
+<footer class="site-foot">
+  <div class="foot-brand">
+    <img src="assets/brand/logo.svg" alt="" width="34" height="34">
+    <span class="brand-name">Zona<em>Sipil</em></span>
+  </div>
+  <nav aria-label="Navigasi kaki">
+    <a href="#bidang">Bidang</a><a href="#kalkulator">Kalkulator</a><a href="#diagram">Diagram</a><a href="#artikel">Artikel</a>
+  </nav>
+  <p>© 2026 ZonaSipil · zonasipil.web.id — Materi edukasi konseptual, bukan dokumen desain.</p>
+</footer>
+
+<script src="assets/js/site.js" defer></script>
+</body>
+</html>

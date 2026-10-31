@@ -1,0 +1,62 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 430" role="img" aria-label="Rangka portal dua lantai: beban di atap dan lantai diteruskan balok ke kolom, lalu ke fondasi dan tanah">
+  <!-- ZonaSipil original: two-storey portal frame load path.
+       Load arrows -> roof/floor beams -> columns -> spread footings -> soil strata.
+       Conceptual communication drawing, not a design document. -->
+  <defs>
+    <pattern id="bp" width="28" height="28" patternUnits="userSpaceOnUse">
+      <path d="M28 0H0v28" fill="none" stroke="#F4F3EE" stroke-width="0.7" opacity="0.14"/>
+    </pattern>
+  </defs>
+  <rect x="0" y="0" width="560" height="430" rx="30" fill="#142D36"/>
+  <rect x="0" y="0" width="560" height="430" rx="30" fill="url(#bp)"/>
+  <!-- soil strata -->
+  <path d="M40 356 H520" stroke="#899398" stroke-width="2" stroke-dasharray="10 7"/>
+  <path d="M40 384 H520" stroke="#899398" stroke-width="2" stroke-dasharray="3 9" opacity=".7"/>
+  <text x="452" y="378" fill="#899398" font-family="Georgia, serif" font-size="12" font-style="italic">tanah dasar</text>
+  <!-- footings -->
+  <g fill="#168B83">
+    <path d="M118 330 h84 l10 22 H108 Z"/>
+    <path d="M358 330 h84 l10 22 H348 Z"/>
+  </g>
+  <!-- columns -->
+  <g fill="#F4F3EE">
+    <rect x="150" y="196" width="20" height="134"/>
+    <rect x="390" y="196" width="20" height="134"/>
+    <rect x="150" y="82" width="20" height="58"/>
+    <rect x="390" y="82" width="20" height="58"/>
+  </g>
+  <!-- beams / slabs -->
+  <rect x="130" y="176" width="300" height="20" rx="4" fill="#F4F3EE"/>
+  <rect x="130" y="62" width="300" height="20" rx="4" fill="#F4F3EE"/>
+  <!-- rebar dots inside floor beam -->
+  <g fill="#142D36">
+    <circle cx="140" cy="190" r="2.6"/><circle cx="420" cy="190" r="2.6"/>
+    <circle cx="140" cy="182" r="2.6"/><circle cx="420" cy="182" r="2.6"/>
+  </g>
+  <!-- load arrows on roof -->
+  <g stroke="#E9A64B" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" fill="none">
+    <path d="M190 22 v26 M183 41 l7 9 7-9"/>
+    <path d="M280 22 v26 M273 41 l7 9 7-9"/>
+    <path d="M370 22 v26 M363 41 l7 9 7-9"/>
+  </g>
+  <!-- load path highlights down right column -->
+  <path d="M400 82 v248" stroke="#E9A64B" stroke-width="3" stroke-dasharray="1 9" stroke-linecap="round"/>
+  <!-- dimension line: span -->
+  <g stroke="#899398" stroke-width="1.6">
+    <path d="M160 236 v18 M400 236 v18 M160 247 h240"/>
+    <path d="M160 247 l8-3.5 v7 Z" fill="#899398"/>
+    <path d="M400 247 l-8-3.5 v7 Z" fill="#899398"/>
+  </g>
+  <text x="252" y="242" fill="#F4F3EE" font-family="Georgia, serif" font-size="13" font-style="italic">bentang balok</text>
+  <!-- labels -->
+  <g font-family="Georgia, serif" font-size="13" fill="#F4F3EE">
+    <text x="446" y="76">balok atap</text>
+    <text x="446" y="190">balok lantai</text>
+    <text x="446" y="272">kolom</text>
+    <text x="446" y="344">fondasi telapak</text>
+  </g>
+  <g stroke="#899398" stroke-width="1.2">
+    <path d="M432 72 h12 M432 186 h12 M412 268 h32 M436 340 h8"/>
+  </g>
+  <text x="40" y="406" fill="#899398" font-family="Georgia, serif" font-size="12" font-style="italic">Gambar konseptual — jalur beban, bukan gambar kerja.</text>
+</svg>

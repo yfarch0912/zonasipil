@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="ZonaSipil">
+  <!-- Portal frame mark: two columns and a beam on a footing line.
+       The amber node is the load point where beam meets column. -->
+  <rect x="2" y="2" width="60" height="60" rx="18" fill="#142D36"/>
+  <path d="M18 50 V22 M46 50 V22 M14 22 H50" fill="none" stroke="#F4F3EE" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M10 52 H54" stroke="#168B83" stroke-width="5" stroke-linecap="round"/>
+  <circle cx="46" cy="22" r="4.5" fill="#E9A64B"/>
+  <path d="M32 12 v5 M29.5 14.5 32 17 l2.5-2.5" fill="none" stroke="#E9A64B" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
