@@ -196,13 +196,21 @@
       }
 
       // 7. SCROLL REVEAL OBSERVER
+      // Kotak-kotak Bidang muncul berurutan (stagger) agar transisi scroll terasa halus.
+      const accordionCards = Array.from(document.querySelectorAll('#services-accordion .reveal-up'));
       const observer = new IntersectionObserver((entries) => {
         entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            entry.target.classList.add('visible');
+          if (!entry.isIntersecting) return;
+          const el = entry.target;
+          const idx = accordionCards.indexOf(el);
+          if (idx >= 0) {
+            el.style.transitionDelay = Math.min(idx * 110, 440) + 'ms';
+            setTimeout(() => { el.style.transitionDelay = ''; }, 1900);
           }
+          el.classList.add('visible');
+          observer.unobserve(el);
         });
-      }, { threshold: 0.12 });
+      }, { threshold: 0.1, rootMargin: '0px 0px -4% 0px' });
 
       document.querySelectorAll('.reveal-up').forEach((el) => observer.observe(el));
 
