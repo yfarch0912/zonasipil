@@ -248,6 +248,53 @@
       display: block;
     }
 
+    /* Lapisan video showreel: menutup gambar poster begitu siap, perilaku slide tidak berubah */
+    .showreel-slide video {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      opacity: 0;
+      transition: opacity 0.8s ease;
+      pointer-events: none;
+    }
+
+    .showreel-slide.vid-on video {
+      opacity: 1;
+    }
+
+    /* Foto Bidang: melebur ke kartu seperti gradasi lama (masker di sisi kiri) */
+    .service-graphic img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      -webkit-mask-image: linear-gradient(to right, transparent 0%, black 34%);
+      mask-image: linear-gradient(to right, transparent 0%, black 34%);
+    }
+
+    /* Grade warna seragam untuk galeri Kajian & thumbnail Artikel */
+    #projects img,
+    #blog article img {
+      filter: saturate(0.9) contrast(1.04);
+      transition-property: transform, filter;
+    }
+
+    #projects .group:hover img,
+    #blog article:hover img {
+      filter: saturate(1.03) contrast(1.05);
+    }
+
+    /* Grid gambar kerja samar di seksi Tentang (Catatan Lapangan & Kenapa) — dekoratif murni */
+    #about {
+      background-image:
+        linear-gradient(rgba(18, 20, 23, 0.045) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(18, 20, 23, 0.045) 1px, transparent 1px);
+      background-size: 44px 44px;
+    }
+
     /* Service Accordion Cards (What We Do) */
     .service-card {
       position: relative;

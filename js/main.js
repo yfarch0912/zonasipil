@@ -435,3 +435,34 @@
       })();
 
     })();
+
+// 13. SHOWREEL VIDEO — segmen MP4 seasal dirakit jadi blob URL; gambar slide tetap fallback.
+// Dilewati bila pengguna memilih gerak minimum atau mode hemat data.
+(() => {
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const saveData = !!(navigator.connection && navigator.connection.saveData);
+  if (reduceMotion || saveData || !('fetch' in window)) return;
+  const videos = Array.from(document.querySelectorAll('#hero-showreel video[data-part-base]'));
+  async function loadScene(video, delay) {
+    if (delay) await new Promise((r) => setTimeout(r, delay));
+    const base = video.getAttribute('data-part-base');
+    const count = parseInt(video.getAttribute('data-parts'), 10);
+    try {
+      const buffers = [];
+      for (let i = 0; i < count; i++) {
+        const res = await fetch(base + String(i).padStart(2, '0'));
+        if (!res.ok) throw new Error('segment ' + i);
+        buffers.push(await res.arrayBuffer());
+      }
+      const blob = new Blob(buffers, { type: 'video/mp4' });
+      video.src = URL.createObjectURL(blob);
+      video.addEventListener('canplay', () => {
+        video.closest('.showreel-slide').classList.add('vid-on');
+      }, { once: true });
+      await video.play().catch(() => {});
+    } catch (e) {
+      /* fallback: poster slide tetap tampil */
+    }
+  }
+  videos.forEach((v, i) => loadScene(v, i * 900));
+})();

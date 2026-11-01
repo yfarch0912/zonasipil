@@ -34,7 +34,7 @@
 
   <!-- TOAST NOTIFICATION -->
   <div id="cb-toast" class="fixed bottom-6 right-6 z-[9990] pointer-events-none opacity-0 translate-y-4 transition-all duration-300 bg-white text-black border border-black/10 shadow-2xl rounded-full px-6 py-3.5 text-sm font-medium flex items-center gap-2.5">
-    <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+    <span class="w-2 h-2 rounded-full bg-[#168B83]"></span>
     <span id="cb-toast-text">Tersalin ke papan klip</span>
   </div>
 
@@ -98,18 +98,22 @@
         <!-- Slide 1: Reinforced Concrete & Structural Steel Diagrid Frame -->
         <div class="showreel-slide active" data-scene-title="ZonaSipil &bull; Structural Concrete &amp; Steel Frame">
           <img src="assets/images/zs_showreel_1.webp" alt="Rangka diagrid beton bertulang dan baja" style="object-position: center 42%;" />
+          <video muted loop playsinline preload="none" data-parts="6" data-part-base="assets/video/s1/p" aria-hidden="true"></video>
         </div>
         <!-- Slide 2: 3D BIM & Finite Element Structural Stress Analysis -->
         <div class="showreel-slide" data-scene-title="ZonaSipil &bull; 3D BIM &amp; FEM Stress Visualization">
           <img src="assets/images/zs_showreel_2.webp" alt="Analisis struktur elemen hingga 3D dalam BIM" style="object-position: center center;" />
+          <video muted loop playsinline preload="none" data-parts="14" data-part-base="assets/video/s2/p" aria-hidden="true"></video>
         </div>
         <!-- Slide 3: Long-Span Parametric Steel & Concrete Shell Roof -->
         <div class="showreel-slide" data-scene-title="ZonaSipil &bull; Long-Span Parametric Roof Shell">
           <img src="assets/images/zs_showreel_3.webp" alt="Cangkang beton dan baja parametrik bentang panjang" style="object-position: center 38%;" />
+          <video muted loop playsinline preload="none" data-parts="9" data-part-base="assets/video/s3/p" aria-hidden="true"></video>
         </div>
         <!-- Slide 4: Parametric Space-Truss Load Path & Deflection Mesh -->
         <div class="showreel-slide" data-scene-title="ZonaSipil &bull; Parametric Space-Frame Load Paths">
           <img src="assets/images/zs_showreel_4.webp" alt="Visualisasi rangka ruang parametrik" style="object-position: center center;" />
+          <video muted loop playsinline preload="none" data-parts="3" data-part-base="assets/video/s4/p" aria-hidden="true"></video>
         </div>
 
         <!-- Subtle Interactive Canvas Overlay & Progress Pills -->
@@ -117,7 +121,7 @@
 
         <div class="absolute bottom-5 left-6 right-6 flex items-center justify-between z-10 pointer-events-none">
           <div class="flex items-center gap-2.5 bg-black/55 backdrop-blur-md text-white px-4 py-2 rounded-full text-xs font-medium tracking-wide">
-            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+            <span class="w-2 h-2 rounded-full bg-[#168B83] animate-pulse"></span>
             <span id="showreel-caption">Showreel ZonaSipil &mdash; Klik untuk memperluas</span>
           </div>
           <div class="flex items-center gap-2">
@@ -151,36 +155,7 @@
       <div class="service-card active p-8 sm:p-11 md:p-14" data-service-index="0">
         <!-- Right-side graphic: Vertical Stepped Indigo Columns (from frame_12) -->
         <div class="service-graphic">
-          <svg viewBox="0 0 500 420" preserveAspectRatio="none" class="w-full h-full">
-            <defs>
-              <linearGradient id="colG1" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stop-color="#15181E" stop-opacity="0.1"/>
-                <stop offset="55%" stop-color="#232E3C" stop-opacity="0.68"/>
-                <stop offset="100%" stop-color="#3B4D61" stop-opacity="0.95"/>
-              </linearGradient>
-              <linearGradient id="colG2" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stop-color="#15181E" stop-opacity="0.2"/>
-                <stop offset="50%" stop-color="#2C3A4B" stop-opacity="0.78"/>
-                <stop offset="100%" stop-color="#526A84" stop-opacity="0.98"/>
-              </linearGradient>
-              <linearGradient id="colG3" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stop-color="#15181E" stop-opacity="0.15"/>
-                <stop offset="45%" stop-color="#3A4B5E" stop-opacity="0.85"/>
-                <stop offset="100%" stop-color="#C86D3B" stop-opacity="0.92"/>
-              </linearGradient>
-            </defs>
-            <rect x="20" y="0" width="80" height="420" fill="url(#colG1)" opacity="0.45"/>
-            <line x1="100" y1="0" x2="100" y2="420" stroke="rgba(255,255,255,0.07)" stroke-width="1"/>
-            <rect x="100" y="0" width="80" height="420" fill="url(#colG1)" opacity="0.7"/>
-            <line x1="180" y1="0" x2="180" y2="420" stroke="rgba(255,255,255,0.09)" stroke-width="1"/>
-            <rect x="180" y="0" width="80" height="420" fill="url(#colG2)" opacity="0.82"/>
-            <line x1="260" y1="0" x2="260" y2="420" stroke="rgba(255,255,255,0.11)" stroke-width="1"/>
-            <rect x="260" y="0" width="80" height="420" fill="url(#colG2)" opacity="0.92"/>
-            <line x1="340" y1="0" x2="340" y2="420" stroke="rgba(255,255,255,0.13)" stroke-width="1"/>
-            <rect x="340" y="0" width="80" height="420" fill="url(#colG3)" opacity="0.96"/>
-            <line x1="420" y1="0" x2="420" y2="420" stroke="rgba(255,255,255,0.15)" stroke-width="1"/>
-            <rect x="420" y="0" width="80" height="420" fill="url(#colG3)" opacity="1"/>
-          </svg>
+          <img src="assets/images/zs_bidang_beton.webp" alt="Rangka tulangan sambungan balok-kolom beton bertulang dengan bekisting kayu" loading="lazy" />
         </div>
 
         <div class="relative z-10 flex items-center justify-between">
@@ -209,19 +184,7 @@
       <div class="service-card p-8 sm:p-11 md:p-14" data-service-index="1">
         <!-- Right-side graphic: Nested Glowing Pyramids (from frame_13) -->
         <div class="service-graphic">
-          <svg viewBox="0 0 520 420" preserveAspectRatio="xMidYMax slice" class="w-full h-full">
-            <defs>
-              <linearGradient id="pyrG" x1="0.5" y1="0" x2="0.5" y2="1">
-                <stop offset="0%" stop-color="#1D2530" stop-opacity="0.35"/>
-                <stop offset="60%" stop-color="#334457" stop-opacity="0.75"/>
-                <stop offset="100%" stop-color="#5B738E" stop-opacity="0.95"/>
-              </linearGradient>
-            </defs>
-            <polygon points="280,10 60,420 500,420" fill="url(#pyrG)" opacity="0.35" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
-            <polygon points="280,85 110,420 450,420" fill="url(#pyrG)" opacity="0.52" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
-            <polygon points="280,165 160,420 400,420" fill="url(#pyrG)" opacity="0.72" stroke="rgba(255,255,255,0.12)" stroke-width="1"/>
-            <polygon points="280,245 210,420 350,420" fill="url(#pyrG)" opacity="0.92" stroke="rgba(255,255,255,0.15)" stroke-width="1"/>
-          </svg>
+          <img src="assets/images/zs_insight_1.webp" alt="Isolator dasar seismik dan tumpuan fondasi kolom" loading="lazy" />
         </div>
 
         <div class="relative z-10 flex items-center justify-between">
@@ -250,19 +213,7 @@
       <div class="service-card p-8 sm:p-11 md:p-14" data-service-index="2">
         <!-- Right-side graphic: Concentric Glowing Circles (from frame_14) -->
         <div class="service-graphic">
-          <svg viewBox="0 0 520 420" preserveAspectRatio="xMidYMax slice" class="w-full h-full">
-            <defs>
-              <radialGradient id="cirG" cx="50%" cy="85%" r="75%">
-                <stop offset="0%" stop-color="#C86D3B" stop-opacity="0.88"/>
-                <stop offset="55%" stop-color="#354659" stop-opacity="0.68"/>
-                <stop offset="100%" stop-color="#15181E" stop-opacity="0.15"/>
-              </radialGradient>
-            </defs>
-            <circle cx="280" cy="390" r="320" fill="url(#cirG)" opacity="0.32" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
-            <circle cx="280" cy="390" r="245" fill="url(#cirG)" opacity="0.48" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
-            <circle cx="280" cy="390" r="175" fill="url(#cirG)" opacity="0.68" stroke="rgba(255,255,255,0.12)" stroke-width="1"/>
-            <circle cx="280" cy="390" r="108" fill="url(#cirG)" opacity="0.92" stroke="rgba(255,255,255,0.15)" stroke-width="1"/>
-          </svg>
+          <img src="assets/images/zs_bidang_kubikasi.webp" alt="Ilustrasi isometrik elemen beton — kolom, pelat, balok, dan fondasi bertangga — dengan garis dimensi" loading="lazy" />
         </div>
 
         <div class="relative z-10 flex items-center justify-between">
@@ -291,19 +242,7 @@
       <div class="service-card p-8 sm:p-11 md:p-14" data-service-index="3">
         <!-- Right-side graphic: Concentric Rounded Arches (from frame_15) -->
         <div class="service-graphic">
-          <svg viewBox="0 0 520 420" preserveAspectRatio="xMidYMax slice" class="w-full h-full">
-            <defs>
-              <linearGradient id="archG" x1="0.5" y1="0" x2="0.5" y2="1">
-                <stop offset="0%" stop-color="#1E2631" stop-opacity="0.35"/>
-                <stop offset="55%" stop-color="#364759" stop-opacity="0.75"/>
-                <stop offset="100%" stop-color="#607994" stop-opacity="0.96"/>
-              </linearGradient>
-            </defs>
-            <rect x="40" y="45" width="460" height="460" rx="150" fill="url(#archG)" opacity="0.32" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
-            <rect x="95" y="120" width="350" height="400" rx="115" fill="url(#archG)" opacity="0.5" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
-            <rect x="150" y="195" width="240" height="320" rx="80" fill="url(#archG)" opacity="0.7" stroke="rgba(255,255,255,0.13)" stroke-width="1"/>
-            <rect x="200" y="270" width="140" height="220" rx="44" fill="url(#archG)" opacity="0.92" stroke="rgba(255,255,255,0.16)" stroke-width="1"/>
-          </svg>
+          <img src="assets/images/zs_bidang_gambar.webp" alt="Gambar kerja struktur: potongan balok dan detail penulangan di atas kertas biru" loading="lazy" />
         </div>
 
         <div class="relative z-10 flex items-center justify-between">
@@ -332,19 +271,7 @@
       <div class="service-card p-8 sm:p-11 md:p-14" data-service-index="4">
         <!-- Right-side graphic: Concentric Hexagons (from frame_16) -->
         <div class="service-graphic">
-          <svg viewBox="0 0 520 420" preserveAspectRatio="xMidYMax slice" class="w-full h-full">
-            <defs>
-              <linearGradient id="hexG" x1="0.5" y1="0" x2="0.5" y2="1">
-                <stop offset="0%" stop-color="#202834" stop-opacity="0.4"/>
-                <stop offset="55%" stop-color="#3B4D61" stop-opacity="0.75"/>
-                <stop offset="100%" stop-color="#B86B3B" stop-opacity="0.92"/>
-              </linearGradient>
-            </defs>
-            <polygon points="280,20 490,135 490,430 70,430 70,135" fill="url(#hexG)" opacity="0.34" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
-            <polygon points="280,95 440,185 440,430 120,430 120,185" fill="url(#hexG)" opacity="0.52" stroke="rgba(255,255,255,0.11)" stroke-width="1"/>
-            <polygon points="280,175 390,238 390,430 170,430 170,238" fill="url(#hexG)" opacity="0.74" stroke="rgba(255,255,255,0.14)" stroke-width="1"/>
-            <polygon points="280,250 345,288 345,430 215,430 215,288" fill="url(#hexG)" opacity="0.94" stroke="rgba(255,255,255,0.17)" stroke-width="1"/>
-          </svg>
+          <img src="assets/images/zs_bidang_alat.webp" alt="Antarmuka kalkulator ZonaSipil: panel Volume Beton dan Berat Tulangan" loading="lazy" />
         </div>
 
         <div class="relative z-10 flex items-center justify-between">
@@ -373,7 +300,7 @@
   </section>
 
   <!-- INDEKS TOPIK ZONASIPIL (12 Topik) -->
-  <section class="pt-16 md:pt-24 pb-28 md:pb-36 px-6 md:px-14 lg:px-24 max-w-[1360px] mx-auto text-center">
+  <section class="bg-[#E8E5DC] pt-16 md:pt-24 pb-28 md:pb-36 px-6 md:px-14 lg:px-24 max-w-[1360px] mx-auto text-center">
     <h2 class="text-[28px] sm:text-[34px] md:text-[40px] font-normal tracking-[-0.025em] text-black mb-16 md:mb-24 reveal-up">
       Topik yang dibahas di ZonaSipil
     </h2>
@@ -486,7 +413,7 @@
           <!-- Kajian: Membaca Gambar Kerja -->
           <article class="project-card reveal-up" data-cursor="arrow-light" data-project-title="Membaca Gambar Kerja" data-project-desc="Dari denah ke potongan, lalu ke detail: urutan membaca satu set gambar kerja agar tidak ada satu elemen pun yang terlewat.">
             <div class="project-img-wrap aspect-[592/798]">
-              <img src="assets/images/zs_work_left_4.webp" alt="Struktur lining terowongan segmental beton pracetak" style="object-position: center center;" loading="lazy" />
+              <img src="assets/images/zs_work_left_4.webp" alt="Struktur lining terowongan segmental beton pracetak" style="object-position: center 42%;" loading="lazy" />
             </div>
             <p class="mt-5 text-[18px] sm:text-[20px] leading-[1.4] text-white/90 font-normal max-w-[520px]">
               Dari denah ke potongan, lalu ke detail: urutan membaca satu set gambar kerja agar tidak ada satu elemen pun yang terlewat.
@@ -539,7 +466,7 @@
           <!-- Kajian: Kubikasi &amp; Estimasi Volume -->
           <article class="project-card reveal-up" data-cursor="arrow-light" data-project-title="Kubikasi &amp; Estimasi Volume" data-project-desc="Mengubah geometri gambar menjadi angka: volume beton dan berat tulangan yang selalu bisa diperiksa ulang.">
             <div class="project-img-wrap aspect-[592/800]">
-              <img src="assets/images/zs_work_right_4.webp" alt="Analisis simpangan modal struktur bertingkat 3D" style="object-position: center center;" loading="lazy" />
+              <img src="assets/images/zs_work_right_4.webp" alt="Analisis simpangan modal struktur bertingkat 3D" style="object-position: center 38%;" loading="lazy" />
             </div>
             <p class="mt-5 text-[18px] sm:text-[20px] leading-[1.4] text-white/90 font-normal max-w-[520px]">
               Mengubah geometri gambar menjadi angka: volume beton dan berat tulangan yang selalu bisa diperiksa ulang.
@@ -778,7 +705,7 @@
         <!-- Insight 1 -->
         <article class="group cursor-pointer reveal-up" data-cursor="arrow-light" data-blog-title="Kenapa Sengkang Dirapatkan di Dekat Tumpuan?" data-blog-cat="STRUKTUR" data-blog-date="10/29/2026">
           <div class="rounded-[24px] overflow-hidden aspect-square bg-neutral-900 mb-6">
-            <img src="assets/images/zs_insight_1.webp" alt="Isolator dasar seismik dan tumpuan fondasi kolom" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" style="object-position: center center;" loading="lazy" />
+            <img src="assets/images/zs_insight_2.webp" alt="Diagram momen lentur dan gaya geser gelagar menerus" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" style="object-position: center center;" loading="lazy" />
           </div>
           <div class="text-[13px] font-medium uppercase tracking-[0.03em] text-white/55 mb-2.5">STRUKTUR</div>
           <h3 class="text-[22px] lg:text-[24px] leading-[1.32] font-normal tracking-[-0.015em] text-white group-hover:text-white/80 transition-colors">
@@ -790,7 +717,7 @@
         <!-- Insight 2 -->
         <article class="group cursor-pointer reveal-up" style="transition-delay: 70ms;" data-cursor="arrow-light" data-blog-title="Asal-Usul Angka 0,006165 pada Berat Besi" data-blog-cat="ESTIMASI" data-blog-date="10/15/2026">
           <div class="rounded-[24px] overflow-hidden aspect-square bg-neutral-900 mb-6">
-            <img src="assets/images/zs_insight_2.webp" alt="Diagram momen lentur dan gaya geser gelagar menerus" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" style="object-position: center center;" loading="lazy" />
+            <img src="assets/images/zs_artikel_besi.webp" alt="Tumpukan batang tulangan baja ulir — penampang lingkaran tempat diameter diukur" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" style="object-position: center center;" loading="lazy" />
           </div>
           <div class="text-[13px] font-medium uppercase tracking-[0.03em] text-white/55 mb-2.5">ESTIMASI</div>
           <h3 class="text-[22px] lg:text-[24px] leading-[1.32] font-normal tracking-[-0.015em] text-white group-hover:text-white/80 transition-colors">
@@ -802,7 +729,7 @@
         <!-- Insight 3 -->
         <article class="group cursor-pointer reveal-up" style="transition-delay: 140ms;" data-cursor="arrow-light" data-blog-title="Dari Gambar ke Kubikasi: Urutan yang Tidak Menipu" data-blog-cat="KUBIKASI" data-blog-date="10/1/2026">
           <div class="rounded-[24px] overflow-hidden aspect-square bg-neutral-900 mb-6">
-            <img src="assets/images/zs_insight_3.webp" alt="Diagram permukaan interaksi P-M-M kolom biaksial 3D" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" style="object-position: center center;" loading="lazy" />
+            <img src="assets/images/zs_work_left_5.webp" alt="Gambar detail penampang kolom beton bertulang dan penulangannya" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" style="object-position: center center;" loading="lazy" />
           </div>
           <div class="text-[13px] font-medium uppercase tracking-[0.03em] text-white/55 mb-2.5">KUBIKASI</div>
           <h3 class="text-[22px] lg:text-[24px] leading-[1.32] font-normal tracking-[-0.015em] text-white group-hover:text-white/80 transition-colors">
