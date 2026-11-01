@@ -1,70 +1,7 @@
 (function () {
-      // 1. CUSTOM ZONASIPIL CURSOR & MAGNETIC PHYSICS
-      const cursor = document.getElementById('cb-cursor');
-      const cursorIcon = document.getElementById('cb-cursor-icon');
-
-      const ICONS = {
-        play: '<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><polygon points="7 4 20 12 7 20 7 4"/></svg>',
-        arrow: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17L17 7M17 7H8M17 7V16"/></svg>',
-        drag: '<span>Tap</span>'
-      };
-
-      let mouseX = window.innerWidth / 2;
-      let mouseY = window.innerHeight / 2;
-      let curX = mouseX;
-      let curY = mouseY;
-
-      window.addEventListener('mousemove', (e) => {
-        mouseX = e.clientX;
-        mouseY = e.clientY;
-
-        // Check if cursor is over a dark section
-        const elUnder = document.elementFromPoint(mouseX, mouseY);
-        if (elUnder) {
-          const darkParent = elUnder.closest('[data-dark-section="true"], .service-card.active, #cb-modal');
-          if (darkParent) {
-            cursor.classList.add('on-dark');
-          } else {
-            cursor.classList.remove('on-dark');
-          }
-        }
-      });
-
-      function animateCursor() {
-        curX += (mouseX - curX) * 0.18;
-        curY += (mouseY - curY) * 0.18;
-        cursor.style.transform = `translate3d(${curX}px, ${curY}px, 0) translate3d(-50%, -50%, 0)`;
-        requestAnimationFrame(animateCursor);
-      }
-      requestAnimationFrame(animateCursor);
-
-      // Attach cursor states to interactive elements
-      function bindCursorStates() {
-        document.querySelectorAll('[data-cursor]').forEach((el) => {
-          el.addEventListener('mouseenter', () => {
-            const type = el.getAttribute('data-cursor');
-            cursor.classList.remove('state-play', 'state-arrow-dark', 'state-arrow-light', 'state-drag', 'state-button');
-            if (type === 'play') {
-              cursor.classList.add('state-play');
-              cursorIcon.innerHTML = ICONS.play;
-            } else if (type === 'arrow-dark') {
-              cursor.classList.add('state-arrow-dark');
-              cursorIcon.innerHTML = ICONS.arrow;
-            } else if (type === 'arrow-light') {
-              cursor.classList.add('state-arrow-light');
-              cursorIcon.innerHTML = ICONS.arrow;
-            } else if (type === 'drag') {
-              cursor.classList.add('state-drag');
-              cursorIcon.innerHTML = ICONS.drag;
-            }
-          });
-          el.addEventListener('mouseleave', () => {
-            cursor.classList.remove('state-play', 'state-arrow-dark', 'state-arrow-light', 'state-drag', 'state-button');
-            cursorIcon.innerHTML = '';
-          });
-        });
-
-        // Magnetic elements
+      // 1. MAGNETIC PHYSICS
+      // Magnetic elements (kursor kini standar browser)
+      function bindMagnetic() {
         document.querySelectorAll('[data-magnetic]').forEach((el) => {
           const strength = parseFloat(el.getAttribute('data-magnetic')) || 0.25;
           el.addEventListener('mousemove', (e) => {
@@ -78,7 +15,7 @@
           });
         });
       }
-      bindCursorStates();
+      bindMagnetic();
 
       // 2. HERO SHOWREEL AUTO-CYCLE + SCROLL EXPAND + CLICK MODAL
       const slides = document.querySelectorAll('#hero-showreel .showreel-slide');
