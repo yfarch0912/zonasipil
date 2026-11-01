@@ -335,36 +335,11 @@
         });
       });
 
-      // Blog cards click
-      document.querySelectorAll('[data-blog-title]').forEach((card) => {
-        card.addEventListener('click', () => {
-          const title = card.getAttribute('data-blog-title');
-          const cat = card.getAttribute('data-blog-cat');
-          const date = card.getAttribute('data-blog-date');
-          const img = card.querySelector('img').getAttribute('src');
-          openModal(`
-            <div class="flex flex-col gap-5">
-              <div class="rounded-2xl overflow-hidden max-h-[260px] bg-black">
-                <img src="${img}" alt="${title}" class="w-full h-full object-cover" />
-              </div>
-              <div class="text-xs font-semibold uppercase tracking-widest text-indigo-400">${cat} &bull; ${date}</div>
-              <h3 class="text-2xl sm:text-3xl font-medium tracking-tight">${title}</h3>
-              <p class="text-white/75 text-sm sm:text-base leading-relaxed">
-                Artikel ZonaSipil berangkat dari gambar dan rumus: konsepnya dijelaskan langkah demi langkah, variabelnya didefinisikan, dan batas konseptualnya dinyatakan dengan jelas — tanpa klaim yang tidak bisa ditelusur.
-              </p>
-            </div>
-          `);
-        });
-      });
+      // Kartu artikel kini berupa tautan ke /artikel/<slug>/ (routing artikel)
 
       document.getElementById('view-all-projects-btn').addEventListener('click', () => {
         document.getElementById('projects').scrollIntoView({ behavior: 'smooth' });
         showToast('Menampilkan 10 kajian pilihan ZonaSipil');
-      });
-
-      document.getElementById('visit-blog-btn').addEventListener('click', () => {
-        document.getElementById('blog').scrollIntoView({ behavior: 'smooth' });
-        showToast('Menampilkan artikel terbaru ZonaSipil');
       });
 
       document.getElementById('privacy-policy-btn').addEventListener('click', () => {
