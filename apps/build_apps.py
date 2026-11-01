@@ -53,7 +53,7 @@ APPS = [
          short="Analisis struktur rangka 2D: simpul–batang, tumpuan, beban titik & merata, reaksi, gaya N/V/M, dan deformasi.",
          long="Zona Structure adalah aplikasi analisis struktur rangka 2D ZonaSipil — hasil migrasi proyek solver STRUKTURA ke ekosistem ZonaSipil. Pengguna memodelkan simpul dan batang di kanvas, memasang tumpuan dan beban, lalu membaca reaksi, klasifikasi kestabilan, gaya dalam N/V/M, dan visualisasi deformasi yang diskalakan secara eksplisit.",
          features=["Pemodelan simpul & batang di kanvas, dengan pengeditan lewat tabel data", "Beban titik dan beban merata (dua mode), kasus beban yang dapat diaktifkan/dinonaktifkan", "Hasil: reaksi tumpuan, diagram N/V/M, bentuk deformasi dari perpindahan solver asli", "Model tidak stabil ditandai jujur sebagai TIDAK STABIL — tanpa hasil karangan", "Simpan & buka kembali proyek (penyimpanan lokal peramban pada tahap ini)"],
-         status_note="Aplikasi selesai tahap uji internal pada 1 November 2026: 222 tes unit/benchmark analitis dan 32 skenario E2E lulus, build & typecheck bersih. Status rilis: SIAP UJI INTERNAL — audit keamanan dependensi (npm audit) dan validasi screen-reader masih terbuka, dan integrasi rute publik di halaman ini sedang disiapkan. Karena itu labelnya BETA, bukan AVAILABLE."),
+         status_note="Aplikasi tayang di rute ini sejak 2 November 2026 (rute /apps/structure/ kini menyajikan aplikasi interaktifnya langsung, bukan halaman perkenalan). Bukti uji internal: 237 tes unit/benchmark analitis dan 39 skenario E2E lulus, build & typecheck bersih. Status rilis tetap BETA, bukan AVAILABLE: audit keamanan dependensi (npm audit) dan validasi screen-reader masih terbuka."),
     dict(slug="concrete", name="Zona Concrete", cat="structural", status="development",
          short="Perancangan elemen beton bertulang — balok, kolom, pelat — dengan alur hitung yang terbuka langkah demi langkah.",
          long="Zona Concrete direncanakan sebagai aplikasi perancangan elemen beton bertulang: balok, kolom, dan pelat, dengan setiap langkah hitung diperlihatkan — bukan kotak hitam. Fondasi hitungnya sudah hidup lebih dulu di ZonaSipil: kalkulator volume beton (dengan faktor waste) yang dipakai di Zona Calculator adalah modul kubikasi pertamanya.",
@@ -161,7 +161,7 @@ def megamenu():
 def header(active=""):
     apps_cls = "cb-nav-link" + (" text-[#168B83]" if active == "apps" else "")
     return f"""<header class="w-full pt-7 pb-5 px-6 md:px-14 lg:px-24 flex items-center justify-between bg-[#F4F3EF] z-40 relative">
-    <a href="/" class="text-[27px] font-bold tracking-[-0.045em] text-black leading-none select-none">zonasipil</a>
+    <a href="/" class="select-none" aria-label="ZonaSipil — beranda"><svg viewBox="0 0 620 160" style="height:40px;width:auto;display:block" role="img" aria-label="ZonaSipil"><polyline points="38,60 38,32 128,4 184,27 184,45" fill="none" stroke="#142D36" stroke-width="11" stroke-linecap="round" stroke-linejoin="round"/><text x="24" y="126" font-family="'Plus Jakarta Sans',sans-serif" font-size="88" font-weight="700" letter-spacing="-1.5"><tspan fill="#142D36">Zona</tspan><tspan fill="#E9A64B">Sipil</tspan></text></svg></a>
     <nav class="hidden md:flex items-center gap-7 lg:gap-9 text-[16px] font-normal text-black">
       <a href="/#services" class="cb-nav-link"><span data-text="Bidang Kajian">Bidang Kajian</span></a>
       <a href="/#projects" class="cb-nav-link"><span data-text="Kajian">Kajian</span></a>
@@ -173,9 +173,9 @@ def header(active=""):
       <a href="/#about" class="cb-nav-link"><span data-text="Tentang">Tentang</span></a>
       <a href="/#workflow" class="cb-nav-link"><span data-text="FAQ">FAQ</span></a>
       <a href="/login" class="zs-login-pill"><i></i>Login</a>
-      <a href="/#kalkulator" class="cb-btn bg-[#121417] text-[#F4F3EF] px-7 py-3 text-[16px] font-medium" style="--hover-text:#ffffff;">
+      <a href="/apps" class="cb-btn bg-[#121417] text-[#F4F3EF] px-7 py-3 text-[16px] font-medium" style="--hover-text:#ffffff;">
         <span class="cb-btn-fill bg-[#3B4D61]"></span>
-        <span class="cb-btn-text-wrap"><span class="cb-btn-text-inner" data-text="Hitung Cepat">Hitung Cepat</span></span>
+        <span class="cb-btn-text-wrap"><span class="cb-btn-text-inner" data-text="Buka Apps">Buka Apps</span></span>
       </a>
     </nav>
     <div class="md:hidden flex items-center gap-5">
@@ -187,7 +187,7 @@ def header(active=""):
 FOOTER = """  <footer class="bg-[#121417] text-[#F4F3EF] mt-24">
     <div class="max-w-[1326px] mx-auto px-6 md:px-14 lg:px-24 py-14 flex flex-col md:flex-row md:items-center justify-between gap-8">
       <div>
-        <div class="text-[24px] font-bold tracking-[-0.045em] leading-none mb-3">zonasipil</div>
+        <div class="mb-3"><svg viewBox="0 0 620 160" style="height:32px;width:auto;display:block" role="img" aria-label="ZonaSipil"><polyline points="38,60 38,32 128,4 184,27 184,45" fill="none" stroke="#F4F3EF" stroke-width="11" stroke-linecap="round" stroke-linejoin="round"/><text x="24" y="126" font-family="'Plus Jakarta Sans',sans-serif" font-size="88" font-weight="700" letter-spacing="-1.5"><tspan fill="#F4F3EF">Zona</tspan><tspan fill="#E9A64B">Sipil</tspan></text></svg></div>
         <p class="text-white/55 text-[15px] max-w-[420px] leading-relaxed">Pengetahuan dan alat teknik sipil berbahasa Indonesia — dijelaskan dari gambar dan rumus yang terbuka.</p>
       </div>
       <nav class="flex flex-wrap gap-x-8 gap-y-3 text-[15px] text-white/75">
@@ -443,6 +443,12 @@ def dashboard_page():
 def main():
     (APPS_DIR / "index.html").write_text(catalog_page(), encoding="utf-8")
     for a in APPS:
+        # /apps/structure/ is served by the Zona Structure web app
+        # itself (integrated 2026-11-02): never overwrite its
+        # index.html with a generated detail page. The app remains
+        # listed in the catalogue above.
+        if a["slug"] == "structure":
+            continue
         d = APPS_DIR / a["slug"]; d.mkdir(parents=True, exist_ok=True)
         (d / "index.html").write_text(detail_page(a), encoding="utf-8")
     for name, page in [("login", login_page()), ("register", register_page()),
