@@ -55,7 +55,7 @@
       <div class="text-[11px] font-bold tracking-[0.16em] text-[#168B83] mb-3">ZONASIPIL ACCOUNT</div>
       <h1 class="text-[32px] font-semibold tracking-[-0.03em] leading-tight mb-2">Buat akun ZonaSipil</h1>
       <p class="text-[14.5px] text-black/60 leading-relaxed mb-8">Akun ini akan menjadi kunci workspace Anda di seluruh ekosistem aplikasi ZonaSipil.</p>
-      <form class="zs-auth-form flex flex-col gap-5" novalidate>
+      <form id="form-register" class="zs-auth-form flex flex-col gap-5" novalidate>
         <div class="zs-field"><label for="rg-name">Nama lengkap</label><input id="rg-name" type="text" autocomplete="name" placeholder="Nama Anda" style="padding-right:15px;" /></div>
         <div class="zs-field"><label for="rg-email">Alamat email</label><input id="rg-email" type="email" autocomplete="email" placeholder="nama@email.com" /></div>
         <div class="zs-field"><label for="rg-pass">Kata sandi</label>
@@ -64,11 +64,12 @@
         </div>
         <button type="submit" class="zs-submit">Buat Akun</button>
         <div class="zs-notice zs-auth-result hidden" role="status"></div>
-      <div class="zs-notice mt-5"><strong>Sistem akun sedang dibangun.</strong> ZonaSipil sedang menyiapkan backend akun yang aman — kata sandi ter-hash, sesi dikelola server, dan data tiap pengguna terpisah. Pendaftaran dan masuk <strong>belum dibuka</strong>; formulir ini adalah antarmukanya, dan tidak ada data yang dikirim atau disimpan saat ini.</div>
+      <p class="mt-5 text-[12.5px] leading-relaxed text-black/45">Kata sandi disimpan sebagai hash aman (scrypt) di server ZonaSipil — tidak pernah sebagai teks biasa. Sesi masuk memakai cookie HttpOnly.</p>
       </form>
       <p class="mt-7 text-center text-[14.5px] text-black/60">Sudah punya akun? <a href="/login" class="font-semibold text-[#142D36] underline decoration-[#168B83] decoration-2 underline-offset-4">Masuk</a></p>
     </div>
   </main>
+  <script src="/apps/auth.js" defer></script>
   <footer class="bg-[#121417] text-[#F4F3EF] mt-24">
     <div class="max-w-[1326px] mx-auto px-6 md:px-14 lg:px-24 py-14 flex flex-col md:flex-row md:items-center justify-between gap-8">
       <div>

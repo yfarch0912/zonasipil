@@ -55,7 +55,7 @@
       <div class="text-[11px] font-bold tracking-[0.16em] text-[#168B83] mb-3">ZONASIPIL ACCOUNT</div>
       <h1 class="text-[32px] font-semibold tracking-[-0.03em] leading-tight mb-2">Masuk ke ZonaSipil</h1>
       <p class="text-[14.5px] text-black/60 leading-relaxed mb-8">Satu akun untuk semua aplikasi, proyek, dan perhitungan tersimpan Anda.</p>
-      <form class="zs-auth-form flex flex-col gap-5" novalidate>
+      <form id="form-login" class="zs-auth-form flex flex-col gap-5" novalidate>
         <div class="zs-field"><label for="li-email">Alamat email</label><input id="li-email" type="email" autocomplete="email" placeholder="nama@email.com" /></div>
         <div class="zs-field"><label for="li-pass">Kata sandi</label>
           <div class="relative"><input id="li-pass" type="password" autocomplete="current-password" placeholder="••••••••" /><button type="button" class="zs-eye" data-eye="li-pass" aria-label="Tampilkan kata sandi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z"/><circle cx="12" cy="12" r="3"/></svg></button></div>
@@ -66,11 +66,12 @@
         </div>
         <button type="submit" class="zs-submit">Masuk</button>
         <div class="zs-notice zs-auth-result hidden" role="status"></div>
-      <div class="zs-notice mt-5"><strong>Sistem akun sedang dibangun.</strong> ZonaSipil sedang menyiapkan backend akun yang aman — kata sandi ter-hash, sesi dikelola server, dan data tiap pengguna terpisah. Pendaftaran dan masuk <strong>belum dibuka</strong>; formulir ini adalah antarmukanya, dan tidak ada data yang dikirim atau disimpan saat ini.</div>
+      <p class="mt-5 text-[12.5px] leading-relaxed text-black/45">Kata sandi disimpan sebagai hash aman (scrypt) di server ZonaSipil — tidak pernah sebagai teks biasa. Sesi masuk memakai cookie HttpOnly.</p>
       </form>
       <p class="mt-7 text-center text-[14.5px] text-black/60">Belum punya akun? <a href="/register" class="font-semibold text-[#142D36] underline decoration-[#168B83] decoration-2 underline-offset-4">Daftar</a></p>
     </div>
   </main>
+  <script src="/apps/auth.js" defer></script>
   <footer class="bg-[#121417] text-[#F4F3EF] mt-24">
     <div class="max-w-[1326px] mx-auto px-6 md:px-14 lg:px-24 py-14 flex flex-col md:flex-row md:items-center justify-between gap-8">
       <div>

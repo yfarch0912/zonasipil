@@ -51,18 +51,6 @@
     });
   });
 
-  /* --- Formulir akun: jujur, tanpa pengiriman data --- */
-  document.querySelectorAll(".zs-auth-form").forEach(function (form) {
-    form.addEventListener("submit", function (e) {
-      e.preventDefault();
-      var box = form.querySelector(".zs-auth-result");
-      if (box) {
-        box.textContent = "Sistem akun ZonaSipil belum dibuka — backend autentikasi yang aman sedang dibangun, jadi belum ada data yang dikirim, disimpan, atau akun yang dibuat dari formulir ini.";
-        box.classList.remove("hidden");
-      }
-    });
-  });
-
   /* --- Mega menu: dukungan sentuh/klik pada pemicu Apps --- */
   document.querySelectorAll(".zs-apps-wrap > a").forEach(function (link) {
     link.addEventListener("click", function (e) {

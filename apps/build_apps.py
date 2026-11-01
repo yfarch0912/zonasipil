@@ -133,7 +133,7 @@ APPS = [
          short="Perpustakaan dokumen teknik pribadi: gambar, laporan, dan referensi tertata per proyek.",
          long="Zona Library direncanakan sebagai rak dokumen teknik pribadi pengguna ZonaSipil: gambar kerja, laporan, dan referensi yang tertata per proyek dan tertaut ke pekerjaan yang menghasilkannya.",
          features=["Rencana: folder dokumen per proyek", "Rencana: tautan dokumen ke hasil hitung", "Rencana: pencarian judul & label dokumen"],
-         status_note="COMING SOON — masih tahap peta jalan produk, dan bergantung pada sistem akun ZonaSipil yang sedang dibangun."),
+         status_note="COMING SOON — masih tahap peta jalan produk; akan terhubung ke akun ZonaSipil yang kini sudah aktif."),
 ]
 
 def esc(s): return html.escape(s, quote=True)
@@ -276,9 +276,9 @@ def catalog_page():
     </div>
     <div id="zs-noresult" class="hidden mt-10 zs-empty">Tidak ada aplikasi yang cocok dengan pencarian ini.<br/>Coba kata kunci lain, atau jelajahi kategori di atas.</div>
     <section class="mt-24 bg-[#142D36] text-[#F4F3EF] rounded-[28px] p-9 md:p-14">
-      <h2 class="text-[30px] md:text-[40px] font-medium tracking-[-0.03em] leading-tight max-w-[640px]">Satu akun untuk semua aplikasi — sedang dibangun.</h2>
-      <p class="mt-4 text-white/65 leading-[1.65] max-w-[620px] text-[16px]">Sistem akun ZonaSipil sedang dibangun dengan backend yang aman (kata sandi ter-hash, sesi terkelola server, data per pengguna terpisah). Selama tahap ini, semua alat yang berlabel AVAILABLE tetap dapat dipakai langsung tanpa akun.</p>
-      <a href="/login" class="inline-flex mt-7 bg-[#F4F3EF] text-[#121417] font-semibold px-7 py-3.5 rounded-full text-[15px]">Lihat halaman Login</a>
+      <h2 class="text-[30px] md:text-[40px] font-medium tracking-[-0.03em] leading-tight max-w-[640px]">Satu akun untuk semua aplikasi.</h2>
+      <p class="mt-4 text-white/65 leading-[1.65] max-w-[620px] text-[16px]">Sistem akun ZonaSipil sudah aktif: daftar dan masuk untuk membuka workspace Anda — kata sandi ter-hash aman di server, sesi terkelola, data tiap pengguna terpisah. Alat berlabel AVAILABLE tetap dapat dipakai langsung tanpa akun.</p>
+      <a href="/login" class="inline-flex mt-7 bg-[#F4F3EF] text-[#121417] font-semibold px-7 py-3.5 rounded-full text-[15px]">Masuk / Daftar</a>
     </section>
   </main>
 {FOOTER}"""
@@ -326,7 +326,7 @@ def detail_page(a):
 EYE = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z"/><circle cx="12" cy="12" r="3"/></svg>'
 
 AUTH_NOTICE = """<div class="zs-notice zs-auth-result hidden" role="status"></div>
-      <div class="zs-notice mt-5"><strong>Sistem akun sedang dibangun.</strong> ZonaSipil sedang menyiapkan backend akun yang aman — kata sandi ter-hash, sesi dikelola server, dan data tiap pengguna terpisah. Pendaftaran dan masuk <strong>belum dibuka</strong>; formulir ini adalah antarmukanya, dan tidak ada data yang dikirim atau disimpan saat ini.</div>"""
+      <p class="mt-5 text-[12.5px] leading-relaxed text-black/45">Kata sandi disimpan sebagai hash aman (scrypt) di server ZonaSipil — tidak pernah sebagai teks biasa. Sesi masuk memakai cookie HttpOnly.</p>"""
 
 def auth_shell(title, desc, path, inner):
     return f"""{head(title, desc, path)}
@@ -336,13 +336,14 @@ def auth_shell(title, desc, path, inner):
 {inner}
     </div>
   </main>
+  <script src="/apps/auth.js" defer></script>
 {FOOTER}"""
 
 def login_page():
     inner = f"""      <div class="text-[11px] font-bold tracking-[0.16em] text-[#168B83] mb-3">ZONASIPIL ACCOUNT</div>
       <h1 class="text-[32px] font-semibold tracking-[-0.03em] leading-tight mb-2">Masuk ke ZonaSipil</h1>
       <p class="text-[14.5px] text-black/60 leading-relaxed mb-8">Satu akun untuk semua aplikasi, proyek, dan perhitungan tersimpan Anda.</p>
-      <form class="zs-auth-form flex flex-col gap-5" novalidate>
+      <form id="form-login" class="zs-auth-form flex flex-col gap-5" novalidate>
         <div class="zs-field"><label for="li-email">Alamat email</label><input id="li-email" type="email" autocomplete="email" placeholder="nama@email.com" /></div>
         <div class="zs-field"><label for="li-pass">Kata sandi</label>
           <div class="relative"><input id="li-pass" type="password" autocomplete="current-password" placeholder="••••••••" /><button type="button" class="zs-eye" data-eye="li-pass" aria-label="Tampilkan kata sandi">{EYE}</button></div>
@@ -361,7 +362,7 @@ def register_page():
     inner = f"""      <div class="text-[11px] font-bold tracking-[0.16em] text-[#168B83] mb-3">ZONASIPIL ACCOUNT</div>
       <h1 class="text-[32px] font-semibold tracking-[-0.03em] leading-tight mb-2">Buat akun ZonaSipil</h1>
       <p class="text-[14.5px] text-black/60 leading-relaxed mb-8">Akun ini akan menjadi kunci workspace Anda di seluruh ekosistem aplikasi ZonaSipil.</p>
-      <form class="zs-auth-form flex flex-col gap-5" novalidate>
+      <form id="form-register" class="zs-auth-form flex flex-col gap-5" novalidate>
         <div class="zs-field"><label for="rg-name">Nama lengkap</label><input id="rg-name" type="text" autocomplete="name" placeholder="Nama Anda" style="padding-right:15px;" /></div>
         <div class="zs-field"><label for="rg-email">Alamat email</label><input id="rg-email" type="email" autocomplete="email" placeholder="nama@email.com" /></div>
         <div class="zs-field"><label for="rg-pass">Kata sandi</label>
@@ -378,7 +379,7 @@ def forgot_page():
     inner = f"""      <div class="text-[11px] font-bold tracking-[0.16em] text-[#168B83] mb-3">ZONASIPIL ACCOUNT</div>
       <h1 class="text-[32px] font-semibold tracking-[-0.03em] leading-tight mb-2">Lupa kata sandi</h1>
       <p class="text-[14.5px] text-black/60 leading-relaxed mb-8">Masukkan email akun Anda — saat sistem akun aktif, tautan atur ulang yang aman dan berbatas waktu akan dikirim ke sana.</p>
-      <form class="zs-auth-form flex flex-col gap-5" novalidate>
+      <form id="form-forgot" class="zs-auth-form flex flex-col gap-5" novalidate>
         <div class="zs-field"><label for="fp-email">Alamat email</label><input id="fp-email" type="email" autocomplete="email" placeholder="nama@email.com" /></div>
         <button type="submit" class="zs-submit">Kirim Tautan Atur Ulang</button>
         {AUTH_NOTICE}
@@ -407,27 +408,35 @@ def dashboard_page():
     body = f"""{head('Dashboard — ZonaSipil', 'Workspace pengguna ZonaSipil: aplikasi, proyek, perhitungan, model, dan laporan tersimpan.', '/dashboard/')}
 {header()}
   <main class="max-w-[1326px] mx-auto px-6 md:px-14 lg:px-0 pt-10 md:pt-14 pb-4">
-    <div class="zs-notice mb-8"><strong>Pratinjau antarmuka workspace.</strong> Sistem akun ZonaSipil sedang dibangun dengan backend yang aman. Halaman ini menunjukkan struktur workspace yang akan Anda dapatkan — belum ada akun yang masuk dan belum ada data pengguna yang disimpan di sini.</div>
+    <div class="bg-white rounded-[22px] px-7 py-6 mb-8 flex flex-wrap items-center justify-between gap-4 shadow-[0_18px_40px_-28px_rgba(18,20,23,.25)]">
+      <div>
+        <div class="text-[11px] font-bold tracking-[0.16em] text-black/45 mb-1">MASUK SEBAGAI</div>
+        <div class="text-[19px] font-semibold leading-tight"><span id="dash-user-name">Memuat…</span></div>
+        <div class="text-[14px] text-black/55" id="dash-user-email"></div>
+      </div>
+      <button type="button" id="btn-logout" class="zs-login-pill">Keluar</button>
+    </div>
     <div class="grid lg:grid-cols-[260px_1fr] gap-8 items-start">
       <aside class="bg-[#142D36] rounded-[24px] p-5 lg:sticky lg:top-6">
         <div class="text-[11px] font-bold tracking-[0.16em] text-white/40 px-2 pb-3">WORKSPACE</div>
         <nav class="flex lg:flex-col gap-1 overflow-x-auto">{nav}</nav>
-        <div class="hidden lg:block mt-8 px-2 text-[13px] leading-relaxed text-white/45">Masuk dengan akun ZonaSipil untuk menyinkronkan proyek dan perhitungan antar perangkat — tersedia setelah backend akun diluncurkan.</div>
+        <div class="hidden lg:block mt-8 px-2 text-[13px] leading-relaxed text-white/45">Proyek dan perhitungan yang Anda simpan dari aplikasi ZonaSipil akan terkumpul di workspace ini.</div>
       </aside>
       <section>
-        <h1 class="text-[34px] md:text-[42px] font-medium tracking-[-0.03em] leading-tight">Overview</h1>
+        <h1 class="text-[34px] md:text-[42px] font-medium tracking-[-0.03em] leading-tight">Halo, <span id="dash-overview-name">…</span></h1>
         <p class="mt-3 text-black/60 text-[16px] leading-relaxed max-w-[620px]">Aplikasi yang sudah dapat dipakai hari ini, dan ruang-ruang workspace yang akan aktif bersama sistem akun.</p>
         <h2 class="mt-10 mb-4 text-[15px] font-bold tracking-[0.1em] text-black/50">APLIKASI AKTIF & BETA</h2>
         <div class="grid sm:grid-cols-2 gap-5">{avail}</div>
         <div class="grid sm:grid-cols-2 gap-5 mt-5">
-          <div><h2 class="mb-3 text-[15px] font-bold tracking-[0.1em] text-black/50">RECENT PROJECTS</h2><div class="zs-empty">Belum ada proyek tersimpan.<br/>Proyek dari aplikasi ZonaSipil akan muncul di sini setelah Anda masuk dengan akun.</div></div>
-          <div><h2 class="mb-3 text-[15px] font-bold tracking-[0.1em] text-black/50">SAVED CALCULATIONS</h2><div class="zs-empty">Belum ada perhitungan tersimpan.<br/>Hasil kalkulator dapat disimpan ke akun pada fase berikutnya.</div></div>
+          <div><h2 class="mb-3 text-[15px] font-bold tracking-[0.1em] text-black/50">RECENT PROJECTS</h2><div class="zs-empty">Belum ada proyek tersimpan.<br/>Proyek dari aplikasi ZonaSipil akan muncul di sini.</div></div>
+          <div><h2 class="mb-3 text-[15px] font-bold tracking-[0.1em] text-black/50">SAVED CALCULATIONS</h2><div class="zs-empty">Belum ada perhitungan tersimpan.<br/>Penyimpanan hasil kalkulator ke akun menyusul pada fase berikutnya.</div></div>
           <div><h2 class="mb-3 text-[15px] font-bold tracking-[0.1em] text-black/50">SAVED MODELS</h2><div class="zs-empty">Belum ada model tersimpan.<br/>Model Zona Structure akan tersimpan di sini setelah integrasi akun selesai.</div></div>
           <div><h2 class="mb-3 text-[15px] font-bold tracking-[0.1em] text-black/50">REPORTS</h2><div class="zs-empty">Belum ada laporan.<br/>Laporan perhitungan yang Anda susun akan terkumpul di sini.</div></div>
         </div>
       </section>
     </div>
   </main>
+  <script src="/apps/auth.js" defer></script>
 {FOOTER}"""
     return body
 
