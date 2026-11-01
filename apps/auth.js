@@ -12,6 +12,12 @@
     box.style.color = isError ? "#7A2716" : "#0C4A45";
   }
 
+  // Pesan dari alur Google yang gagal/dibatalkan
+  if (new URLSearchParams(location.search).get("error") === "google") {
+    var lg = document.getElementById("form-login") || document.querySelector("form.zs-auth-form");
+    if (lg) showResult(lg, "Masuk dengan Google belum berhasil. Coba lagi, atau masuk dengan email dan kata sandi.", true);
+  }
+
   async function post(path, body) {
     const res = await fetch(path, {
       method: "POST",

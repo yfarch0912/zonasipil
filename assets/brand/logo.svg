@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="ZonaSipil">
-  <!-- Roof/portal mark over Z — adapted from the user-chosen logo board (top-right), brand colours. -->
-  <rect x="2" y="2" width="60" height="60" rx="18" fill="#142D36"/>
-  <polyline points="17,25 17,15 29,8 39,13.5 39,18" fill="none" stroke="#E9A64B" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
-  <path d="M19 25 H45 L29.5 41 H45 V48 H19 V41 L34.5 25 H19 Z" fill="#F4F3EF"/>
+  <!-- Favicon: petak navy, Z putih tebal, titik amber (titik beban). Wordmark situs tetap teks polos. -->
+  <rect x="2" y="2" width="60" height="60" rx="16" fill="#142D36"/>
+  <text x="30" y="46" text-anchor="middle" font-family="'Plus Jakarta Sans',sans-serif" font-size="42" font-weight="800" fill="#F4F3EF">z</text>
+  <circle cx="47" cy="17" r="5" fill="#E9A64B"/>
 </svg>
