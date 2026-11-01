@@ -14,6 +14,37 @@ BASE = "https://zonasipil.web.id"
 
 ARTICLES = [
   {
+    "slug": "tiga-jembatan-gantung-satu-gelar-terpanjang",
+    "title": "Tiga Jembatan Gantung, Satu Gelar 'Terpanjang di Asia Tenggara'",
+    "cat": "JEMBATAN", "kind": "berita",
+    "date": "2026-11-01", "date_label": "1 November 2026",
+    "hero": "/assets/images/artikel/tiga-jembatan-gantung-satu-gelar-terpanjang.webp",
+    "hero_alt": "Ilustrasi jembatan gantung sangat panjang menyeberangi lembah pinus berkabut",
+    "hero_caption": "Ilustrasi hasil generate yang dibuat khusus untuk ZonaSipil: jembatan gantung panjang di atas lembah pinus — bukan foto salah satu jembatan yang dibahas.",
+    "excerpt": "Jembatan gantung sedang viral di mana-mana — dan setidaknya tiga jembatan di Jawa Barat sama-sama menyandang klaim 'terpanjang di Asia Tenggara'. Mana yang benar? Jawabannya ada pada cara angka panjang itu diukur.",
+    "sources": [
+      {"label": "Jadesta Kementerian Pariwisata — Atraksi Situ Gunung Suspension Bridge (243 m, lebar 1,8 m, tinggi 121 m)", "url": "https://jadesta.kemenpar.go.id/atraksi/situ_gunung_suspension_bridge"},
+      {"label": "Situs pengelola Kawah Rengganis — Rengganis Suspension Bridge (370 m, 75 m di atas Sungai Palayangan)", "url": "https://kawahrengganis.com/kawah-rengganis-suspension-bridge.html"},
+      {"label": "Explorer.id — Fun Trip Situgunung (Jembatan Gantung Lembah Purba 535 m, dibangun akhir 2023)", "url": "https://explorer.id/trip/fun-trip-situgunung-with-dji"},
+      {"label": "PanduanLiburan — Situ Gunung Suspension Bridge Sukabumi (sejarah viral sejak dibuka 2019, kapasitas per sesi)", "url": "https://www.panduanliburan.com/situ-gunung-suspension-bridge-sukabumi.htm"},
+    ],
+    "body": """
+<p>Beberapa pekan terakhir, jembatan gantung kembali jadi tontonan paling ramai dibagikan: video peresmian jembatan gantung desa di Jawa Barat dipadati warga dan ditonton puluhan ribu kali, sementara jembatan-jembatan gantung wisata di Sukabumi dan Ciwidey tidak pernah sepi dari unggahan. Di tengah keramaian itu, satu gelar diperebutkan tiga jembatan sekaligus: <strong>"jembatan gantung terpanjang di Asia Tenggara."</strong></p>
+<div class="fakta"><strong>Para pemegang klaim (sesuai sumber masing-masing):</strong> Situ Gunung, Sukabumi — 243 m, dibuka 2019, lebar 1,8 m, tinggi 121 m di atas permukaan tanah (Jadesta Kemenpar). Rengganis, Ciwidey — 370 m, 75 m di atas Sungai Palayangan (situs pengelola). Lembah Purba, kawasan Situ Gunung — 535 m, dibangun akhir 2023 (operator wisata kawasan).</div>
+<h2>Semua klaim bisa "benar" — tergantung yang diukur</h2>
+<p>Dalam dunia jembatan, kata "panjang" punya dua arti yang sering tertukar. <strong>Panjang total</strong> adalah ujung ke ujung seluruh struktur, termasuk bentang sisi dan bagian yang menempel di tebing. <strong>Bentang (span)</strong> adalah jarak bebas yang digantung di antara dua tumpuan utama — bagian yang benar-benar melayang di atas lembah. Sebuah jembatan bisa menang di panjang total tetapi kalah di bentang bebas, dan sebaliknya.</p>
+<p>Itulah sebabnya rekor semacam ini berpindah-pindah dan tumpang tindih: setiap pengelola mengutip angka yang paling menguntungkan dari caranya mengukur, dan tidak ada wasit tunggal yang menyamakan definisinya untuk jembatan wisata. Gelar "terpanjang" di sini adalah gelar pemasaran — bukan kategori resmi rekayasa.</p>
+<h2>Angka tinggi pun tidak pernah tunggal</h2>
+<p>Bukti paling mudah dilihat ada pada Situ Gunung sendiri: berbagai sumber menulis ketinggiannya 107 m, 121 m, bahkan 150 m. Semuanya bisa "benar" sebagian — tinggi bisa diukur dari lantai jembatan ke permukaan sungai, ke dasar lembah, atau ke titik tanah terendah, dan permukaan sungai sendiri naik-turun mengikuti musim. Pelajarannya berlaku umum: <strong>angka spesifikasi tanpa definisi pengukuran hanyalah setengah informasi.</strong></p>
+<h2>Semakin panjang, semakin mahal gaya kabelnya</h2>
+<p>Ada alasan teknik kenapa gelar ini tidak berpindah setiap bulan. Pada jembatan gantung, kabel utama bekerja dalam lengkung: untuk lendutan (sag) yang sebanding, <strong>gaya tarik kabel tumbuh sangat cepat ketika bentang memanjang</strong> — beban bertambah karena dek makin panjang, sementara geometri lengkungnya menuntut tarikan yang jauh lebih besar. Menara harus lebih kuat, blok angkur harus lebih masif, dan lantai jembatan harus lebih kaku agar tidak berayun berlebihan.</p>
+<p>Konsekuensi praktisnya terlihat pada aturan main di atas jembatan wisata panjang: jumlah orang yang boleh menyeberang bersamaan <em>dibatasi</em> (di Situ Gunung dilaporkan sekitar 40–60 orang per sesi). Itu bukan sekadar manajemen antrean — itu pengendalian beban hidup. Setiap penyeberang menambah beban pada kabel yang sama, dan pengelola menjaga totalnya jauh di bawah kapasitas struktur.</p>
+<h2>Kenapa jembatan gantung terasa bergoyang</h2>
+<p>Sensasi bergoyang yang membuat jembatan-jembatan ini viral justru adalah sifat alaminya. Struktur yang digantung kabel bersifat ringan dan lentur, dengan frekuensi getar alami yang rendah — dekat dengan irama langkah kaki manusia. Langkah puluhan orang yang kebetulan serempak dapat memperkuat ayunan kecil menjadi terasa besar. Desain jembatan gantung yang baik memperhitungkan hal ini: goyangan dalam batas tertentu adalah perilaku normal yang sudah masuk hitungan, bukan tanda bahaya — yang dijaga ketat adalah batas jumlah penyeberang dan kondisi kabel serta sambungannya.</p>
+<p>Jadi, siapa pemilik gelar yang sah? Dengan angka yang tersedia: Lembah Purba (535 m) adalah yang terpanjang saat ini, Rengganis (370 m) berikutnya, dan Situ Gunung (243 m) adalah pelopor yang membuat format ini viral sejak 2019. Tetapi jawaban yang lebih berguna bagi pembaca teknik adalah: selalu tanyakan <em>panjang apa</em> yang sedang diukur. Gelar akan terus berpindah setiap ada yang membangun lebih panjang — cara membaca angkanya tidak akan pernah kedaluwarsa.</p>
+""",
+  },
+  {
     "slug": "bendung-peusangan-aceh-pulih-70-persen",
     "title": "Bendung Peusangan Pulih 70 Persen: Kenapa Aliran Sungai Harus 'Diarahkan' agar Irigasi Mengalir",
     "cat": "SUMBER DAYA AIR", "kind": "berita",
