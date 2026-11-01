@@ -1,221 +1,1069 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="id" class="scroll-smooth">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>ZonaSipil — Pengetahuan &amp; Alat Teknik Sipil</title>
-<meta name="description" content="ZonaSipil: platform pengetahuan dan alat hitung teknik sipil berbahasa Indonesia. Jalur beban, potongan balok, kubikasi beton, dan berat tulangan — dijelaskan dengan gambar orisinal dan rumus yang terbuka.">
-<link rel="icon" type="image/svg+xml" href="assets/brand/logo.svg">
-<link rel="stylesheet" href="assets/css/site.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ZonaSipil — Pengetahuan &amp; Alat Teknik Sipil</title>
+  <meta name="description" content="ZonaSipil: platform pengetahuan dan alat teknik sipil berbahasa Indonesia. Struktur beton, fondasi, kubikasi, dan detail gambar kerja — dijelaskan dari gambar dan rumus yang terbuka." />
+  <link rel="icon" type="image/svg+xml" href="assets/brand/logo.svg" />
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css" />
 </head>
-<body>
-<a class="skip" href="#kalkulator">Lewati ke kalkulator</a>
+<body class="bg-[#F4F3EF] text-[#121417] selection:bg-[#121417] selection:text-[#F4F3EF]">
 
-<header class="site-head">
-  <a class="brand" href="#atas" aria-label="ZonaSipil — beranda">
-    <img src="assets/brand/logo.svg" alt="" width="40" height="40">
-    <span class="brand-name">Zona<em>Sipil</em></span>
-  </a>
-  <button class="nav-toggle" id="navToggle" aria-expanded="false" aria-controls="navMain">
-    <svg class="ic" aria-hidden="true"><use id="navToggleIcon" href="assets/icons/icons.svg#i-menu"/></svg>
-    <span class="visually-hidden">Buka menu</span>
-  </button>
-  <nav class="nav" id="navMain" aria-label="Navigasi utama">
-    <a href="#bidang">Bidang</a>
-    <a href="#kalkulator">Kalkulator</a>
-    <a href="#diagram">Diagram</a>
-    <a href="#artikel">Artikel</a>
-    <a class="nav-cta" href="#kalkulator">Hitung Sekarang
-      <svg class="ic" aria-hidden="true"><use href="assets/icons/icons.svg#i-arrow"/></svg></a>
-  </nav>
-</header>
-
-<main id="atas">
-
-  <!-- ============ HERO ============ -->
-  <section class="hero">
-    <div class="hero-copy reveal">
-      <p class="eyebrow">Pengetahuan &amp; alat teknik sipil</p>
-      <h1>Setiap bangunan berdiri di atas <span class="hl">jalur beban</span> yang bisa dijelaskan.</h1>
-      <p class="lede">ZonaSipil membedah struktur beton bertulang dengan gambar teknis orisinal dan kalkulator yang membuka rumusnya — bukan kotak hitam. Untuk belajar, memeriksa kubikasi, dan memahami kenapa detail tulangan disusun begitu.</p>
-      <div class="hero-actions">
-        <a class="btn btn-solid" href="#kalkulator">Coba Kalkulator
-          <svg class="ic" aria-hidden="true"><use href="assets/icons/icons.svg#i-arrow"/></svg></a>
-        <a class="btn btn-ghost" href="#diagram">Lihat Potongan Balok</a>
-      </div>
-      <p class="hero-note">Semua alat di halaman ini bersifat konseptual dan edukatif — bukan pengganti perhitungan desain oleh insinyur struktur.</p>
-    </div>
-    <figure class="hero-art reveal">
-      <img src="assets/engineering/frame-load.svg" alt="Rangka portal dua lantai: beban diteruskan dari balok atap dan balok lantai melalui kolom ke fondasi telapak dan tanah dasar" width="560" height="430">
-      <figcaption>Jalur beban pada rangka portal — beban selalu mencari jalan paling kaku menuju tanah.</figcaption>
-    </figure>
-  </section>
-
-  <!-- ============ BIDANG ============ -->
-  <section class="bidang" id="bidang">
-    <div class="section-head reveal">
-      <p class="eyebrow">Bidang kajian</p>
-      <h2>Empat hal yang paling sering ditanyakan di lapangan</h2>
-    </div>
-    <ol class="index-list">
-      <li class="reveal">
-        <span class="idx">01</span>
-        <svg class="ic ic-lg" aria-hidden="true"><use href="assets/icons/icons.svg#i-beam"/></svg>
-        <div>
-          <h3>Struktur Beton Bertulang</h3>
-          <p>Balok, kolom, dan pelat bekerja sebagai satu rangka. Yang menentukan bukan betonnya saja, melainkan di mana tulangan diletakkan terhadap daerah tarik dan tekan.</p>
-        </div>
-        <a class="row-link" href="#diagram">Ke diagram <svg class="ic" aria-hidden="true"><use href="assets/icons/icons.svg#i-arrow"/></svg></a>
-      </li>
-      <li class="reveal">
-        <span class="idx">02</span>
-        <svg class="ic ic-lg" aria-hidden="true"><use href="assets/icons/icons.svg#i-footing"/></svg>
-        <div>
-          <h3>Fondasi &amp; Tanah</h3>
-          <p>Semua beban akhirnya berhenti di tanah. Fondasi telapak menyebarkan beban kolom ke area yang cukup luas agar tekanan tanah tidak melampaui daya dukungnya.</p>
-        </div>
-        <a class="row-link" href="#artikel">Baca artikel <svg class="ic" aria-hidden="true"><use href="assets/icons/icons.svg#i-arrow"/></svg></a>
-      </li>
-      <li class="reveal">
-        <span class="idx">03</span>
-        <svg class="ic ic-lg" aria-hidden="true"><use href="assets/icons/icons.svg#i-quantity"/></svg>
-        <div>
-          <h3>Kubikasi &amp; Estimasi</h3>
-          <p>Volume beton dan berat besi dihitung dari geometri gambar — panjang, lebar, tinggi, diameter. Angka yang bisa ditelusur balik ke gambar tidak mudah dimanipulasi.</p>
-        </div>
-        <a class="row-link" href="#kalkulator">Ke kalkulator <svg class="ic" aria-hidden="true"><use href="assets/icons/icons.svg#i-arrow"/></svg></a>
-      </li>
-      <li class="reveal">
-        <span class="idx">04</span>
-        <svg class="ic ic-lg" aria-hidden="true"><use href="assets/icons/icons.svg#i-detail"/></svg>
-        <div>
-          <h3>Detail &amp; Gambar Kerja</h3>
-          <p>Selimut beton, jarak sengkang, dan panjang penyaluran adalah detail kecil yang menentukan umur struktur. Gambar konseptual di sini menandai mana yang tidak boleh disederhanakan.</p>
-        </div>
-        <a class="row-link" href="#diagram">Ke diagram <svg class="ic" aria-hidden="true"><use href="assets/icons/icons.svg#i-arrow"/></svg></a>
-      </li>
-    </ol>
-  </section>
-
-  <!-- ============ KALKULATOR ============ -->
-  <section class="calc-wrap" id="kalkulator">
-    <div class="calc-intro reveal">
-      <p class="eyebrow">Alat hitung</p>
-      <h2>Kalkulator beton &amp; tulangan</h2>
-      <p>Dua perhitungan yang paling sering muncul saat membaca gambar dan menyusun kebutuhan material. Rumusnya ditampilkan terbuka — ubah angkanya, lihat hasilnya, dan periksa sendiri dari mana angka itu datang.</p>
-      <div class="formula-block">
-        <p><strong>Volume beton</strong></p>
-        <p class="formula">V = p × l × t × n</p>
-        <p class="formula-note">p = panjang elemen (m), l = lebar (m), t = tinggi (m), n = jumlah elemen sejenis. Faktor cadangan mengantisipasi tumpahan dan pemadatan — besarnya asumsi pengguna.</p>
-        <p><strong>Berat tulangan per meter</strong></p>
-        <p class="formula">w = 0,006165 × d²</p>
-        <p class="formula-note">d = diameter nominal (mm), w dalam kg/m. Konstanta ini bukan angka hafalan: ia berasal dari luas penampang lingkaran × massa jenis baja 7.850 kg/m³. Turunannya ada di artikel nomor 02.</p>
-      </div>
-      <p class="disclaimer">Hasil kalkulator adalah estimasi konseptual untuk belajar dan pemeriksaan awal. Dimensi, mutu, dan detail akhir struktur wajib ditentukan lewat perhitungan desain oleh insinyur yang berwenang.</p>
-    </div>
-
-    <form class="calc-panel reveal" id="calcForm" novalidate>
-      <fieldset>
-        <legend><svg class="ic" aria-hidden="true"><use href="assets/icons/icons.svg#i-calc"/></svg> Volume Beton</legend>
-        <div class="field-grid">
-          <label>Panjang elemen (m)
-            <input type="number" id="inP" value="4" min="0" step="0.1" inputmode="decimal"></label>
-          <label>Lebar (m)
-            <input type="number" id="inL" value="0.25" min="0" step="0.01" inputmode="decimal"></label>
-          <label>Tinggi (m)
-            <input type="number" id="inT" value="0.5" min="0" step="0.01" inputmode="decimal"></label>
-          <label>Jumlah elemen
-            <input type="number" id="inN" value="6" min="0" step="1" inputmode="numeric"></label>
-          <label>Cadangan / waste (%)
-            <input type="number" id="inW" value="5" min="0" step="1" inputmode="numeric"></label>
-        </div>
-        <p class="result" aria-live="polite">Volume bersih <strong id="outVolNet">3,00 m³</strong> · dengan cadangan <strong id="outVol">3,15 m³</strong></p>
-      </fieldset>
-      <fieldset>
-        <legend><svg class="ic" aria-hidden="true"><use href="assets/icons/icons.svg#i-beam"/></svg> Berat Tulangan</legend>
-        <div class="field-grid">
-          <label>Diameter (mm)
-            <input type="number" id="inD" value="13" min="1" step="1" inputmode="numeric"></label>
-          <label>Panjang total (m)
-            <input type="number" id="inLen" value="120" min="0" step="1" inputmode="decimal"></label>
-        </div>
-        <p class="result" aria-live="polite">Berat per meter <strong id="outWm">1,042 kg/m</strong> · total <strong id="outW">125,0 kg</strong></p>
-      </fieldset>
-      <p class="calc-foot">Panjang total tulangan = panjang satu batang × jumlah batang, termasuk tekukan dan sambungan yang kamu rencanakan. Kalkulator ini tidak menebak detail itu untukmu.</p>
-    </form>
-  </section>
-
-  <!-- ============ DIAGRAM ============ -->
-  <section class="diagram" id="diagram">
-    <div class="diagram-copy reveal">
-      <p class="eyebrow eyebrow-dark">Diagram struktur</p>
-      <h2>Membaca satu potongan balok</h2>
-      <p>Potongan melintang adalah bahasa paling ringkas di gambar struktur. Tiga hal yang selalu bisa dibaca darinya:</p>
-      <ul class="check-list">
-        <li><svg class="ic" aria-hidden="true"><use href="assets/icons/icons.svg#i-check"/></svg><span><strong>Tulangan bawah lebih banyak</strong> — di tengah bentang, sisi bawah balok tertarik, dan beton lemah menahan tarik. Di situlah baja bekerja.</span></li>
-        <li><svg class="ic" aria-hidden="true"><use href="assets/icons/icons.svg#i-check"/></svg><span><strong>Sengkang menutup mengelilingi tulangan utama</strong> — ia menahan gaya geser dan mengekang beton, bukan sekadar pengikat saat pengecoran.</span></li>
-        <li><svg class="ic" aria-hidden="true"><use href="assets/icons/icons.svg#i-check"/></svg><span><strong>Selimut beton melindungi baja dari karat dan api</strong> — tulangan yang terlalu dekat ke permukaan adalah awal kerusakan, bukan penghematan.</span></li>
-      </ul>
-      <p class="disclaimer disclaimer-dark">Gambar konseptual untuk membaca notasi — jumlah dan diameter batang pada proyek nyata berasal dari perhitungan, bukan dari contoh ini.</p>
-    </div>
-    <figure class="diagram-art reveal">
-      <img src="assets/engineering/beam-section.svg" alt="Potongan balok beton bertulang: sengkang teal mengelilingi dua tulangan atas dan tiga tulangan bawah, dengan penanda selimut beton" width="420" height="340" loading="lazy">
-    </figure>
-  </section>
-
-  <!-- ============ ARTIKEL ============ -->
-  <section class="artikel" id="artikel">
-    <div class="section-head reveal">
-      <p class="eyebrow">Artikel pengetahuan</p>
-      <h2>Ditulis dari rumus dan gambar, bukan dari slogan</h2>
-    </div>
-    <div class="article-list">
-      <article class="reveal">
-        <span class="idx">01</span>
-        <div>
-          <h3>Kenapa sengkang dirapatkan di dekat tumpuan?</h3>
-          <p>Gaya geser pada balok paling besar di ujung bentang, dekat kolom — diagram gesernya tertinggi tepat di sana. Karena beton sendiri terbatas menahan geser, sengkang mengambil alih, dan kebutuhannya paling rapat justru di daerah tumpuan. Merenggangkan sengkang secara merata di seluruh bentang berarti membuang baja di tengah dan kekurangan di tempat yang paling membutuhkan.</p>
-        </div>
-      </article>
-      <article class="reveal">
-        <span class="idx">02</span>
-        <div>
-          <h3>Asal-usul angka 0,006165 pada berat besi</h3>
-          <p>Berat satu meter batang besi = luas penampang × massa jenis baja. Luas lingkaran berdiameter d mm adalah π/4 × d² mm²; dikalikan 7.850 kg/m³ dan dikonversi satuannya, hasilnya w = 0,006165 × d² kg/m. Coba D13: 0,006165 × 169 = 1,042 kg/m — angka yang sama dengan tabel berat tulangan mana pun, karena memang dari turunan yang sama.</p>
-        </div>
-      </article>
-      <article class="reveal">
-        <span class="idx">03</span>
-        <div>
-          <h3>Dari gambar ke kubikasi: urutan yang tidak menipu</h3>
-          <p>Kubikasi yang bisa dipercaya selalu berurutan: daftar elemen dari gambar denah dan potongan, ambil dimensi dari gambar (bukan dari ingatan lapangan), hitung per jenis elemen, lalu jumlahkan. Kesalahan paling umum bukan pada perkaliannya, melainkan pada elemen yang terlewat — balok anak, bordes tangga, dan ring balok adalah tiga yang paling sering hilang dari daftar.</p>
-        </div>
-      </article>
-    </div>
-  </section>
-
-  <!-- ============ TENTANG ============ -->
-  <section class="tentang reveal">
-    <svg class="ic ic-lg" aria-hidden="true"><use href="assets/icons/icons.svg#i-article"/></svg>
-    <div>
-      <h2>Tentang ZonaSipil</h2>
-      <p>ZonaSipil adalah platform pengetahuan dan alat teknik sipil berbahasa Indonesia yang dibangun di zonasipil.web.id. Prinsipnya sederhana: setiap gambar digambar khusus untuk konsep yang dijelaskannya, setiap kalkulator membuka rumusnya, dan setiap klaim teknis bisa ditelusur ke rumus atau gambar. Konten di situs ini adalah materi edukasi konseptual — untuk keputusan struktur yang nyata, selalu libatkan insinyur struktur yang berwenang.</p>
-    </div>
-  </section>
-
-</main>
-
-<footer class="site-foot">
-  <div class="foot-brand">
-    <img src="assets/brand/logo.svg" alt="" width="34" height="34">
-    <span class="brand-name">Zona<em>Sipil</em></span>
+  <!-- CUSTOM ZONASIPIL CURSOR -->
+  <div id="cb-cursor" aria-hidden="true">
+    <div id="cb-cursor-icon"></div>
   </div>
-  <nav aria-label="Navigasi kaki">
-    <a href="#bidang">Bidang</a><a href="#kalkulator">Kalkulator</a><a href="#diagram">Diagram</a><a href="#artikel">Artikel</a>
-  </nav>
-  <p>© 2026 ZonaSipil · zonasipil.web.id — Materi edukasi konseptual, bukan dokumen desain.</p>
-</footer>
 
-<script src="assets/js/site.js" defer></script>
+  <!-- TOAST NOTIFICATION -->
+  <div id="cb-toast" class="fixed bottom-6 right-6 z-[9990] pointer-events-none opacity-0 translate-y-4 transition-all duration-300 bg-white text-black border border-black/10 shadow-2xl rounded-full px-6 py-3.5 text-sm font-medium flex items-center gap-2.5">
+    <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+    <span id="cb-toast-text">Copied to clipboard</span>
+  </div>
+
+  <!-- HEADER / NAVIGATION -->
+  <header class="w-full pt-7 pb-5 px-6 md:px-14 lg:px-24 flex items-center justify-between bg-[#F4F3EF] z-40 relative">
+    <a href="#top" class="text-[27px] font-bold tracking-[-0.045em] text-black leading-none select-none" data-magnetic="0.18">
+      zonasipil
+    </a>
+
+    <nav class="hidden md:flex items-center gap-9 lg:gap-11 text-[16px] font-normal text-black">
+      <a href="#services" class="cb-nav-link" data-magnetic="0.22"><span data-text="Bidang">Bidang</span></a>
+      <a href="#projects" class="cb-nav-link" data-magnetic="0.22"><span data-text="Kajian">Kajian</span></a>
+      <a href="#about" class="cb-nav-link" data-magnetic="0.22"><span data-text="Tentang">Tentang</span></a>
+      <a href="#blog" class="cb-nav-link" data-magnetic="0.22"><span data-text="Artikel">Artikel</span></a>
+      <a href="#kalkulator" id="header-contact-btn" class="cb-btn bg-[#121417] text-[#F4F3EF] px-7 py-3 text-[16px] font-medium" style="--hover-text: #ffffff;" data-magnetic="0.3">
+        <span class="cb-btn-fill bg-[#3B4D61]"></span>
+        <span class="cb-btn-text-wrap">
+          <span class="cb-btn-text-inner" data-text="Hitung Cepat">Hitung Cepat</span>
+        </span>
+      </a>
+    </nav>
+
+    <!-- Mobile Menu Trigger -->
+    <button type="button" id="mobile-menu-btn" class="md:hidden w-11 h-11 rounded-full border border-black/15 flex flex-col items-center justify-center gap-1.5" aria-label="Toggle Menu">
+      <span class="w-5 h-[1.5px] bg-black transition-transform" id="burger-1"></span>
+      <span class="w-5 h-[1.5px] bg-black transition-transform" id="burger-2"></span>
+    </button>
+  </header>
+
+  <!-- MOBILE MENU DRAWER -->
+  <div id="mobile-menu" class="fixed inset-0 bg-black text-white z-50 hidden flex-col justify-between p-8">
+    <div class="flex items-center justify-between">
+      <span class="text-[26px] font-bold tracking-[-0.045em]">zonasipil</span>
+      <button type="button" id="mobile-menu-close" class="w-11 h-11 rounded-full border border-white/25 flex items-center justify-center text-xl">&times;</button>
+    </div>
+    <div class="flex flex-col gap-6 text-4xl font-medium tracking-tight my-auto">
+      <a href="#services" class="mobile-nav-item">Bidang</a>
+      <a href="#projects" class="mobile-nav-item">Kajian</a>
+      <a href="#about" class="mobile-nav-item">Tentang</a>
+      <a href="#blog" class="mobile-nav-item">Artikel</a>
+      <a href="#kalkulator" class="mobile-nav-item">Hitung Cepat</a>
+    </div>
+    <div class="text-sm text-white/50">zonasipil.web.id</div>
+  </div>
+
+  <!-- HERO SECTION -->
+  <section id="top" class="pt-16 md:pt-24 pb-12 px-6 text-center">
+    <div class="max-w-[1060px] mx-auto">
+      <h1 class="hero-title text-black mx-auto reveal-up visible">
+        Struktur dibaca,<br />bukan dihafal.
+      </h1>
+      <p class="mt-7 md:mt-8 text-[18px] md:text-[21px] leading-[1.48] text-black/90 max-w-[650px] mx-auto font-normal tracking-[-0.015em] reveal-up visible" style="transition-delay: 80ms;">
+        ZonaSipil adalah platform pengetahuan dan alat teknik sipil berbahasa Indonesia.<br class="hidden sm:inline" />
+        Setiap topik dibuka dari gambarnya, dihitung dengan rumus yang terbuka, dan dijelaskan sampai detailnya masuk akal.
+      </p>
+    </div>
+
+    <!-- HERO SHOWREEL (Interactive Video Reel) -->
+    <div class="mt-14 md:mt-20">
+      <div id="hero-showreel" class="showreel-box group" data-cursor="play" role="button" tabindex="0" aria-label="Putar Showreel ZonaSipil">
+        <!-- Slide 1: Reinforced Concrete & Structural Steel Diagrid Frame -->
+        <div class="showreel-slide active" data-scene-title="ZonaSipil &bull; Structural Concrete &amp; Steel Frame">
+          <img src="assets/images/zs_showreel_1.webp" alt="Reinforced Concrete and Steel Diagrid Frame" style="object-position: center 42%;" />
+        </div>
+        <!-- Slide 2: 3D BIM & Finite Element Structural Stress Analysis -->
+        <div class="showreel-slide" data-scene-title="ZonaSipil &bull; 3D BIM &amp; FEM Stress Visualization">
+          <img src="assets/images/zs_showreel_2.webp" alt="3D BIM Finite Element Structural Analysis" style="object-position: center center;" />
+        </div>
+        <!-- Slide 3: Long-Span Parametric Steel & Concrete Shell Roof -->
+        <div class="showreel-slide" data-scene-title="ZonaSipil &bull; Long-Span Parametric Roof Shell">
+          <img src="assets/images/zs_showreel_3.webp" alt="Long-Span Parametric Steel and Concrete Shell" style="object-position: center 38%;" />
+        </div>
+        <!-- Slide 4: Parametric Space-Truss Load Path & Deflection Mesh -->
+        <div class="showreel-slide" data-scene-title="ZonaSipil &bull; Parametric Space-Frame Load Paths">
+          <img src="assets/images/zs_showreel_4.webp" alt="Parametric Structural Space-Truss Visualization" style="object-position: center center;" />
+        </div>
+
+        <!-- Subtle Interactive Canvas Overlay & Progress Pills -->
+        <div class="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent pointer-events-none"></div>
+
+        <div class="absolute bottom-5 left-6 right-6 flex items-center justify-between z-10 pointer-events-none">
+          <div class="flex items-center gap-2.5 bg-black/55 backdrop-blur-md text-white px-4 py-2 rounded-full text-xs font-medium tracking-wide">
+            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+            <span id="showreel-caption">Showreel ZonaSipil &mdash; Klik untuk memperluas</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="sr-dot w-7 h-1.5 rounded-full bg-white transition-all duration-300"></span>
+            <span class="sr-dot w-2 h-1.5 rounded-full bg-white/40 transition-all duration-300"></span>
+            <span class="sr-dot w-2 h-1.5 rounded-full bg-white/40 transition-all duration-300"></span>
+            <span class="sr-dot w-2 h-1.5 rounded-full bg-white/40 transition-all duration-300"></span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- BIDANG KAJIAN SECTION (Services Accordion Cards) -->
+  <section id="services" class="pt-20 md:pt-32 pb-20 px-6 md:px-14 lg:px-24 max-w-[1440px] mx-auto">
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start mb-16 md:mb-24 reveal-up">
+      <div class="lg:col-span-3 text-[13px] font-medium uppercase tracking-[0.04em] text-black/80 pt-2">
+        BIDANG KAJIAN
+      </div>
+      <div class="lg:col-span-9">
+        <p class="text-[24px] sm:text-[30px] md:text-[34px] leading-[1.34] tracking-[-0.02em] font-normal text-black max-w-[820px]">
+          Struktur tidak dipahami dari hafalan istilah. Ia dipahami dari gambar yang dibaca dengan benar, beban yang ditelusur jalurnya, dan rumus yang dibuka sampai satuannya jelas — begitulah ZonaSipil menyusun setiap bidang kajiannya.
+        </p>
+      </div>
+    </div>
+
+    <!-- 5 Expandable Bidang Cards -->
+    <div class="max-w-[1160px] mx-auto flex flex-col gap-4" id="services-accordion">
+
+      <!-- 01: Struktur Beton Bertulang -->
+      <div class="service-card active p-8 sm:p-11 md:p-14" data-service-index="0">
+        <!-- Right-side graphic: Vertical Stepped Indigo Columns (from frame_12) -->
+        <div class="service-graphic">
+          <svg viewBox="0 0 500 420" preserveAspectRatio="none" class="w-full h-full">
+            <defs>
+              <linearGradient id="colG1" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#15181E" stop-opacity="0.1"/>
+                <stop offset="55%" stop-color="#232E3C" stop-opacity="0.68"/>
+                <stop offset="100%" stop-color="#3B4D61" stop-opacity="0.95"/>
+              </linearGradient>
+              <linearGradient id="colG2" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#15181E" stop-opacity="0.2"/>
+                <stop offset="50%" stop-color="#2C3A4B" stop-opacity="0.78"/>
+                <stop offset="100%" stop-color="#526A84" stop-opacity="0.98"/>
+              </linearGradient>
+              <linearGradient id="colG3" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#15181E" stop-opacity="0.15"/>
+                <stop offset="45%" stop-color="#3A4B5E" stop-opacity="0.85"/>
+                <stop offset="100%" stop-color="#C86D3B" stop-opacity="0.92"/>
+              </linearGradient>
+            </defs>
+            <rect x="20" y="0" width="80" height="420" fill="url(#colG1)" opacity="0.45"/>
+            <line x1="100" y1="0" x2="100" y2="420" stroke="rgba(255,255,255,0.07)" stroke-width="1"/>
+            <rect x="100" y="0" width="80" height="420" fill="url(#colG1)" opacity="0.7"/>
+            <line x1="180" y1="0" x2="180" y2="420" stroke="rgba(255,255,255,0.09)" stroke-width="1"/>
+            <rect x="180" y="0" width="80" height="420" fill="url(#colG2)" opacity="0.82"/>
+            <line x1="260" y1="0" x2="260" y2="420" stroke="rgba(255,255,255,0.11)" stroke-width="1"/>
+            <rect x="260" y="0" width="80" height="420" fill="url(#colG2)" opacity="0.92"/>
+            <line x1="340" y1="0" x2="340" y2="420" stroke="rgba(255,255,255,0.13)" stroke-width="1"/>
+            <rect x="340" y="0" width="80" height="420" fill="url(#colG3)" opacity="0.96"/>
+            <line x1="420" y1="0" x2="420" y2="420" stroke="rgba(255,255,255,0.15)" stroke-width="1"/>
+            <rect x="420" y="0" width="80" height="420" fill="url(#colG3)" opacity="1"/>
+          </svg>
+        </div>
+
+        <div class="relative z-10 flex items-center justify-between">
+          <h3 class="text-[28px] sm:text-[36px] md:text-[42px] font-normal tracking-[-0.025em] leading-tight">
+            Struktur Beton Bertulang
+          </h3>
+          <span class="service-num">01</span>
+        </div>
+
+        <div class="service-card-body relative z-10 max-w-[500px]">
+          <p class="text-[16px] sm:text-[17px] leading-[1.55] text-white/85 font-normal">
+            Balok, kolom, dan pelat bekerja sebagai satu rangka — bukan elemen yang berdiri sendiri. Bidang ini membedah daerah tarik dan tekan, serta kenapa posisi tulangan terhadap keduanya lebih menentukan daripada jumlah bajanya.
+          </p>
+          <div class="mt-8">
+            <button type="button" class="explore-btn inline-flex items-center gap-3.5 text-[16px] font-medium text-white" data-service-modal="Struktur Beton Bertulang">
+              <span>Explore</span>
+              <span class="explore-arrow-circle">
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3.5 10.5L10.5 3.5M10.5 3.5H4.5M10.5 3.5V9.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 02: Fondasi & Tanah -->
+      <div class="service-card p-8 sm:p-11 md:p-14" data-service-index="1">
+        <!-- Right-side graphic: Nested Glowing Pyramids (from frame_13) -->
+        <div class="service-graphic">
+          <svg viewBox="0 0 520 420" preserveAspectRatio="xMidYMax slice" class="w-full h-full">
+            <defs>
+              <linearGradient id="pyrG" x1="0.5" y1="0" x2="0.5" y2="1">
+                <stop offset="0%" stop-color="#1D2530" stop-opacity="0.35"/>
+                <stop offset="60%" stop-color="#334457" stop-opacity="0.75"/>
+                <stop offset="100%" stop-color="#5B738E" stop-opacity="0.95"/>
+              </linearGradient>
+            </defs>
+            <polygon points="280,10 60,420 500,420" fill="url(#pyrG)" opacity="0.35" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
+            <polygon points="280,85 110,420 450,420" fill="url(#pyrG)" opacity="0.52" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
+            <polygon points="280,165 160,420 400,420" fill="url(#pyrG)" opacity="0.72" stroke="rgba(255,255,255,0.12)" stroke-width="1"/>
+            <polygon points="280,245 210,420 350,420" fill="url(#pyrG)" opacity="0.92" stroke="rgba(255,255,255,0.15)" stroke-width="1"/>
+          </svg>
+        </div>
+
+        <div class="relative z-10 flex items-center justify-between">
+          <h3 class="text-[28px] sm:text-[36px] md:text-[42px] font-normal tracking-[-0.025em] leading-tight">
+            Fondasi &amp; Tanah
+          </h3>
+          <span class="service-num">02</span>
+        </div>
+
+        <div class="service-card-body relative z-10 max-w-[500px]">
+          <p class="text-[16px] sm:text-[17px] leading-[1.55] text-white/85 font-normal">
+            Semua beban akhirnya berhenti di tanah. Fondasi telapak dan pelat fondasi menyebarkan beban kolom ke area yang cukup luas — di sini jalur beban itu ditelusur sampai konsep tekanan tanahnya.
+          </p>
+          <div class="mt-8">
+            <button type="button" class="explore-btn inline-flex items-center gap-3.5 text-[16px] font-medium text-white" data-service-modal="Fondasi &amp; Tanah">
+              <span>Explore</span>
+              <span class="explore-arrow-circle">
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3.5 10.5L10.5 3.5M10.5 3.5H4.5M10.5 3.5V9.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 03: Estimasi & Kubikasi -->
+      <div class="service-card p-8 sm:p-11 md:p-14" data-service-index="2">
+        <!-- Right-side graphic: Concentric Glowing Circles (from frame_14) -->
+        <div class="service-graphic">
+          <svg viewBox="0 0 520 420" preserveAspectRatio="xMidYMax slice" class="w-full h-full">
+            <defs>
+              <radialGradient id="cirG" cx="50%" cy="85%" r="75%">
+                <stop offset="0%" stop-color="#C86D3B" stop-opacity="0.88"/>
+                <stop offset="55%" stop-color="#354659" stop-opacity="0.68"/>
+                <stop offset="100%" stop-color="#15181E" stop-opacity="0.15"/>
+              </radialGradient>
+            </defs>
+            <circle cx="280" cy="390" r="320" fill="url(#cirG)" opacity="0.32" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
+            <circle cx="280" cy="390" r="245" fill="url(#cirG)" opacity="0.48" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
+            <circle cx="280" cy="390" r="175" fill="url(#cirG)" opacity="0.68" stroke="rgba(255,255,255,0.12)" stroke-width="1"/>
+            <circle cx="280" cy="390" r="108" fill="url(#cirG)" opacity="0.92" stroke="rgba(255,255,255,0.15)" stroke-width="1"/>
+          </svg>
+        </div>
+
+        <div class="relative z-10 flex items-center justify-between">
+          <h3 class="text-[28px] sm:text-[36px] md:text-[42px] font-normal tracking-[-0.025em] leading-tight">
+            Estimasi &amp; Kubikasi
+          </h3>
+          <span class="service-num">03</span>
+        </div>
+
+        <div class="service-card-body relative z-10 max-w-[500px]">
+          <p class="text-[16px] sm:text-[17px] leading-[1.55] text-white/85 font-normal">
+            Volume beton dan berat tulangan dihitung dari geometri gambar: panjang, lebar, tinggi, diameter. Angka yang bisa ditelusur balik ke gambar tidak mudah dimanipulasi — bidang ini melatih urutan hitungnya.
+          </p>
+          <div class="mt-8">
+            <button type="button" class="explore-btn inline-flex items-center gap-3.5 text-[16px] font-medium text-white" data-service-modal="Estimasi &amp; Kubikasi">
+              <span>Explore</span>
+              <span class="explore-arrow-circle">
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3.5 10.5L10.5 3.5M10.5 3.5H4.5M10.5 3.5V9.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 04: Detail & Gambar Kerja -->
+      <div class="service-card p-8 sm:p-11 md:p-14" data-service-index="3">
+        <!-- Right-side graphic: Concentric Rounded Arches (from frame_15) -->
+        <div class="service-graphic">
+          <svg viewBox="0 0 520 420" preserveAspectRatio="xMidYMax slice" class="w-full h-full">
+            <defs>
+              <linearGradient id="archG" x1="0.5" y1="0" x2="0.5" y2="1">
+                <stop offset="0%" stop-color="#1E2631" stop-opacity="0.35"/>
+                <stop offset="55%" stop-color="#364759" stop-opacity="0.75"/>
+                <stop offset="100%" stop-color="#607994" stop-opacity="0.96"/>
+              </linearGradient>
+            </defs>
+            <rect x="40" y="45" width="460" height="460" rx="150" fill="url(#archG)" opacity="0.32" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
+            <rect x="95" y="120" width="350" height="400" rx="115" fill="url(#archG)" opacity="0.5" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
+            <rect x="150" y="195" width="240" height="320" rx="80" fill="url(#archG)" opacity="0.7" stroke="rgba(255,255,255,0.13)" stroke-width="1"/>
+            <rect x="200" y="270" width="140" height="220" rx="44" fill="url(#archG)" opacity="0.92" stroke="rgba(255,255,255,0.16)" stroke-width="1"/>
+          </svg>
+        </div>
+
+        <div class="relative z-10 flex items-center justify-between">
+          <h3 class="text-[28px] sm:text-[36px] md:text-[42px] font-normal tracking-[-0.025em] leading-tight">
+            Detail &amp; Gambar Kerja
+          </h3>
+          <span class="service-num">04</span>
+        </div>
+
+        <div class="service-card-body relative z-10 max-w-[500px]">
+          <p class="text-[16px] sm:text-[17px] leading-[1.55] text-white/85 font-normal">
+            Selimut beton, jarak sengkang, dan panjang penyaluran adalah detail kecil yang menentukan umur struktur. Bidang ini mengajarkan membaca notasi potongan dan detail penulangan tanpa melewatkan satu pun.
+          </p>
+          <div class="mt-8">
+            <button type="button" class="explore-btn inline-flex items-center gap-3.5 text-[16px] font-medium text-white" data-service-modal="Detail &amp; Gambar Kerja">
+              <span>Explore</span>
+              <span class="explore-arrow-circle">
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3.5 10.5L10.5 3.5M10.5 3.5H4.5M10.5 3.5V9.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 05: Alat Hitung Digital -->
+      <div class="service-card p-8 sm:p-11 md:p-14" data-service-index="4">
+        <!-- Right-side graphic: Concentric Hexagons (from frame_16) -->
+        <div class="service-graphic">
+          <svg viewBox="0 0 520 420" preserveAspectRatio="xMidYMax slice" class="w-full h-full">
+            <defs>
+              <linearGradient id="hexG" x1="0.5" y1="0" x2="0.5" y2="1">
+                <stop offset="0%" stop-color="#202834" stop-opacity="0.4"/>
+                <stop offset="55%" stop-color="#3B4D61" stop-opacity="0.75"/>
+                <stop offset="100%" stop-color="#B86B3B" stop-opacity="0.92"/>
+              </linearGradient>
+            </defs>
+            <polygon points="280,20 490,135 490,430 70,430 70,135" fill="url(#hexG)" opacity="0.34" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
+            <polygon points="280,95 440,185 440,430 120,430 120,185" fill="url(#hexG)" opacity="0.52" stroke="rgba(255,255,255,0.11)" stroke-width="1"/>
+            <polygon points="280,175 390,238 390,430 170,430 170,238" fill="url(#hexG)" opacity="0.74" stroke="rgba(255,255,255,0.14)" stroke-width="1"/>
+            <polygon points="280,250 345,288 345,430 215,430 215,288" fill="url(#hexG)" opacity="0.94" stroke="rgba(255,255,255,0.17)" stroke-width="1"/>
+          </svg>
+        </div>
+
+        <div class="relative z-10 flex items-center justify-between">
+          <h3 class="text-[28px] sm:text-[36px] md:text-[42px] font-normal tracking-[-0.025em] leading-tight">
+            Alat Hitung Digital
+          </h3>
+          <span class="service-num">05</span>
+        </div>
+
+        <div class="service-card-body relative z-10 max-w-[500px]">
+          <p class="text-[16px] sm:text-[17px] leading-[1.55] text-white/85 font-normal">
+            Kalkulator ZonaSipil selalu berdampingan dengan rumusnya — bukan kotak hitam. Semua perhitungan berjalan lokal di browsermu; ubah angkanya, dan periksa sendiri dari mana hasilnya datang.
+          </p>
+          <div class="mt-8">
+            <button type="button" class="explore-btn inline-flex items-center gap-3.5 text-[16px] font-medium text-white" data-service-modal="Alat Hitung Digital">
+              <span>Explore</span>
+              <span class="explore-arrow-circle">
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3.5 10.5L10.5 3.5M10.5 3.5H4.5M10.5 3.5V9.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- INDEKS TOPIK ZONASIPIL (12 Topik) -->
+  <section class="pt-16 md:pt-24 pb-28 md:pb-36 px-6 md:px-14 lg:px-24 max-w-[1360px] mx-auto text-center">
+    <h2 class="text-[28px] sm:text-[34px] md:text-[40px] font-normal tracking-[-0.025em] text-black mb-16 md:mb-24 reveal-up">
+      Topik yang dibahas di ZonaSipil
+    </h2>
+
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-y-16 sm:gap-y-24 gap-x-8 items-center justify-items-center max-w-[1160px] mx-auto">
+      <!-- topik: Balok & Pelat -->
+      <a href="#projects" class="group opacity-55 hover:opacity-100 transition-opacity duration-300 flex items-center gap-2.5" data-cursor="arrow-dark">
+        <span class="text-[21px] font-bold tracking-[-0.02em] text-black whitespace-nowrap">Balok &amp; Pelat</span>
+      </a>
+
+      <!-- topik: Kolom -->
+      <a href="#projects" class="group opacity-55 hover:opacity-100 transition-opacity duration-300 flex flex-col items-center" data-cursor="arrow-dark">
+        <span class="text-[21px] font-bold tracking-[-0.02em] text-black whitespace-nowrap">Kolom</span>
+      </a>
+
+      <!-- topik: Fondasi Telapak -->
+      <a href="#projects" class="group opacity-55 hover:opacity-100 transition-opacity duration-300 flex items-center gap-2" data-cursor="arrow-dark">
+        <span class="text-[21px] font-bold tracking-[-0.02em] text-black whitespace-nowrap">Fondasi Telapak</span>
+      </a>
+
+      <!-- topik: Sengkang -->
+      <a href="#projects" class="group opacity-55 hover:opacity-100 transition-opacity duration-300 flex items-center gap-2" data-cursor="arrow-dark">
+        <span class="text-[21px] font-bold tracking-[-0.02em] text-black whitespace-nowrap">Sengkang</span>
+      </a>
+
+      <!-- topik: Tulangan -->
+      <a href="#projects" class="group opacity-55 hover:opacity-100 transition-opacity duration-300 flex flex-col items-center" data-cursor="arrow-dark">
+        <span class="text-[21px] font-bold tracking-[-0.02em] text-black whitespace-nowrap">Tulangan</span>
+      </a>
+
+      <!-- topik: Kubikasi -->
+      <a href="#projects" class="group opacity-65 hover:opacity-100 transition-opacity duration-300 flex flex-col items-center" data-cursor="arrow-dark">
+        <span class="text-[21px] font-bold tracking-[-0.02em] text-black whitespace-nowrap">Kubikasi</span>
+      </a>
+
+      <!-- topik: Rangka Portal -->
+      <a href="#projects" class="group opacity-45 hover:opacity-100 transition-opacity duration-300 flex items-center" data-cursor="arrow-dark">
+        <span class="text-[21px] font-bold tracking-[-0.02em] text-black whitespace-nowrap">Rangka Portal</span>
+      </a>
+
+      <!-- topik: Tangga -->
+      <a href="#projects" class="group opacity-45 hover:opacity-100 transition-opacity duration-300 flex items-center" data-cursor="arrow-dark">
+        <span class="text-[21px] font-bold tracking-[-0.02em] text-black whitespace-nowrap">Tangga</span>
+      </a>
+
+      <!-- topik: Dinding Penahan -->
+      <a href="#projects" class="group opacity-45 hover:opacity-100 transition-opacity duration-300 flex items-center" data-cursor="arrow-dark">
+        <span class="text-[21px] font-bold tracking-[-0.02em] text-black whitespace-nowrap">Dinding Penahan</span>
+      </a>
+
+      <!-- topik: Sambungan Baja -->
+      <a href="#projects" class="group opacity-45 hover:opacity-100 transition-opacity duration-300 flex items-center" data-cursor="arrow-dark">
+        <span class="text-[21px] font-bold tracking-[-0.02em] text-black whitespace-nowrap">Sambungan Baja</span>
+      </a>
+
+      <!-- topik: Pelat Lantai -->
+      <a href="#projects" class="group opacity-45 hover:opacity-100 transition-opacity duration-300 flex items-center" data-cursor="arrow-dark">
+        <span class="text-[21px] font-bold tracking-[-0.02em] text-black whitespace-nowrap">Pelat Lantai</span>
+      </a>
+
+      <!-- topik: Gambar Kerja -->
+      <a href="#projects" class="group opacity-45 hover:opacity-100 transition-opacity duration-300 flex items-center" data-cursor="arrow-dark">
+        <span class="text-[21px] font-bold tracking-[-0.02em] text-black whitespace-nowrap">Gambar Kerja</span>
+      </a>
+    </div>
+  </section>
+
+  <!-- KAJIAN & TOPIK PILIHAN SECTION (Black Rounded Container with 10 Topics) -->
+  <section id="projects" class="bg-[#121417] text-[#F4F3EF] rounded-section-top pt-24 md:pt-36 pb-36 md:pb-48 px-6 md:px-14 lg:px-24 relative z-10" data-dark-section="true">
+    <div class="max-w-[1326px] mx-auto">
+      <h2 class="text-[44px] sm:text-[60px] md:text-[72px] font-medium tracking-[-0.035em] leading-none mb-16 md:mb-24 reveal-up">
+        Kajian &amp; Topik Pilihan
+      </h2>
+
+      <!-- Asymmetric 2-Column Kajian Grid (ZonaSipil layout) -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-x-12 lg:gap-x-[134px] gap-y-16 md:gap-y-0 items-start">
+
+        <!-- LEFT COLUMN (5 Kajian) -->
+        <div class="flex flex-col gap-16 md:gap-24">
+          <!-- Kajian: Rangka Portal Beton -->
+          <article class="project-card reveal-up" data-cursor="arrow-light" data-project-title="Rangka Portal Beton" data-project-desc="Menelusur jalur beban dari balok lantai ke kolom sampai ke fondasi — rangka adalah satu sistem, bukan kumpulan elemen yang berdiri sendiri.">
+            <div class="project-img-wrap aspect-[592/800]">
+              <img src="assets/images/zs_work_left_1.webp" alt="Reinforced Concrete Cantilevered High-Rise Structure" style="object-position: center 25%;" loading="lazy" />
+            </div>
+            <p class="mt-5 text-[18px] sm:text-[20px] leading-[1.4] text-white/90 font-normal max-w-[520px]">
+              Menelusur jalur beban dari balok lantai ke kolom sampai ke fondasi — rangka adalah satu sistem, bukan kumpulan elemen yang berdiri sendiri.
+            </p>
+          </article>
+
+          <!-- Kajian: Sambungan Baja Baut -->
+          <article class="project-card reveal-up" data-cursor="arrow-light" data-project-title="Sambungan Baja Baut" data-project-desc="Detail sambungan momen pada baja: pelat ujung, susunan baut, dan jalur gaya yang harus sampai dari balok ke kolom tanpa putus.">
+            <div class="project-img-wrap aspect-[592/799]">
+              <img src="assets/images/zs_work_left_2.webp" alt="Structural Steel Bolted Moment Connection Detail" style="object-position: center center;" loading="lazy" />
+            </div>
+            <p class="mt-5 text-[18px] sm:text-[20px] leading-[1.4] text-white/90 font-normal max-w-[520px]">
+              Detail sambungan momen pada baja: pelat ujung, susunan baut, dan jalur gaya yang harus sampai dari balok ke kolom tanpa putus.
+            </p>
+          </article>
+
+          <!-- Kajian: Dinding Penahan Tanah -->
+          <article class="project-card reveal-up" data-cursor="arrow-light" data-project-title="Dinding Penahan Tanah" data-project-desc="Dinding penahan menahan tekanan tanah lateral — dibaca dari diagram tekanannya, bukan dari tebal dindingnya saja.">
+            <div class="project-img-wrap aspect-square">
+              <img src="assets/images/zs_work_left_3.webp" alt="Exposed Board-Formed Concrete Shear Wall Geometry" style="object-position: center 35%;" loading="lazy" />
+            </div>
+            <p class="mt-5 text-[18px] sm:text-[20px] leading-[1.4] text-white/90 font-normal max-w-[520px]">
+              Dinding penahan menahan tekanan tanah lateral — dibaca dari diagram tekanannya, bukan dari tebal dindingnya saja.
+            </p>
+          </article>
+
+          <!-- Kajian: Membaca Gambar Kerja -->
+          <article class="project-card reveal-up" data-cursor="arrow-light" data-project-title="Membaca Gambar Kerja" data-project-desc="Dari denah ke potongan, lalu ke detail: urutan membaca satu set gambar kerja agar tidak ada satu elemen pun yang terlewat.">
+            <div class="project-img-wrap aspect-[592/798]">
+              <img src="assets/images/zs_work_left_4.webp" alt="Precast Concrete Segmental Tunnel Lining Structure" style="object-position: center center;" loading="lazy" />
+            </div>
+            <p class="mt-5 text-[18px] sm:text-[20px] leading-[1.4] text-white/90 font-normal max-w-[520px]">
+              Dari denah ke potongan, lalu ke detail: urutan membaca satu set gambar kerja agar tidak ada satu elemen pun yang terlewat.
+            </p>
+          </article>
+
+          <!-- Kajian: Kolom &amp; Penulangannya -->
+          <article class="project-card reveal-up" data-cursor="arrow-light" data-project-title="Kolom &amp; Penulangannya" data-project-desc="Tulangan longitudinal dan sengkang pengikat pada kolom — membaca potongan, notasi, dan kenapa pengikat tidak boleh renggang.">
+            <div class="project-img-wrap aspect-square">
+              <img src="assets/images/zs_work_left_5.webp" alt="Reinforced Concrete Column Section and Rebar Detailing Blueprint" style="object-position: center center;" loading="lazy" />
+            </div>
+            <p class="mt-5 text-[18px] sm:text-[20px] leading-[1.4] text-white/90 font-normal max-w-[520px]">
+              Tulangan longitudinal dan sengkang pengikat pada kolom — membaca potongan, notasi, dan kenapa pengikat tidak boleh renggang.
+            </p>
+          </article>
+        </div>
+
+        <!-- RIGHT COLUMN (5 Kajian, offset downward on desktop by 180px) -->
+        <div class="flex flex-col gap-16 md:gap-24 md:mt-[180px]">
+          <!-- Kajian: Baja Bentang Panjang -->
+          <article class="project-card reveal-up" data-cursor="arrow-light" data-project-title="Baja Bentang Panjang" data-project-desc="Kabel, gelagar, dan pilon pada struktur bentang panjang: bagaimana beban dibagi dan diteruskan ke tumpuan.">
+            <div class="project-img-wrap aspect-[592/798]">
+              <img src="assets/images/zs_work_right_1.webp" alt="Cable-Stayed Steel Box Girder Bridge and Concrete Pylons" style="object-position: center 30%;" loading="lazy" />
+            </div>
+            <p class="mt-5 text-[18px] sm:text-[20px] leading-[1.4] text-white/90 font-normal max-w-[520px]">
+              Kabel, gelagar, dan pilon pada struktur bentang panjang: bagaimana beban dibagi dan diteruskan ke tumpuan.
+            </p>
+          </article>
+
+          <!-- Kajian: Fondasi Telapak &amp; Rakit -->
+          <article class="project-card reveal-up" data-cursor="arrow-light" data-project-title="Fondasi Telapak &amp; Rakit" data-project-desc="Menyebarkan beban kolom ke tanah lewat telapak dan pelat fondasi — luas bidang kontak adalah kuncinya.">
+            <div class="project-img-wrap aspect-square">
+              <img src="assets/images/zs_work_right_2.webp" alt="High-Density Foundation Mat Slab Rebar Reinforcement Cage" style="object-position: center 60%;" loading="lazy" />
+            </div>
+            <p class="mt-5 text-[18px] sm:text-[20px] leading-[1.4] text-white/90 font-normal max-w-[520px]">
+              Menyebarkan beban kolom ke tanah lewat telapak dan pelat fondasi — luas bidang kontak adalah kuncinya.
+            </p>
+          </article>
+
+          <!-- Kajian: Balok Beton Bertulang -->
+          <article class="project-card reveal-up" data-cursor="arrow-light" data-project-title="Balok Beton Bertulang" data-project-desc="Daerah tarik dan tekan pada balok, dan kenapa tulangan bawah lebih banyak di tengah bentang daripada di tumpuan.">
+            <div class="project-img-wrap aspect-square">
+              <img src="assets/images/zs_work_right_3.webp" alt="Precision Structural Steel Diagrid Dome Node" style="object-position: center center;" loading="lazy" />
+            </div>
+            <p class="mt-5 text-[18px] sm:text-[20px] leading-[1.4] text-white/90 font-normal max-w-[520px]">
+              Daerah tarik dan tekan pada balok, dan kenapa tulangan bawah lebih banyak di tengah bentang daripada di tumpuan.
+            </p>
+          </article>
+
+          <!-- Kajian: Kubikasi &amp; Estimasi Volume -->
+          <article class="project-card reveal-up" data-cursor="arrow-light" data-project-title="Kubikasi &amp; Estimasi Volume" data-project-desc="Mengubah geometri gambar menjadi angka: volume beton dan berat tulangan yang selalu bisa diperiksa ulang.">
+            <div class="project-img-wrap aspect-[592/800]">
+              <img src="assets/images/zs_work_right_4.webp" alt="3D Multi-Story Structural Modal Drift and FEM Analysis" style="object-position: center center;" loading="lazy" />
+            </div>
+            <p class="mt-5 text-[18px] sm:text-[20px] leading-[1.4] text-white/90 font-normal max-w-[520px]">
+              Mengubah geometri gambar menjadi angka: volume beton dan berat tulangan yang selalu bisa diperiksa ulang.
+            </p>
+          </article>
+
+          <!-- Kajian: Pelat &amp; Tangga -->
+          <article class="project-card reveal-up" data-cursor="arrow-light" data-project-title="Pelat &amp; Tangga" data-project-desc="Pelat satu arah dan dua arah, plus bordes dan anak tangga — elemen yang paling sering hilang dari daftar kubikasi.">
+            <div class="project-img-wrap aspect-square">
+              <img src="assets/images/zs_work_right_5.webp" alt="Parametric Precast Concrete Ribs and Steel Tension Sculpture" style="object-position: center center;" loading="lazy" />
+            </div>
+            <p class="mt-5 text-[18px] sm:text-[20px] leading-[1.4] text-white/90 font-normal max-w-[520px]">
+              Pelat satu arah dan dua arah, plus bordes dan anak tangga — elemen yang paling sering hilang dari daftar kubikasi.
+            </p>
+          </article>
+        </div>
+
+      </div>
+
+      <!-- View All Kajian Pill Button -->
+      <div class="mt-24 md:mt-32 text-center">
+        <button type="button" id="view-all-projects-btn" class="cb-btn border border-white/40 text-white px-11 py-5 text-[17px] font-normal" style="--hover-text: #000000;" data-magnetic="0.32">
+          <span class="cb-btn-fill bg-white"></span>
+          <span class="cb-btn-text-wrap">
+            <span class="cb-btn-text-inner" data-text="Lihat semua kajian">Lihat semua kajian</span>
+          </span>
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- CATATAN LAPANGAN + KENAPA ZONASIPIL (White Rounded Container) -->
+  <section id="about" class="bg-[#F4F3EF] text-[#121417] rounded-section-top -mt-12 pt-24 md:pt-36 pb-28 md:pb-40 px-6 md:px-14 lg:px-24 relative z-20">
+    <div class="max-w-[1326px] mx-auto">
+      <h2 class="text-[44px] sm:text-[62px] md:text-[78px] font-medium tracking-[-0.035em] text-center leading-none mb-16 md:mb-24 reveal-up">
+        Catatan Lapangan
+      </h2>
+
+      <!-- 5 Overlapping Sticky-Note Catatan Lapangan Cards -->
+      <div class="relative max-w-[1140px] mx-auto min-h-[780px] hidden lg:block" id="testimonials-cluster">
+        <!-- Card 1: Top Center (Mint, 0deg) -->
+        <div class="sticky-note absolute w-[390px] bg-[#EAE7E0] left-1/2 -translate-x-1/2 top-0 z-10 cursor-pointer" style="transform: translate(-50%, 0) rotate(0deg);" data-base-transform="translate(-50%, 0) rotate(0deg)" data-cursor="drag">
+          <div class="text-[48px] leading-none text-black/15 font-serif select-none mb-3">&rdquo;</div>
+          <p class="text-[16px] leading-[1.52] text-black/90 font-normal">
+            &ldquo;Selimut beton bukan sisa toleransi. Kurangi selimutnya, dan tulanganmu akan menua lebih cepat daripada bangunannya.&rdquo;
+          </p>
+          <div class="w-10 h-[1px] bg-black/20 mt-6 mb-4"></div>
+          <div class="text-xs font-semibold uppercase tracking-wider text-black/50">Catatan ZonaSipil · 01</div>
+        </div>
+
+        <!-- Card 2: Mid Left (Lavender-Gray, -9.5deg) -->
+        <div class="sticky-note absolute w-[390px] bg-[#E2E6EA] left-[5%] top-[115px] z-20 cursor-pointer" style="transform: rotate(-9.5deg);" data-base-transform="rotate(-9.5deg)" data-cursor="drag">
+          <div class="text-[48px] leading-none text-black/15 font-serif select-none mb-3">&rdquo;</div>
+          <p class="text-[16px] leading-[1.52] text-black/90 font-normal">
+            &ldquo;Sengkang selalu paling rapat di dekat tumpuan — di sanalah gaya geser paling besar. Samakan jaraknya di semua tempat, dan kamu membuang baja di tengah bentang.&rdquo;
+          </p>
+          <div class="w-10 h-[1px] bg-black/20 mt-6 mb-4"></div>
+          <div class="text-xs font-semibold uppercase tracking-wider text-black/50">Catatan ZonaSipil · 02</div>
+        </div>
+
+        <!-- Card 3: Mid Right (Lavender-Gray, +9.5deg) -->
+        <div class="sticky-note absolute w-[390px] bg-[#E2E6EA] right-[5%] top-[115px] z-20 cursor-pointer" style="transform: rotate(9.5deg);" data-base-transform="rotate(9.5deg)" data-cursor="drag">
+          <div class="text-[48px] leading-none text-black/15 font-serif select-none mb-3">&rdquo;</div>
+          <p class="text-[16px] leading-[1.52] text-black/90 font-normal">
+            &ldquo;Ambil dimensi dari gambar, bukan dari ingatan lapangan. Kubikasi yang salah hampir selalu lahir dari angka yang hanya kira-kira.&rdquo;
+          </p>
+          <div class="w-10 h-[1px] bg-black/20 mt-6 mb-4"></div>
+          <div class="text-xs font-semibold uppercase tracking-wider text-black/50">Catatan ZonaSipil · 03</div>
+        </div>
+
+        <!-- Card 4: Bottom Left (Mint, -17deg) -->
+        <div class="sticky-note absolute w-[395px] bg-[#E6E4DD] left-[14%] top-[330px] z-30 cursor-pointer" style="transform: rotate(-17deg);" data-base-transform="rotate(-17deg)" data-cursor="drag">
+          <div class="text-[48px] leading-none text-black/15 font-serif select-none mb-3">&rdquo;</div>
+          <p class="text-[16px] leading-[1.52] text-black/90 font-normal">
+            &ldquo;Faktor cadangan itu untuk tumpahan dan pemadatan — bukan untuk menutupi gambar yang belum selesai dibaca.&rdquo;
+          </p>
+          <div class="w-10 h-[1px] bg-black/20 mt-6 mb-4"></div>
+          <div class="text-xs font-semibold uppercase tracking-wider text-black/50">Catatan ZonaSipil · 04</div>
+        </div>
+
+        <!-- Card 5: Bottom Right (Mint, +17deg) -->
+        <div class="sticky-note absolute w-[395px] bg-[#E6E4DD] right-[14%] top-[305px] z-40 cursor-pointer" style="transform: rotate(17deg);" data-base-transform="rotate(17deg)" data-cursor="drag">
+          <div class="text-[48px] leading-none text-black/15 font-serif select-none mb-3">&rdquo;</div>
+          <p class="text-[16px] leading-[1.52] text-black/90 font-normal">
+            &ldquo;Sebelum cor: periksa lagi jarak tulangan, posisi bekisting, dan selimut di sisi yang tidak terlihat. Sesudah cor, semuanya hanya tebakan.&rdquo;
+          </p>
+          <div class="w-10 h-[1px] bg-black/20 mt-6 mb-4"></div>
+          <div class="text-xs font-semibold uppercase tracking-wider text-black/50">Catatan ZonaSipil · 05</div>
+        </div>
+      </div>
+
+      <!-- Mobile / Tablet Responsive Fallback Grid for Catatan Lapangan -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 lg:hidden mb-16">
+        <div class="sticky-note bg-[#E2E6EA] -rotate-1">
+          <div class="text-4xl text-black/15 font-serif mb-2">&rdquo;</div>
+          <p class="text-[15px] leading-relaxed">&ldquo;Sengkang selalu paling rapat di dekat tumpuan — di sanalah gaya geser paling besar. Samakan jaraknya di semua tempat, dan kamu membuang baja di tengah bentang.&rdquo;</p>
+          <div class="mt-4 text-xs font-semibold uppercase tracking-wider text-black/50">Catatan ZonaSipil · 02</div>
+        </div>
+        <div class="sticky-note bg-[#EAE7E0] rotate-1">
+          <div class="text-4xl text-black/15 font-serif mb-2">&rdquo;</div>
+          <p class="text-[15px] leading-relaxed">&ldquo;Faktor cadangan itu untuk tumpahan dan pemadatan — bukan untuk menutupi gambar yang belum selesai dibaca.&rdquo;</p>
+          <div class="mt-4 text-xs font-semibold uppercase tracking-wider text-black/50">Catatan ZonaSipil · 04</div>
+        </div>
+        <div class="sticky-note bg-[#E6E4DD] -rotate-1">
+          <div class="text-4xl text-black/15 font-serif mb-2">&rdquo;</div>
+          <p class="text-[15px] leading-relaxed">&ldquo;Sebelum cor: periksa lagi jarak tulangan, posisi bekisting, dan selimut di sisi yang tidak terlihat. Sesudah cor, semuanya hanya tebakan.&rdquo;</p>
+          <div class="mt-4 text-xs font-semibold uppercase tracking-wider text-black/50">Catatan ZonaSipil · 05</div>
+        </div>
+        <div class="sticky-note bg-[#E2E6EA] rotate-1">
+          <div class="text-4xl text-black/15 font-serif mb-2">&rdquo;</div>
+          <p class="text-[15px] leading-relaxed">&ldquo;Selimut beton bukan sisa toleransi. Kurangi selimutnya, dan tulanganmu akan menua lebih cepat daripada bangunannya.&rdquo;</p>
+          <div class="mt-4 text-xs font-semibold uppercase tracking-wider text-black/50">Catatan ZonaSipil · 01</div>
+        </div>
+      </div>
+
+      <!-- KENAPA ZONASIPIL SECTION -->
+      <div class="mt-20 md:mt-28 pt-12 border-t border-black/80 max-w-[1160px] mx-auto">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start mb-16 md:mb-24 reveal-up">
+          <div class="lg:col-span-3 text-[13px] font-medium uppercase tracking-[0.04em] text-black/80 pt-2">
+            KENAPA ZONASIPIL
+          </div>
+          <div class="lg:col-span-9">
+            <p class="text-[24px] sm:text-[30px] md:text-[34px] leading-[1.35] tracking-[-0.02em] font-normal text-black max-w-[820px]">
+              ZonaSipil bekerja dengan empat aturan yang bisa kamu periksa sendiri di setiap halaman — bukan janji pemasaran, melainkan cara kami menyusun gambar, rumus, dan tulisan.
+            </p>
+          </div>
+        </div>
+
+        <!-- 5-Card Bento Grid (3 top row + 2 bottom row) -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-5 mb-5">
+          <!-- Bento 1: Gambar khusus -->
+          <div class="bg-[#EAE7E0] rounded-[24px] p-9 flex flex-col justify-between min-h-[290px] reveal-up hover:-translate-y-1 transition-transform duration-300">
+            <div>
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#111" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+              </svg>
+            </div>
+            <div>
+              <div class="text-[64px] md:text-[72px] font-normal tracking-[-0.04em] leading-none text-black">Gambar</div>
+              <div class="text-[13px] font-medium uppercase tracking-[0.03em] text-black/75 mt-3">DIGAMBAR KHUSUS UNTUK KONSEP YANG DIJELASKANNYA</div>
+            </div>
+          </div>
+
+          <!-- Bento 2: Rumus terbuka -->
+          <div class="bg-[#E2E6EA] rounded-[24px] p-9 flex flex-col justify-between min-h-[290px] reveal-up hover:-translate-y-1 transition-transform duration-300" style="transition-delay: 70ms;">
+            <div>
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#111" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/>
+                <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/>
+                <path d="M4 22h16"/>
+                <path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/>
+                <path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/>
+                <path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/>
+              </svg>
+            </div>
+            <div>
+              <p class="text-[22px] md:text-[25px] leading-[1.3] tracking-[-0.02em] font-normal text-black">
+                Rumus selalu<br />terbuka
+              </p>
+            </div>
+          </div>
+
+          <!-- Bento 3: Jujur konseptual -->
+          <div class="bg-[#EAE7E0] rounded-[24px] p-9 flex flex-col justify-between min-h-[290px] reveal-up hover:-translate-y-1 transition-transform duration-300" style="transition-delay: 140ms;">
+            <div>
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#111" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"/>
+                <path d="M2 12h20"/>
+                <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+              </svg>
+            </div>
+            <div>
+              <div class="text-[64px] md:text-[72px] font-normal tracking-[-0.04em] leading-none text-black">Jujur</div>
+              <div class="text-[13px] font-medium uppercase tracking-[0.03em] text-black/75 mt-3">YANG KONSEPTUAL DIAKUI SEBAGAI KONSEPTUAL</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Bottom Row: 2 Wide Bento Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+          <!-- Bento 4: Tanpa angka pajangan -->
+          <div class="bg-[#E2E6EA] rounded-[24px] p-9 flex flex-col justify-between min-h-[280px] reveal-up hover:-translate-y-1 transition-transform duration-300">
+            <div>
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#111" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="2" y="7" width="20" height="14" rx="2" ry="2"/>
+                <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>
+                <path d="M2 12h20"/>
+              </svg>
+            </div>
+            <div>
+              <p class="text-[24px] md:text-[26px] leading-[1.3] tracking-[-0.02em] font-normal text-black">
+                Tidak ada<br />angka pajangan —<br />tanpa klaim kosong
+              </p>
+            </div>
+          </div>
+
+          <!-- Bento 5: Bahasa Indonesia -->
+          <div class="bg-[#E2E6EA] rounded-[24px] p-9 flex flex-col justify-between min-h-[280px] reveal-up hover:-translate-y-1 transition-transform duration-300" style="transition-delay: 80ms;">
+            <div>
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#111" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                <ellipse cx="12" cy="12" rx="10" ry="4.5"/>
+                <ellipse cx="12" cy="12" rx="4.5" ry="10"/>
+                <path d="M19 12l-2-2m2 2l-2 2"/>
+              </svg>
+            </div>
+            <div>
+              <p class="text-[24px] md:text-[26px] leading-[1.3] tracking-[-0.02em] font-normal text-black">
+                Bahasa Indonesia,<br />dari gambar<br />ke angka
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ARTIKEL + KALKULATOR + FAQ + CTA + FOOTER (Black Rounded Container) -->
+  <section id="blog" class="bg-[#121417] text-[#F4F3EF] rounded-section-top pt-24 md:pt-36 pb-16 relative z-30 overflow-hidden" data-dark-section="true">
+
+    <!-- ARTIKEL SECTION -->
+    <div class="max-w-[1326px] mx-auto px-6 md:px-14 lg:px-0">
+      <div class="flex flex-wrap items-center justify-between gap-6 mb-14 md:mb-20 reveal-up">
+        <h2 class="text-[44px] sm:text-[60px] md:text-[72px] font-medium tracking-[-0.035em] leading-none">
+          Artikel
+        </h2>
+        <button type="button" id="visit-blog-btn" class="cb-btn border border-white/40 text-white px-10 py-4 text-[17px] font-normal" style="--hover-text: #000000;" data-magnetic="0.3">
+          <span class="cb-btn-fill bg-white"></span>
+          <span class="cb-btn-text-wrap">
+            <span class="cb-btn-text-inner" data-text="Semua artikel">Semua artikel</span>
+          </span>
+        </button>
+      </div>
+
+      <!-- 3 Artikel Cards -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-7">
+        <!-- Insight 1 -->
+        <article class="group cursor-pointer reveal-up" data-cursor="arrow-light" data-blog-title="Kenapa Sengkang Dirapatkan di Dekat Tumpuan?" data-blog-cat="STRUKTUR" data-blog-date="10/29/2026">
+          <div class="rounded-[24px] overflow-hidden aspect-square bg-neutral-900 mb-6">
+            <img src="assets/images/zs_insight_1.webp" alt="Seismic Base Isolator and Structural Column Foundation Bearing" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" style="object-position: center center;" loading="lazy" />
+          </div>
+          <div class="text-[13px] font-medium uppercase tracking-[0.03em] text-white/55 mb-2.5">STRUKTUR</div>
+          <h3 class="text-[22px] lg:text-[24px] leading-[1.32] font-normal tracking-[-0.015em] text-white group-hover:text-white/80 transition-colors">
+            Kenapa Sengkang Dirapatkan di Dekat Tumpuan?
+          </h3>
+          <div class="text-[14px] text-white/50 mt-3">10/29/2026</div>
+        </article>
+
+        <!-- Insight 2 -->
+        <article class="group cursor-pointer reveal-up" style="transition-delay: 70ms;" data-cursor="arrow-light" data-blog-title="Asal-Usul Angka 0,006165 pada Berat Besi" data-blog-cat="ESTIMASI" data-blog-date="10/15/2026">
+          <div class="rounded-[24px] overflow-hidden aspect-square bg-neutral-900 mb-6">
+            <img src="assets/images/zs_insight_2.webp" alt="Continuous Girder Bending Moment and Shear Force Envelope" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" style="object-position: center center;" loading="lazy" />
+          </div>
+          <div class="text-[13px] font-medium uppercase tracking-[0.03em] text-white/55 mb-2.5">ESTIMASI</div>
+          <h3 class="text-[22px] lg:text-[24px] leading-[1.32] font-normal tracking-[-0.015em] text-white group-hover:text-white/80 transition-colors">
+            Asal-Usul Angka 0,006165 pada Berat Besi
+          </h3>
+          <div class="text-[14px] text-white/50 mt-3">10/15/2026</div>
+        </article>
+
+        <!-- Insight 3 -->
+        <article class="group cursor-pointer reveal-up" style="transition-delay: 140ms;" data-cursor="arrow-light" data-blog-title="Dari Gambar ke Kubikasi: Urutan yang Tidak Menipu" data-blog-cat="KUBIKASI" data-blog-date="10/1/2026">
+          <div class="rounded-[24px] overflow-hidden aspect-square bg-neutral-900 mb-6">
+            <img src="assets/images/zs_insight_3.webp" alt="3D Biaxial Column P-M-M Interaction Surface Diagram" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" style="object-position: center center;" loading="lazy" />
+          </div>
+          <div class="text-[13px] font-medium uppercase tracking-[0.03em] text-white/55 mb-2.5">KUBIKASI</div>
+          <h3 class="text-[22px] lg:text-[24px] leading-[1.32] font-normal tracking-[-0.015em] text-white group-hover:text-white/80 transition-colors">
+            Dari Gambar ke Kubikasi: Urutan yang Tidak Menipu
+          </h3>
+          <div class="text-[14px] text-white/50 mt-3">10/1/2026</div>
+        </article>
+      </div>
+    </div>
+
+
+    <!-- KALKULATOR SECTION (ZonaSipil) -->
+    <div id="kalkulator" class="max-w-[1326px] mx-auto px-6 md:px-14 lg:px-0 pt-36 md:pt-48 pb-4">
+      <h2 class="text-[44px] sm:text-[60px] md:text-[72px] font-medium tracking-[-0.035em] leading-none mb-8 reveal-up">
+        Kalkulator
+      </h2>
+      <p class="text-[18px] md:text-[20px] leading-[1.55] text-white/70 max-w-[760px] mb-14 reveal-up">
+        Dua perhitungan yang paling sering muncul saat membaca gambar. Rumusnya terbuka di samping hasilnya — ubah angkanya, lalu periksa sendiri dari mana angka itu datang. Semua hitungan berjalan lokal di browsermu.
+      </p>
+
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-7">
+        <!-- Volume Beton -->
+        <div class="bg-white/5 border border-white/10 rounded-[24px] p-8 sm:p-10 reveal-up">
+          <h3 class="text-[24px] sm:text-[28px] font-medium tracking-[-0.02em] text-white mb-2">Volume Beton</h3>
+          <p class="font-serif italic text-white/85 text-[19px] mb-1">V = p &times; l &times; t &times; n</p>
+          <p class="text-[14px] leading-relaxed text-white/50 mb-8">p = panjang (m), l = lebar (m), t = tinggi (m), n = jumlah elemen sejenis. Faktor cadangan mengantisipasi tumpahan dan pemadatan — besarnya adalah asumsi pengguna.</p>
+          <div class="grid grid-cols-2 gap-4">
+            <label class="block text-[13px] font-medium uppercase tracking-[0.03em] text-white/55">Panjang (m)
+              <input type="number" id="inP" value="4" min="0" step="0.1" inputmode="decimal" class="mt-2 w-full bg-white/5 border border-white/15 rounded-xl px-4 py-3.5 text-white text-[16px] focus:outline-none focus:border-white/50" /></label>
+            <label class="block text-[13px] font-medium uppercase tracking-[0.03em] text-white/55">Lebar (m)
+              <input type="number" id="inL" value="0.25" min="0" step="0.01" inputmode="decimal" class="mt-2 w-full bg-white/5 border border-white/15 rounded-xl px-4 py-3.5 text-white text-[16px] focus:outline-none focus:border-white/50" /></label>
+            <label class="block text-[13px] font-medium uppercase tracking-[0.03em] text-white/55">Tinggi (m)
+              <input type="number" id="inT" value="0.5" min="0" step="0.01" inputmode="decimal" class="mt-2 w-full bg-white/5 border border-white/15 rounded-xl px-4 py-3.5 text-white text-[16px] focus:outline-none focus:border-white/50" /></label>
+            <label class="block text-[13px] font-medium uppercase tracking-[0.03em] text-white/55">Jumlah elemen
+              <input type="number" id="inN" value="6" min="0" step="1" inputmode="numeric" class="mt-2 w-full bg-white/5 border border-white/15 rounded-xl px-4 py-3.5 text-white text-[16px] focus:outline-none focus:border-white/50" /></label>
+            <label class="block text-[13px] font-medium uppercase tracking-[0.03em] text-white/55">Cadangan / waste (%)
+              <input type="number" id="inW" value="5" min="0" step="1" inputmode="numeric" class="mt-2 w-full bg-white/5 border border-white/15 rounded-xl px-4 py-3.5 text-white text-[16px] focus:outline-none focus:border-white/50" /></label>
+          </div>
+          <p class="mt-8 text-[17px] text-white/75" aria-live="polite">Volume bersih <strong id="outVolNet" class="text-white text-[20px]">3,00 m&sup3;</strong><br />Dengan cadangan <strong id="outVol" class="text-white text-[20px]">3,15 m&sup3;</strong></p>
+        </div>
+
+        <!-- Berat Tulangan -->
+        <div class="bg-white/5 border border-white/10 rounded-[24px] p-8 sm:p-10 reveal-up" style="transition-delay: 70ms;">
+          <h3 class="text-[24px] sm:text-[28px] font-medium tracking-[-0.02em] text-white mb-2">Berat Tulangan</h3>
+          <p class="font-serif italic text-white/85 text-[19px] mb-1">w = 0,006165 &times; d&sup2;</p>
+          <p class="text-[14px] leading-relaxed text-white/50 mb-8">d = diameter nominal (mm), w dalam kg/m. Konstanta ini berasal dari luas penampang lingkaran &times; massa jenis baja 7.850 kg/m&sup3; — turunannya dibahas di artikel ZonaSipil.</p>
+          <div class="grid grid-cols-2 gap-4">
+            <label class="block text-[13px] font-medium uppercase tracking-[0.03em] text-white/55">Diameter (mm)
+              <input type="number" id="inD" value="13" min="1" step="1" inputmode="numeric" class="mt-2 w-full bg-white/5 border border-white/15 rounded-xl px-4 py-3.5 text-white text-[16px] focus:outline-none focus:border-white/50" /></label>
+            <label class="block text-[13px] font-medium uppercase tracking-[0.03em] text-white/55">Panjang total (m)
+              <input type="number" id="inLen" value="120" min="0" step="1" inputmode="decimal" class="mt-2 w-full bg-white/5 border border-white/15 rounded-xl px-4 py-3.5 text-white text-[16px] focus:outline-none focus:border-white/50" /></label>
+          </div>
+          <p class="mt-8 text-[17px] text-white/75" aria-live="polite">Berat per meter <strong id="outWm" class="text-white text-[20px]">1,042 kg/m</strong><br />Total <strong id="outW" class="text-white text-[20px]">125,0 kg</strong></p>
+          <p class="mt-6 text-[14px] leading-relaxed text-white/50">Panjang total = panjang satu batang &times; jumlah batang, termasuk tekukan dan sambungan yang kamu rencanakan.</p>
+        </div>
+      </div>
+
+      <p class="mt-10 text-[15px] leading-relaxed text-white/45 max-w-[820px] border-l-2 border-white/25 pl-5">
+        Hasil kalkulator adalah estimasi konseptual untuk belajar dan pemeriksaan awal — bukan pengganti perhitungan desain oleh insinyur struktur yang berwenang.
+      </p>
+    </div>
+
+    <!-- FAQ SECTION -->
+    <div id="workflow" class="max-w-[1326px] mx-auto px-6 md:px-14 lg:px-0 pt-36 md:pt-48 pb-24">
+      <h2 class="text-[44px] sm:text-[60px] md:text-[72px] font-medium tracking-[-0.035em] leading-none mb-16 md:mb-24 reveal-up">
+        FAQ
+      </h2>
+
+      <div class="flex flex-col" id="faq-list">
+        <!-- FAQ 1 -->
+        <div class="faq-item">
+          <button type="button" class="w-full py-7 md:py-8 flex items-center justify-between text-left gap-6 group">
+            <span class="text-[20px] sm:text-[23px] md:text-[25px] font-normal tracking-[-0.015em] text-white/90 group-hover:text-white transition-colors">
+              Apa itu ZonaSipil?
+            </span>
+            <span class="faq-plus text-3xl font-light text-white/80 shrink-0">+</span>
+          </button>
+          <div class="faq-answer text-[17px] leading-[1.6] text-white/65 max-w-[880px]">
+            ZonaSipil adalah platform pengetahuan dan alat teknik sipil berbahasa Indonesia. Isinya kajian struktur beton, fondasi, estimasi dan kubikasi, serta detail gambar kerja — semuanya disusun dari gambar teknis dan rumus yang terbuka, bukan dari hafalan istilah.
+          </div>
+        </div>
+
+        <!-- FAQ 2 -->
+        <div class="faq-item">
+          <button type="button" class="w-full py-7 md:py-8 flex items-center justify-between text-left gap-6 group">
+            <span class="text-[20px] sm:text-[23px] md:text-[25px] font-normal tracking-[-0.015em] text-white/90 group-hover:text-white transition-colors">
+              Apakah kalkulator ZonaSipil bisa menggantikan insinyur struktur?
+            </span>
+            <span class="faq-plus text-3xl font-light text-white/80 shrink-0">+</span>
+          </button>
+          <div class="faq-answer text-[17px] leading-[1.6] text-white/65 max-w-[880px]">
+            Tidak. Kalkulator di sini menghasilkan estimasi konseptual untuk belajar dan memeriksa kewajaran angka. Dimensi, mutu material, dan detail akhir sebuah struktur wajib ditentukan lewat perhitungan desain oleh insinyur struktur yang berwenang.
+          </div>
+        </div>
+
+        <!-- FAQ 3 -->
+        <div class="faq-item">
+          <button type="button" class="w-full py-7 md:py-8 flex items-center justify-between text-left gap-6 group">
+            <span class="text-[20px] sm:text-[23px] md:text-[25px] font-normal tracking-[-0.015em] text-white/90 group-hover:text-white transition-colors">
+              Apakah konten ZonaSipil mengacu pada standar tertentu?
+            </span>
+            <span class="faq-plus text-3xl font-light text-white/80 shrink-0">+</span>
+          </button>
+          <div class="faq-answer text-[17px] leading-[1.6] text-white/65 max-w-[880px]">
+            Konten ZonaSipil adalah materi edukasi konseptual dan tidak mengklaim kepatuhan pada standar atau peraturan mana pun. Gambar dan contoh hitungan disederhanakan untuk menjelaskan konsep, dan selalu dilabeli sebagai konseptual.
+          </div>
+        </div>
+
+        <!-- FAQ 4 -->
+        <div class="faq-item">
+          <button type="button" class="w-full py-7 md:py-8 flex items-center justify-between text-left gap-6 group">
+            <span class="text-[20px] sm:text-[23px] md:text-[25px] font-normal tracking-[-0.015em] text-white/85 group-hover:text-white transition-colors">
+              Apakah gambar di ZonaSipil mengambil stok dari internet?
+            </span>
+            <span class="faq-plus text-3xl font-light text-white/80 shrink-0">+</span>
+          </button>
+          <div class="faq-answer text-[17px] leading-[1.6] text-white/65 max-w-[880px]">
+            Bukan. Setiap ilustrasi dan diagram digambar khusus untuk konsep yang sedang dijelaskannya, lalu disimpan sebagai aset proyek ini. Kalau sebuah gambar disederhanakan, keterangannya menyebutkannya dengan jelas.
+          </div>
+        </div>
+
+        <!-- FAQ 5 -->
+        </div>
+
+        <!-- FAQ 6 -->
+        </div>
+
+        <!-- FAQ 7 -->
+        </div>
+
+        <!-- FAQ 8 -->
+        </div>
+      </div>
+    </div>
+
+    <!-- CTA KALKULATOR (ZonaSipil) -->
+    <div id="contact-cta" class="relative py-28 md:py-40 px-6 text-center overflow-hidden border-b border-white/10">
+      <!-- Concentric Glowing Indigo Pyramids Background Graphic matching Frame 38 -->
+      <div class="absolute inset-0 pointer-events-none flex items-end justify-center overflow-hidden">
+        <svg id="cta-pyramids" viewBox="0 0 1920 760" preserveAspectRatio="xMidYMax slice" class="w-full h-full max-w-[1920px]">
+          <defs>
+            <linearGradient id="ctaPyr1" x1="0.5" y1="0" x2="0.5" y2="1">
+              <stop offset="0%" stop-color="#161C24" stop-opacity="0.25"/>
+              <stop offset="60%" stop-color="#263342" stop-opacity="0.62"/>
+              <stop offset="100%" stop-color="#3E5268" stop-opacity="0.88"/>
+            </linearGradient>
+            <linearGradient id="ctaPyr2" x1="0.5" y1="0" x2="0.5" y2="1">
+              <stop offset="0%" stop-color="#1D2631" stop-opacity="0.38"/>
+              <stop offset="55%" stop-color="#354659" stop-opacity="0.75"/>
+              <stop offset="100%" stop-color="#B86B3B" stop-opacity="0.90"/>
+            </linearGradient>
+          </defs>
+          <polygon id="pyr-layer-1" points="960,15 60,760 1860,760" fill="url(#ctaPyr1)" opacity="0.4" stroke="rgba(255,255,255,0.09)" stroke-width="1.2"/>
+          <polygon id="pyr-layer-2" points="960,210 290,760 1630,760" fill="url(#ctaPyr1)" opacity="0.65" stroke="rgba(255,255,255,0.11)" stroke-width="1.2"/>
+          <polygon id="pyr-layer-3" points="960,405 520,760 1400,760" fill="url(#ctaPyr2)" opacity="0.88" stroke="rgba(255,255,255,0.15)" stroke-width="1.2"/>
+        </svg>
+      </div>
+
+      <div class="relative z-10 max-w-[780px] mx-auto">
+        <h2 class="text-[46px] sm:text-[64px] md:text-[78px] font-medium tracking-[-0.035em] leading-[1.05] text-white">
+          Sudah baca gambarnya?<br />Sekarang hitung angkanya.
+        </h2>
+        <p class="mt-6 text-[18px] sm:text-[20px] leading-[1.5] text-white/85 max-w-[540px] mx-auto font-normal">
+          Buka kalkulator ZonaSipil: volume beton dan berat tulangan, dihitung dari rumus yang terbuka — tanpa kotak hitam.
+        </p>
+        <div class="mt-11">
+          <a href="#kalkulator" id="cta-get-in-touch" class="cb-btn bg-white text-black px-10 py-4 text-[17px] font-medium shadow-2xl" style="--hover-text: #ffffff;" data-magnetic="0.35">
+            <span class="cb-btn-fill bg-black border border-white/40"></span>
+            <span class="cb-btn-text-wrap">
+              <span class="cb-btn-text-inner" data-text="Coba Kalkulator">Coba Kalkulator</span>
+            </span>
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- FOOTER (ZonaSipil) -->
+    <footer class="max-w-[1440px] mx-auto px-6 md:px-14 lg:px-24 pt-20 pb-10">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 pb-20">
+        <!-- Left Info Columns -->
+        <div class="lg:col-span-8 flex flex-col sm:flex-row gap-12 sm:gap-16">
+          <!-- Situs Resmi -->
+          <div>
+            <button type="button" data-copy="zonasipil.web.id" class="cb-btn border border-white/35 text-white px-7 py-3.5 text-[19px] font-normal mb-7" style="--hover-text: #000000;" data-magnetic="0.28">
+              <span class="cb-btn-fill bg-white"></span>
+              <span class="cb-btn-text-wrap">
+                <span class="cb-btn-text-inner" data-text="zonasipil.web.id">zonasipil.web.id</span>
+              </span>
+            </button>
+            <div class="text-[14px] leading-[1.6]">
+              <span class="uppercase text-white/45 tracking-wider font-medium mr-2">SITUS RESMI</span>
+              <span class="text-white font-medium">zonasipil.web.id</span><br />
+              <span class="text-white font-medium">Platform pengetahuan &amp; alat teknik sipil</span>
+            </div>
+          </div>
+
+          <!-- Alat Hitung -->
+          <div>
+            <a href="#kalkulator" class="cb-btn border border-white/35 text-white px-7 py-3.5 text-[19px] font-normal mb-7" style="--hover-text: #000000;" data-magnetic="0.28">
+              <span class="cb-btn-fill bg-white"></span>
+              <span class="cb-btn-text-wrap">
+                <span class="cb-btn-text-inner" data-text="Buka Kalkulator">Buka Kalkulator</span>
+              </span>
+            </a>
+            <div class="text-[14px] leading-[1.6]">
+              <span class="uppercase text-white/45 tracking-wider font-medium mr-2">ALAT HITUNG</span>
+              <span class="text-white font-medium">Volume beton &amp; berat tulangan</span><br />
+              <span class="text-white font-medium">Dengan rumus yang selalu terbuka</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right 2-Column Nav Links -->
+        <div class="lg:col-span-4 grid grid-cols-2 gap-8 text-[19px] font-normal lg:justify-items-end">
+          <div class="flex flex-col gap-4">
+            <a href="#services" class="cb-nav-link text-white/90 hover:text-white" data-magnetic="0.2"><span data-text="Bidang">Bidang</span></a>
+            <a href="#projects" class="cb-nav-link text-white/90 hover:text-white" data-magnetic="0.2"><span data-text="Kajian">Kajian</span></a>
+            <a href="#about" class="cb-nav-link text-white/90 hover:text-white" data-magnetic="0.2"><span data-text="Tentang">Tentang</span></a>
+          </div>
+          <div class="flex flex-col gap-4">
+            <a href="#blog" class="cb-nav-link text-white/90 hover:text-white" data-magnetic="0.2"><span data-text="Artikel">Artikel</span></a>
+            <a href="#workflow" class="cb-nav-link text-white/90 hover:text-white" data-magnetic="0.2"><span data-text="FAQ">FAQ</span></a>
+            <a href="#kalkulator" class="cb-nav-link text-white/90 hover:text-white" data-magnetic="0.2"><span data-text="Kalkulator">Kalkulator</span></a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bottom Copyright & Social Icons Row -->
+      <div class="pt-6 flex flex-col sm:flex-row items-center justify-between gap-6">
+        <div class="flex items-center gap-6 text-[14px]">
+          <button type="button" id="privacy-policy-btn" class="text-white hover:text-white/75 transition-colors">Privacy Policy</button>
+          <span class="text-white/45">2026, ZonaSipil</span>
+        </div>
+
+        <!-- 4 Social Circles (Dribbble, GitHub, YouTube, LinkedIn) -->
+        <div class="flex items-center gap-3.5">
+          <!-- Dribbble -->
+          <a href="#top" aria-label="Dribbble" class="w-12 h-12 rounded-full bg-[#1c1c1f] hover:bg-white text-white hover:text-black flex items-center justify-center transition-colors duration-300" data-magnetic="0.35">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"/>
+              <path d="M19.13 5.09C15.22 9.14 10 10.44 2.25 10.94"/>
+              <path d="M21.75 12.84c-6.62-1.41-12.14 1-16.38 6.32"/>
+              <path d="M8.56 2.75c4.37 6 6 9.42 8 17.72"/>
+            </svg>
+          </a>
+          <!-- GitHub -->
+          <a href="https://github.com/yfarch0912/zonasipil" aria-label="GitHub" class="w-12 h-12 rounded-full bg-[#1c1c1f] hover:bg-white text-white hover:text-black flex items-center justify-center transition-colors duration-300" data-magnetic="0.35">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+              <path fill-rule="evenodd" clip-rule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.53 1.032 1.53 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/>
+            </svg>
+          </a>
+          <!-- YouTube -->
+          <a href="#top" aria-label="YouTube" class="w-12 h-12 rounded-full bg-[#1c1c1f] hover:bg-white text-white hover:text-black flex items-center justify-center transition-colors duration-300" data-magnetic="0.35">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
+            </svg>
+          </a>
+          <!-- LinkedIn -->
+          <a href="#top" aria-label="LinkedIn" class="w-12 h-12 rounded-full bg-[#1c1c1f] hover:bg-white text-white hover:text-black flex items-center justify-center transition-colors duration-300" data-magnetic="0.35">
+            <span class="font-bold text-[15px] tracking-tighter">in</span>
+          </a>
+        </div>
+      </div>
+    </footer>
+  </section>
+
+  <!-- INTERACTIVE MODAL (Kajian Preview / Info / Showreel Lightbox) -->
+  <div id="cb-modal" class="fixed inset-0 z-[9995] bg-black/80 backdrop-blur-md hidden items-center justify-center p-4 sm:p-8">
+    <div class="bg-[#0d0e14] border border-white/15 text-white rounded-[28px] max-w-[780px] w-full p-8 sm:p-12 relative shadow-2xl overflow-hidden">
+      <button type="button" id="cb-modal-close" class="absolute top-6 right-6 w-11 h-11 rounded-full bg-white/10 hover:bg-white hover:text-black transition-colors flex items-center justify-center text-xl">&times;</button>
+      <div id="cb-modal-content"></div>
+    </div>
+  </div>
+
+  <script src="js/main.js"></script>
 </body>
 </html>

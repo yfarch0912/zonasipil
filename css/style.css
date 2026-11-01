@@ -1,0 +1,447 @@
+:root {
+      --bg-light: #F4F3EF;
+      --bg-dark: #121417;
+      --card-dark: #16191E;
+      --card-gray: #E6E4DD;
+      --concrete-warm: #EAE7E0;
+      --slate-grey: #E2E6EA;
+      --steel-accent: #3B4D61;
+      --amber-accent: #C86D3B;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html, body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: #F4F3EF;
+      color: #121417;
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    /* Hide native cursor on desktop when custom cursor is active */
+    @media (pointer: fine) {
+      body, a, button, [role="button"], input, textarea, select {
+        cursor: none !important;
+      }
+    }
+
+    /* Custom ZonaSipil Mouse Follower Cursor */
+    #cb-cursor {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 10px;
+      height: 10px;
+      border-radius: 9999px;
+      background-color: #121417;
+      pointer-events: none;
+      z-index: 9999;
+      transform: translate3d(-50%, -50%, 0);
+      transition: width 0.34s cubic-bezier(0.16, 1, 0.3, 1),
+                  height 0.34s cubic-bezier(0.16, 1, 0.3, 1),
+                  background-color 0.25s ease,
+                  backdrop-filter 0.25s ease,
+                  border-color 0.25s ease,
+                  opacity 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      will-change: transform, width, height;
+    }
+
+    #cb-cursor.on-dark {
+      background-color: #F4F3EF;
+    }
+
+    #cb-cursor.state-play {
+      width: 96px;
+      height: 96px;
+      background-color: rgba(18, 21, 26, 0.86);
+      border: 1px solid rgba(147, 173, 200, 0.28);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      color: #F4F3EF;
+      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.34);
+    }
+
+    #cb-cursor.state-arrow-dark {
+      width: 84px;
+      height: 84px;
+      background-color: #121417;
+      color: #ffffff;
+      box-shadow: 0 10px 28px rgba(0, 0, 0, 0.22);
+    }
+
+    #cb-cursor.state-arrow-light {
+      width: 84px;
+      height: 84px;
+      background-color: #F4F3EF;
+      color: #121417;
+      border: 1px solid rgba(59, 77, 97, 0.25);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.42);
+    }
+
+    #cb-cursor.state-drag {
+      width: 78px;
+      height: 78px;
+      background-color: #121417;
+      color: #ffffff;
+      font-size: 12px;
+      font-weight: 500;
+      letter-spacing: 0.02em;
+    }
+
+    #cb-cursor.state-button {
+      width: 0px;
+      height: 0px;
+      opacity: 0;
+    }
+
+    #cb-cursor-icon {
+      opacity: 0;
+      transform: scale(0.4);
+      transition: opacity 0.22s ease, transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    #cb-cursor.state-play #cb-cursor-icon,
+    #cb-cursor.state-arrow-dark #cb-cursor-icon,
+    #cb-cursor.state-arrow-light #cb-cursor-icon,
+    #cb-cursor.state-drag #cb-cursor-icon {
+      opacity: 1;
+      transform: scale(1);
+    }
+
+    /* Magnetic Rolling Text Pill Buttons */
+    .cb-btn {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 9999px;
+      overflow: hidden;
+      transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+                  border-color 0.3s ease,
+                  background-color 0.3s ease;
+      will-change: transform;
+      user-select: none;
+    }
+
+    .cb-btn-fill {
+      position: absolute;
+      inset: 0;
+      border-radius: 9999px;
+      transform: translateY(102%) scale(0.95);
+      transition: transform 0.45s cubic-bezier(0.19, 1, 0.22, 1);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .cb-btn:hover .cb-btn-fill {
+      transform: translateY(0%) scale(1.02);
+    }
+
+    .cb-btn-text-wrap {
+      position: relative;
+      z-index: 1;
+      display: inline-block;
+      overflow: hidden;
+      line-height: 1.2;
+    }
+
+    .cb-btn-text-inner {
+      display: block;
+      transition: transform 0.44s cubic-bezier(0.19, 1, 0.22, 1);
+    }
+
+    .cb-btn-text-inner::after {
+      content: attr(data-text);
+      position: absolute;
+      left: 0;
+      top: 108%;
+      width: 100%;
+      text-align: center;
+      color: var(--hover-text, #ffffff);
+    }
+
+    .cb-btn:hover .cb-btn-text-inner {
+      transform: translateY(-108%);
+    }
+
+    /* Nav Link Rolling Effect */
+    .cb-nav-link {
+      position: relative;
+      display: inline-block;
+      overflow: hidden;
+      line-height: 1.25;
+      padding: 4px 0;
+    }
+
+    .cb-nav-link span {
+      display: block;
+      transition: transform 0.4s cubic-bezier(0.19, 1, 0.22, 1);
+    }
+
+    .cb-nav-link span::after {
+      content: attr(data-text);
+      position: absolute;
+      left: 0;
+      top: 105%;
+      width: 100%;
+    }
+
+    .cb-nav-link:hover span {
+      transform: translateY(-105%);
+    }
+
+    /* Hero Typography */
+    .hero-title {
+      font-size: clamp(46px, 6.2vw, 92px);
+      line-height: 1.04;
+      letter-spacing: -0.038em;
+      font-weight: 500;
+    }
+
+    /* Showreel Container */
+    .showreel-box {
+      position: relative;
+      width: 88%;
+      max-width: 1520px;
+      height: clamp(380px, 52vw, 720px);
+      margin: 0 auto;
+      border-radius: 28px;
+      overflow: hidden;
+      background: #121519;
+      border: 1px solid rgba(18, 20, 23, 0.12);
+      box-shadow: 0 28px 68px rgba(18, 20, 23, 0.14);
+      transform-origin: center top;
+      will-change: transform, width, border-radius;
+    }
+
+    .showreel-slide {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      transform: scale(1.06);
+      transition: opacity 0.9s cubic-bezier(0.16, 1, 0.3, 1),
+                  transform 4.2s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .showreel-slide.active {
+      opacity: 1;
+      transform: scale(1);
+    }
+
+    .showreel-slide img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center;
+      display: block;
+    }
+
+    /* Service Accordion Cards (What We Do) */
+    .service-card {
+      position: relative;
+      border-radius: 24px;
+      background-color: #E6E4DD;
+      color: #121417;
+      border: 1px solid rgba(18, 20, 23, 0.06);
+      overflow: hidden;
+      transition: background-color 0.5s cubic-bezier(0.16, 1, 0.3, 1),
+                  color 0.5s cubic-bezier(0.16, 1, 0.3, 1),
+                  padding 0.5s cubic-bezier(0.16, 1, 0.3, 1),
+                  box-shadow 0.5s ease,
+                  border-color 0.5s ease;
+    }
+
+    .service-card.active {
+      background-color: #15181E;
+      color: #F4F3EF;
+      border-color: rgba(147, 173, 200, 0.16);
+      box-shadow: 0 28px 64px rgba(18, 20, 23, 0.22);
+    }
+
+    .service-card-body {
+      max-height: 0;
+      opacity: 0;
+      overflow: hidden;
+      transition: max-height 0.55s cubic-bezier(0.16, 1, 0.3, 1),
+                  opacity 0.45s ease,
+                  margin-top 0.45s ease;
+      margin-top: 0;
+    }
+
+    .service-card.active .service-card-body {
+      max-height: 320px;
+      opacity: 1;
+      margin-top: 28px;
+    }
+
+    .service-graphic {
+      position: absolute;
+      right: 0;
+      top: 0;
+      bottom: 0;
+      width: 48%;
+      opacity: 0;
+      pointer-events: none;
+      transform: translateX(24px) scale(0.96);
+      transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1),
+                  transform 0.65s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .service-card.active .service-graphic {
+      opacity: 1;
+      transform: translateX(0) scale(1);
+    }
+
+    .service-num {
+      font-size: 20px;
+      font-weight: 400;
+      color: rgba(17, 17, 17, 0.34);
+      transition: color 0.4s ease;
+    }
+
+    .service-card.active .service-num {
+      color: rgba(255, 255, 255, 0.45);
+    }
+
+    .explore-arrow-circle {
+      width: 40px;
+      height: 40px;
+      border-radius: 9999px;
+      background: #F4F3EF;
+      color: #121417;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.3s ease;
+    }
+
+    .explore-btn:hover .explore-arrow-circle {
+      background: #C86D3B;
+      color: #ffffff;
+    }
+
+    .explore-btn:hover .explore-arrow-circle {
+      transform: scale(1.12) rotate(12deg);
+    }
+
+    /* Project Cards in Kajian Pilihan */
+    .project-card {
+      position: relative;
+      display: block;
+    }
+
+    .project-img-wrap {
+      position: relative;
+      width: 100%;
+      border-radius: 24px;
+      overflow: hidden;
+      background: #1A1E24;
+      border: 1px solid rgba(244, 243, 239, 0.09);
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.28);
+      transform: translateZ(0);
+    }
+
+    .project-img-wrap::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(180deg, rgba(18,20,23,0) 68%, rgba(18,20,23,0.32) 100%);
+      pointer-events: none;
+    }
+
+    .project-img-wrap img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      transition: transform 0.75s cubic-bezier(0.16, 1, 0.3, 1);
+      will-change: transform;
+    }
+
+    .project-card:hover .project-img-wrap img {
+      transform: scale(1.045);
+    }
+
+    /* Catatan Lapangan Sticky Note Cards */
+    .sticky-note {
+      border-radius: 8px;
+      padding: 36px 34px 32px;
+      box-shadow: 0 14px 38px rgba(18, 20, 23, 0.08);
+      border: 3px solid #F8F7F4;
+      transition: transform 0.45s cubic-bezier(0.16, 1, 0.3, 1),
+                  box-shadow 0.45s cubic-bezier(0.16, 1, 0.3, 1),
+                  z-index 0s;
+      user-select: none;
+    }
+
+    .sticky-note:hover {
+      box-shadow: 0 26px 58px rgba(0, 0, 0, 0.13);
+    }
+
+    /* FAQ Accordion */
+    .faq-item {
+      border-bottom: 1px solid rgba(255, 255, 255, 0.18);
+      transition: border-color 0.3s ease;
+    }
+
+    .faq-item:first-child {
+      border-top: 1px solid rgba(255, 255, 255, 0.18);
+    }
+
+    .faq-item:hover {
+      border-bottom-color: rgba(255, 255, 255, 0.55);
+    }
+
+    .faq-answer {
+      max-height: 0;
+      opacity: 0;
+      overflow: hidden;
+      transition: max-height 0.48s cubic-bezier(0.16, 1, 0.3, 1),
+                  opacity 0.35s ease,
+                  padding-bottom 0.35s ease;
+    }
+
+    .faq-item.open .faq-answer {
+      max-height: 240px;
+      opacity: 1;
+      padding-bottom: 28px;
+    }
+
+    .faq-plus {
+      transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .faq-item.open .faq-plus {
+      transform: rotate(45deg);
+    }
+
+    /* Reveal Animations */
+    .reveal-up {
+      opacity: 0;
+      transform: translateY(34px);
+      transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1),
+                  transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .reveal-up.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* Section Rounded Overlaps */
+    .rounded-section-top {
+      border-top-left-radius: clamp(36px, 4.5vw, 76px);
+      border-top-right-radius: clamp(36px, 4.5vw, 76px);
+    }
