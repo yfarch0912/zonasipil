@@ -416,3 +416,26 @@
       border-top-left-radius: clamp(36px, 4.5vw, 76px);
       border-top-right-radius: clamp(36px, 4.5vw, 76px);
     }
+
+/* ===== Apps mega menu + Login pill (ditambahkan 2026-11-01) ===== */
+.zs-apps-wrap{ position:relative; }
+.zs-mega{ position:absolute; top:calc(100% + 18px); left:50%; transform:translate(-50%, 10px); width:min(1060px, calc(100vw - 48px)); background:#fff; border-radius:24px; box-shadow:0 40px 80px -32px rgba(18,20,23,.35); padding:34px 38px 30px; opacity:0; visibility:hidden; transition:opacity .28s ease, transform .28s cubic-bezier(.22,1,.36,1), visibility .28s; z-index:60; text-align:left; }
+.zs-apps-wrap:hover .zs-mega, .zs-apps-wrap:focus-within .zs-mega, .zs-apps-wrap.open .zs-mega{ opacity:1; visibility:visible; transform:translate(-50%, 0); }
+.zs-mega-head{ display:flex; justify-content:space-between; align-items:flex-end; gap:24px; padding-bottom:20px; border-bottom:1px solid rgba(18,20,23,.08); margin-bottom:22px; }
+.zs-mega-title{ font-size:clamp(20px,2.4vw,27px); font-weight:700; letter-spacing:-.02em; line-height:1.12; color:#121417; }
+.zs-mega-desc{ font-size:13.5px; line-height:1.55; color:rgba(18,20,23,.6); max-width:400px; }
+.zs-mega-grid{ display:grid; grid-template-columns:repeat(3, 1fr); gap:22px 34px; }
+.zs-mega-cat{ font-size:10.5px; font-weight:700; letter-spacing:.16em; color:#168B83; margin-bottom:9px; }
+.zs-mega-item{ display:flex; align-items:center; justify-content:space-between; gap:10px; padding:5px 8px; margin:0 -8px; border-radius:9px; font-size:14.5px; color:#121417; }
+.zs-mega-item:hover{ background:rgba(22,139,131,.08); }
+.zs-mega-status{ font-size:9.5px; font-weight:700; letter-spacing:.1em; padding:3px 7px; border-radius:99px; flex:none; }
+.zs-st-available{ background:rgba(22,139,131,.13); color:#0E6B64; }
+.zs-st-beta{ background:rgba(233,166,75,.2); color:#96660F; }
+.zs-st-development{ background:rgba(59,77,97,.13); color:#3B4D61; }
+.zs-st-soon{ background:rgba(137,147,152,.18); color:#5C666C; }
+.zs-mega-foot{ margin-top:22px; padding-top:16px; border-top:1px solid rgba(18,20,23,.08); display:flex; justify-content:space-between; align-items:center; font-size:13.5px; color:rgba(18,20,23,.55); }
+.zs-login-pill{ display:inline-flex; align-items:center; gap:8px; border:1.5px solid rgba(18,20,23,.8); border-radius:999px; padding:9px 20px; font-size:15px; font-weight:600; color:#121417; transition:all .25s; }
+.zs-login-pill i{ width:7px; height:7px; border-radius:99px; background:#168B83; display:inline-block; }
+.zs-login-pill:hover{ background:#121417; color:#F4F3EF; }
+@media (max-width:1100px){ .zs-mega-grid{ grid-template-columns:repeat(2,1fr); } }
+@media (prefers-reduced-motion: reduce){ .zs-mega{ transition:none; } }

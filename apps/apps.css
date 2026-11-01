@@ -1,0 +1,36 @@
+/* ZonaSipil Apps — katalog, detail aplikasi, akun. Ditulis khusus untuk ZonaSipil. */
+:root{ --teal:#168B83; --amber:#E9A64B; --graphite:#121417; --navy:#142D36; --steel:#3B4D61; --muted:#899398; }
+.zs-badge{ display:inline-flex; align-items:center; gap:7px; font-size:11px; font-weight:600; letter-spacing:.12em; padding:5px 11px; border-radius:999px; white-space:nowrap; }
+.zs-badge i{ width:7px; height:7px; border-radius:99px; background:currentColor; display:inline-block; }
+.zs-badge.available{ background:rgba(22,139,131,.12); color:#0E6B64; }
+.zs-badge.beta{ background:rgba(233,166,75,.18); color:#96660F; }
+.zs-badge.development{ background:rgba(59,77,97,.12); color:#3B4D61; }
+.zs-badge.soon{ background:rgba(137,147,152,.16); color:#5C666C; }
+.zs-app-card{ background:#fff; border-radius:22px; padding:26px; display:flex; flex-direction:column; gap:14px; box-shadow:0 18px 40px -28px rgba(18,20,23,.25); transition:transform .35s cubic-bezier(.22,1,.36,1), box-shadow .35s; }
+.zs-app-card:hover{ transform:translateY(-4px); box-shadow:0 26px 48px -26px rgba(18,20,23,.32); }
+.zs-app-icon{ width:52px; height:52px; border-radius:14px; background:rgba(22,139,131,.1); color:var(--navy); display:flex; align-items:center; justify-content:center; flex:none; }
+.zs-app-icon svg{ width:28px; height:28px; }
+.zs-chip{ padding:9px 18px; border-radius:999px; border:1px solid rgba(18,20,23,.16); font-size:14px; font-weight:500; background:transparent; cursor:pointer; transition:all .25s; }
+.zs-chip:hover{ border-color:rgba(18,20,23,.45); }
+.zs-chip.active{ background:var(--graphite); color:#F4F3EF; border-color:var(--graphite); }
+.zs-open{ margin-top:auto; display:inline-flex; align-items:center; gap:8px; font-weight:600; font-size:15px; color:var(--navy); }
+.zs-open svg{ width:17px; height:17px; transition:transform .25s; }
+.zs-app-card:hover .zs-open svg, a:hover > .zs-open svg{ transform:translateX(3px); }
+.zs-open.disabled{ color:var(--muted); pointer-events:none; }
+/* Auth */
+.zs-field label{ display:block; font-size:13px; font-weight:600; letter-spacing:.04em; margin-bottom:7px; color:rgba(18,20,23,.75); }
+.zs-field input[type=email], .zs-field input[type=password], .zs-field input[type=text]{ width:100%; background:#fff; border:1px solid rgba(18,20,23,.16); border-radius:12px; padding:13px 44px 13px 15px; font-size:15px; outline:none; transition:border-color .2s, box-shadow .2s; }
+.zs-field input:focus{ border-color:var(--teal); box-shadow:0 0 0 3px rgba(22,139,131,.15); }
+.zs-eye{ position:absolute; right:8px; top:50%; transform:translateY(-50%); width:34px; height:34px; display:flex; align-items:center; justify-content:center; color:rgba(18,20,23,.45); border-radius:9px; }
+.zs-eye:hover{ color:var(--graphite); background:rgba(18,20,23,.05); }
+.zs-eye svg{ width:19px; height:19px; }
+.zs-notice{ border:1px solid rgba(233,166,75,.55); background:rgba(233,166,75,.12); border-radius:14px; padding:14px 16px; font-size:14px; line-height:1.55; color:#5C430A; }
+.zs-submit{ width:100%; background:var(--graphite); color:#F4F3EF; font-weight:600; font-size:16px; padding:14px; border-radius:999px; transition:background .25s; cursor:pointer; }
+.zs-submit:hover{ background:var(--navy); }
+/* Dashboard */
+.zs-dash-link{ display:flex; align-items:center; gap:11px; padding:11px 14px; border-radius:12px; font-size:15px; color:rgba(244,243,239,.72); }
+.zs-dash-link:hover{ color:#fff; background:rgba(255,255,255,.06); }
+.zs-dash-link.active{ color:#fff; background:rgba(22,139,131,.28); }
+.zs-dash-link svg{ width:19px; height:19px; flex:none; }
+.zs-empty{ border:1.5px dashed rgba(18,20,23,.18); border-radius:18px; padding:26px; text-align:center; color:rgba(18,20,23,.55); font-size:14.5px; line-height:1.6; background:rgba(255,255,255,.5); }
+@media (prefers-reduced-motion: reduce){ .zs-app-card, .zs-open svg{ transition:none; } .zs-app-card:hover{ transform:none; } }

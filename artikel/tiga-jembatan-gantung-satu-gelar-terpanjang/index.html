@@ -29,17 +29,33 @@
 <body class="bg-[#F4F3EF] text-[#121417] selection:bg-[#121417] selection:text-[#F4F3EF]">
   <header class="w-full pt-7 pb-5 px-6 md:px-14 lg:px-24 flex items-center justify-between bg-[#F4F3EF] z-40 relative">
     <a href="/" class="text-[27px] font-bold tracking-[-0.045em] text-black leading-none select-none">zonasipil</a>
-    <nav class="hidden md:flex items-center gap-9 lg:gap-11 text-[16px] font-normal text-black">
-      <a href="/#services" class="cb-nav-link"><span data-text="Bidang">Bidang</span></a>
+    <nav class="hidden md:flex items-center gap-7 lg:gap-9 text-[16px] font-normal text-black">
+      <a href="/#services" class="cb-nav-link"><span data-text="Bidang Kajian">Bidang Kajian</span></a>
       <a href="/#projects" class="cb-nav-link"><span data-text="Kajian">Kajian</span></a>
-      <a href="/#about" class="cb-nav-link"><span data-text="Tentang">Tentang</span></a>
+      <div class="zs-apps-wrap">
+        <a href="/apps" class="cb-nav-link" aria-haspopup="true"><span data-text="Apps">Apps</span></a>
+<div class="zs-mega" role="menu" aria-label="Daftar aplikasi ZonaSipil">
+      <div class="zs-mega-head">
+        <div class="zs-mega-title">ENGINEERING TOOLS.<br/>ONE ECOSYSTEM.</div>
+        <p class="zs-mega-desc">Explore digital applications designed to simplify engineering calculations, structural analysis, construction workflows, and technical learning.</p>
+      </div>
+      <div class="zs-mega-grid"><div><div class="zs-mega-cat">STRUCTURAL ENGINEERING</div><a class="zs-mega-item" href="/apps/structure/"><span>Zona Structure</span><span class="zs-mega-status zs-st-beta">BETA</span></a><a class="zs-mega-item" href="/apps/concrete/"><span>Zona Concrete</span><span class="zs-mega-status zs-st-development">IN DEVELOPMENT</span></a><a class="zs-mega-item" href="/apps/steel/"><span>Zona Steel</span><span class="zs-mega-status zs-st-soon">COMING SOON</span></a><a class="zs-mega-item" href="/apps/foundation/"><span>Zona Foundation</span><span class="zs-mega-status zs-st-soon">COMING SOON</span></a></div><div><div class="zs-mega-cat">CONSTRUCTION & ESTIMATION</div><a class="zs-mega-item" href="/apps/rab/"><span>Zona RAB</span><span class="zs-mega-status zs-st-soon">COMING SOON</span></a><a class="zs-mega-item" href="/apps/quantity/"><span>Zona Quantity</span><span class="zs-mega-status zs-st-soon">COMING SOON</span></a><a class="zs-mega-item" href="/apps/project/"><span>Zona Project</span><span class="zs-mega-status zs-st-soon">COMING SOON</span></a></div><div><div class="zs-mega-cat">CIVIL ENGINEERING UTILITIES</div><a class="zs-mega-item" href="/apps/calculator/"><span>Zona Calculator</span><span class="zs-mega-status zs-st-available">AVAILABLE</span></a><a class="zs-mega-item" href="/apps/survey/"><span>Zona Survey</span><span class="zs-mega-status zs-st-soon">COMING SOON</span></a><a class="zs-mega-item" href="/apps/road/"><span>Zona Road</span><span class="zs-mega-status zs-st-soon">COMING SOON</span></a><a class="zs-mega-item" href="/apps/bridge/"><span>Zona Bridge</span><span class="zs-mega-status zs-st-soon">COMING SOON</span></a></div><div><div class="zs-mega-cat">ARCHITECTURE & MODELING</div><a class="zs-mega-item" href="/apps/plan/"><span>Zona Plan</span><span class="zs-mega-status zs-st-soon">COMING SOON</span></a><a class="zs-mega-item" href="/apps/bim/"><span>Zona BIM</span><span class="zs-mega-status zs-st-soon">COMING SOON</span></a></div><div><div class="zs-mega-cat">ENGINEERING LEARNING</div><a class="zs-mega-item" href="/apps/academy/"><span>Zona Academy</span><span class="zs-mega-status zs-st-soon">COMING SOON</span></a><a class="zs-mega-item" href="/apps/simulator/"><span>Zona Simulator</span><span class="zs-mega-status zs-st-soon">COMING SOON</span></a></div><div><div class="zs-mega-cat">ENGINEERING DOCUMENTS</div><a class="zs-mega-item" href="/apps/report/"><span>Zona Report</span><span class="zs-mega-status zs-st-soon">COMING SOON</span></a><a class="zs-mega-item" href="/apps/library/"><span>Zona Library</span><span class="zs-mega-status zs-st-soon">COMING SOON</span></a></div></div>
+      <div class="zs-mega-foot"><span>Status setiap aplikasi ditampilkan apa adanya — hanya alat yang benar-benar berjalan yang berlabel AVAILABLE.</span><a href="/apps" class="font-semibold text-[#142D36]">Lihat semua aplikasi →</a></div>
+    </div>
+      </div>
       <a href="/artikel/" class="cb-nav-link"><span data-text="Artikel">Artikel</span></a>
+      <a href="/#about" class="cb-nav-link"><span data-text="Tentang">Tentang</span></a>
+      <a href="/#workflow" class="cb-nav-link"><span data-text="FAQ">FAQ</span></a>
+      <a href="/login" class="zs-login-pill"><i></i>Login</a>
       <a href="/#kalkulator" class="cb-btn bg-[#121417] text-[#F4F3EF] px-7 py-3 text-[16px] font-medium" style="--hover-text: #ffffff;">
         <span class="cb-btn-fill bg-[#3B4D61]"></span>
         <span class="cb-btn-text-wrap"><span class="cb-btn-text-inner" data-text="Hitung Cepat">Hitung Cepat</span></span>
       </a>
     </nav>
-    <a href="/artikel/" class="md:hidden text-[15px] font-medium">Artikel</a>
+    <div class="md:hidden flex items-center gap-5">
+      <a href="/apps" class="text-[15px] font-medium">Apps</a>
+      <a href="/login" class="text-[15px] font-semibold">Login</a>
+    </div>
   </header>
 
   <main class="max-w-[1326px] mx-auto px-6 md:px-14 lg:px-0">
@@ -87,26 +103,26 @@
     <div class="max-w-[1100px] mx-auto mt-20">
       <h2 class="text-[28px] md:text-[34px] font-medium tracking-[-0.025em] mb-8">Artikel lainnya</h2>
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-7">
-        <a href="/artikel/jembatan-kemang-pratama-bekasi-tanpa-pilar/" class="block group">
+        <a href="/artikel/jembatan-pajarakan-probolinggo-ganti-lantai/" class="block group">
           <div class="rounded-[20px] overflow-hidden aspect-[4/3] bg-neutral-200 mb-4">
-            <img src="/assets/images/artikel/jembatan-kemang-pratama-bekasi-tanpa-pilar.webp" alt="Ilustrasi jembatan gelagar baja bentang tunggal melintasi sungai perkotaan tanpa pilar di tengah aliran" class="art-card-img w-full h-full object-cover" loading="lazy" />
+            <img src="/assets/images/artikel/jembatan-pajarakan-probolinggo-ganti-lantai.webp" alt="Ilustrasi jembatan rangka baja di atas sungai tropis yang sedang diganti lantainya, dengan balok stringer baja terekspos dan perancah di sisi jembatan" class="art-card-img w-full h-full object-cover" loading="lazy" />
+          </div>
+          <div class="text-[12px] font-medium uppercase tracking-[0.03em] text-[#168B83] mb-1.5">JEMBATAN · 2 November 2026</div>
+          <h3 class="text-[19px] leading-[1.35] font-medium tracking-[-0.015em] group-hover:text-black/70 transition-colors">Jembatan Pajarakan Probolinggo: Kenapa Lantai Jembatan 1990 Ini Harus Dibongkar, Bukan Sekadar Diaspal Ulang</h3>
+        </a>
+        <a href="/artikel/jembatan-gantung-langkap-kramat-purbalingga/" class="block group">
+          <div class="rounded-[20px] overflow-hidden aspect-[4/3] bg-neutral-200 mb-4">
+            <img src="/assets/images/artikel/jembatan-gantung-langkap-kramat-purbalingga.webp" alt="Ilustrasi jembatan gantung pejalan kaki yang sempit melintasi sungai tropis, dengan dua menara baja dan kabel utama parabola" class="art-card-img w-full h-full object-cover" loading="lazy" />
           </div>
           <div class="text-[12px] font-medium uppercase tracking-[0.03em] text-[#168B83] mb-1.5">JEMBATAN · 1 November 2026</div>
-          <h3 class="text-[19px] leading-[1.35] font-medium tracking-[-0.015em] group-hover:text-black/70 transition-colors">Jembatan Kemang Pratama Bekasi: Kenapa Bentang 78 Meter Sengaja Dibuat Tanpa Pilar Tengah</h3>
+          <h3 class="text-[19px] leading-[1.35] font-medium tracking-[-0.015em] group-hover:text-black/70 transition-colors">Jembatan Gantung Langkap–Kramat Purbalingga: Kenapa Bentang 100 Meter Harus Digantung, Bukan Ditopang</h3>
         </a>
-        <a href="/artikel/bendung-peusangan-aceh-pulih-70-persen/" class="block group">
+        <a href="/artikel/tol-semarang-demak-seksi-1-tanggul-laut/" class="block group">
           <div class="rounded-[20px] overflow-hidden aspect-[4/3] bg-neutral-200 mb-4">
-            <img src="/assets/images/artikel/bendung-peusangan-aceh-pulih-70-persen.webp" alt="Ilustrasi bendung irigasi dengan bangunan pengarah aliran dari batu besar, pancang baja, dan kantong pasir" class="art-card-img w-full h-full object-cover" loading="lazy" />
+            <img src="/assets/images/artikel/tol-semarang-demak-seksi-1-tanggul-laut.webp" alt="Ilustrasi jalan tol pesisir di atas tanggul laut, dengan kolam retensi dan rumah pompa di sisi daratan" class="art-card-img w-full h-full object-cover" loading="lazy" />
           </div>
-          <div class="text-[12px] font-medium uppercase tracking-[0.03em] text-[#168B83] mb-1.5">SUMBER DAYA AIR · 1 November 2026</div>
-          <h3 class="text-[19px] leading-[1.35] font-medium tracking-[-0.015em] group-hover:text-black/70 transition-colors">Bendung Peusangan Pulih 70 Persen: Kenapa Aliran Sungai Harus &#x27;Diarahkan&#x27; agar Irigasi Mengalir</h3>
-        </a>
-        <a href="/artikel/jembatan-way-bungur-lampung-764-meter/" class="block group">
-          <div class="rounded-[20px] overflow-hidden aspect-[4/3] bg-neutral-200 mb-4">
-            <img src="/assets/images/artikel/jembatan-way-bungur-lampung-764-meter.webp" alt="Ilustrasi jembatan layang panjang di atas tiang melintasi dataran pesisir, dengan satu bentang rangka baja di atas sungai" class="art-card-img w-full h-full object-cover" loading="lazy" />
-          </div>
-          <div class="text-[12px] font-medium uppercase tracking-[0.03em] text-[#168B83] mb-1.5">PROYEK · 1 November 2026</div>
-          <h3 class="text-[19px] leading-[1.35] font-medium tracking-[-0.015em] group-hover:text-black/70 transition-colors">Jembatan Way Bungur: Kenapa Trase 764 Meter Hanya Butuh Bentang Utama 80 Meter</h3>
+          <div class="text-[12px] font-medium uppercase tracking-[0.03em] text-[#168B83] mb-1.5">JALAN & TRANSPORTASI · 1 November 2026</div>
+          <h3 class="text-[19px] leading-[1.35] font-medium tracking-[-0.015em] group-hover:text-black/70 transition-colors">Tol Semarang–Demak Seksi 1: Kenapa Jalan Tol Ini Harus Menunggu Tanahnya &#x27;Mampat&#x27; Dulu</h3>
         </a>
       </div>
     </div>
@@ -118,10 +134,12 @@
         <p class="text-white/55 text-[15px] max-w-[420px] leading-relaxed">Pengetahuan dan alat teknik sipil berbahasa Indonesia — dijelaskan dari gambar dan rumus yang terbuka.</p>
       </div>
       <nav class="flex flex-wrap gap-x-8 gap-y-3 text-[15px] text-white/75">
-        <a href="/#services" class="hover:text-white">Bidang</a>
+        <a href="/#services" class="hover:text-white">Bidang Kajian</a>
         <a href="/#projects" class="hover:text-white">Kajian</a>
+        <a href="/apps" class="hover:text-white">Apps</a>
         <a href="/artikel/" class="hover:text-white">Artikel</a>
         <a href="/#kalkulator" class="hover:text-white">Kalkulator</a>
+        <a href="/login" class="hover:text-white">Login</a>
         <a href="https://github.com/yfarch0912/zonasipil" target="_blank" rel="noopener" class="hover:text-white">GitHub</a>
       </nav>
     </div>
@@ -129,5 +147,6 @@
       <div class="max-w-[1326px] mx-auto px-6 md:px-14 lg:px-24 py-5 text-[13px] text-white/40">© 2026 ZonaSipil · zonasipil.web.id</div>
     </div>
   </footer>
+  <script src="/apps/apps.js" defer></script>
 </body>
 </html>
