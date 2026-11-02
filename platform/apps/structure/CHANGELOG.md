@@ -1,0 +1,720 @@
+# Changelog
+
+## ZonaSipil Structure 1.0.0 — 2026-11-01 (migration)
+- Migrated from STRUKTURA 1.0.0 (commit 77fd6e1 + working-tree audit doc) per
+  the user's Phase 0 decision: STRUKTURA becomes `zonasipil-structure`.
+  Full record: docs/MIGRATION-RECORD.md.
+- Product identity: package name, page title/meta, dashboard + editor
+  wordmarks, report header. Report version string keeps engine provenance:
+  `ZonaSipil Structure 1.0.0 · engine STRUKTURA 1.0.0`.
+- Vite base `/software-perhitungan-struktur/` → `/` (independent app deploy;
+  the GitHub Pages workflow of the original does not apply here).
+- Added platform integration: `zonasipil.app.json`, `src/platform/metadata.ts`,
+  development licence fixtures (`fixtures/licenses/`), contract tests,
+  `docs/STATUS-MATRIX.md`, `AGENTS.md`.
+- Compatibility preserved on purpose: localStorage keys and the
+  `struktura-project` export schema are unchanged, so STRUKTURA project
+  files and browser data remain valid.
+- No engineering behaviour changed in this entry.
+
+
+## STRUKTURA 1.0.0 — 2026-10-31
+First STRUKTURA release. License, third-party attribution, and
+provenance are recorded in NOTICE. The foundation history before this
+entry is preserved below as a historical record.
+
+### Added
+- STRUKTURA dashboard + project management (localStorage, versioned JSON
+  import/export, FNV-1a model fingerprint, autosave + recovery).
+- Analytical benchmark suite (21 tests) + unit/regression tests (25) — the
+  foundation shipped with no tests.
+- SNI 1727:2020 Pasal 2.3.2 LRFD combination preset (snow omitted for
+  Indonesia), stored standard reference on every generated combination.
+- Service-combination calculation report (1.0x(SW + all cases), print/PDF).
+- 7 verified sample projects.
+- Full documentation set under docs/ incl. SNI implementation matrix,
+  numerical validation with measured errors, and known limitations.
+- GitHub Pages deployment (Vite base + Actions workflow).
+
+### Changed
+- Rebranded to STRUKTURA; single-page app at repo root; editor lazy-loaded.
+- Removed: Cloudflare wrangler config, landing page + binary demo images,
+  unused next-themes dependency, upstream logo assets.
+
+### Fixed (Audit Cycle 1)
+- Editor height overflow under the STRUKTURA top bar (h-screen -> h-full).
+- Sample loads no longer inherit a stale active project on save.
+- Dashboard import accepts bare editor model JSON.
+- Report now includes self-weight (was: raw all-cases solve without the
+  synthesized Selfweight case).
+- Fingerprint is now invariant under JSON round-trips (undefined keys).
+
+---
+
+# Changelog
+
+All notable changes in the pre-STRUKTURA foundation history are
+preserved below as a historical record.
+
+Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
+
+---
+
+## [1.2.0] — 2026-08-08
+
+**The Design tab loses its Run button and its floating criteria panel.** Two changes that turn out to be the same change: design criteria only mean something once you know the material they apply to, and a design result is only trustworthy if it is current. Both are now structural rather than remembered.
+
+### Criteria belong to their material
+
+The standalone **DESIGN CRITERIA** tool is gone, and with it the RC/Steel toggle inside it. The Design tab now carries three tools instead of four — **REINFORCED CONCRETE**, **STEEL**, **DESIGN SCHEDULE** — and each material tool is two steps:
+
+**① PREFERENCES → ② SECTION.** Preferences is the old criteria content for that material; Section is the old per-material tool. The step switch is a numbered sequence, not a plain toggle, because the order is real: the preferences decide which clauses the section is then checked against. The old criteria tool's sliders icon and the two section glyphs move onto the switch, so the merged tools stay recognisable.
+
+`DesignCriteria.material` is **deleted**, not merely hidden. It existed only to tell the standalone tool which block to edit; with each material's preferences living inside that material's own tool, the active tool *is* the answer and the field had no readers left.
+
+A one-line **context strip** binds the two steps: each shows a summary of what the other decided — `SNI 2847:2019 · SRPMB · fy 420` while you are in Section, `Beam 300x500 · Beam · as required` while you are in Preferences — and clicking it jumps there. Checks are meaningless without knowing which standard produced them, and preferences are abstract until you see the section they are about to govern.
+
+### Results carry their own verdict
+
+The Section step is grouped into collapsible cards, and each **header states its own outcome**: `Checks ✓ 7`, `Results D/C 0.28` in its capacity-band colour, `Reinforcement 3D19 / 2D19`, `Seismic — Highly ductile: OK`. You read the answer with everything closed and expand only for the reasoning. Groups toggle independently — rebar and its checks are meant to be visible together.
+
+In **as-required** mode the Results header reads *adequate* / *enlarge section* rather than a ratio. The engine's `dc` is a flag in that mode (0 when the section carries the demand, `Infinity` when it does not), so printing "D/C 0.00" would have been a number that means nothing.
+
+RC required mode gains a real **per-zone results card** — Mu, required As top/bottom, Aᵥ/s with a suggested stirrup, per zone — where it previously said only "Run Design Check to get required As".
+
+### No Run button
+
+Opening the Design tab evaluates every member; every edit afterwards re-evaluates immediately. This is how the Analyze tab has always behaved inside its own tab, and the stale-result invalidation that used to blank `designResult` on every input change is deleted along with the button.
+
+**This is affordable because `run-design.ts` now splits in two.** `solveDesignCases()` holds the only expensive step — one stiffness factorization per enabled load case — and depends solely on the model, the cases and the shear-deformation flag. `designFromCases()` takes those solved cases plus the criteria and section inputs and does the combination, envelope and clause work. A rebar keystroke re-runs only the second stage. `runDesign()` composes both for callers holding no cache.
+
+Two further consequences fall out of the split:
+
+- The Design tab now **shares the Analyze tab's solve memo** rather than solving independently, so switching Analyze ↔ Design reuses the factorization. The combination/envelope memos stay gated to Analyze — the design run combines the cases itself, and rebuilding the display set on every keystroke would be work nothing on the Design tab draws.
+- Criteria and section inputs — the two things edited at typing speed, both of which commit live — go through `useDeferredValue`, so a keystroke paints before the design pass runs. That deferral is also what powers the **Updating…** chip that took the Run button's place: a silent recompute would leave you unsure anything happened.
+
+Both design tools widen to 355px, since each now holds two panes.
+
+---
+
+## [1.1.6] — 2026-08-08
+
+**Steel gets seismic detailing, and the criteria panel finally matches the RC one.** Until now a user designing an RC frame got a full Chapter 18 path — SRPMB/SRPMM/SRPMK, capacity-design shear, confinement, strong-column-weak-beam — while the same user designing a steel frame got nothing, with `SteelCriteria.frameType` sitting unread in the type and deliberately hidden from the UI. That asymmetry is closed.
+
+**It is opt-in and inert by default.** The framing type defaults to OMF/RMB, for which the engine emits no seismic block at all and every result is byte-identical to a run with no seismic code. That is asserted, not assumed.
+
+### Criteria
+
+- A steel **design-code dropdown** — `SNI 1729:2020` and `AISC 360/341-16` — and a **framing-type dropdown** whose labels follow it: **RMK / RMM / RMB** for SNI, **SMF / IMF / OMF** for AISC. The engine enum stays `OMF|IMF|SMF` internally, exactly as on the RC side.
+- **The code axis is labels only.** SNI 1729:2020 adopts AISC 360-16 and SNI 7860 adopts AISC 341-16, so no steel clause differs between the two editions. This is *unlike* RC, where ACI 318-25 and SNI 2847:2019 genuinely diverge — a difference now documented in three places, because the RC precedent sets the opposite expectation.
+- The descriptive blurb above the material fields is removed.
+
+### What is checked
+
+Moment frames only. Braced-frame systems are absent by design: they need the F2.3 brace mechanism analyses this engine cannot run.
+
+- **D1.1 / Table D1.1** — width-to-thickness against `λmd` or `λhd` per element, with `Ca = Pu/(φc·Ry·Fy·Ag)` driving the I-shape web.
+- **D1.2** — beam lateral bracing, reported as an **advisory**: because `Lb` is always the full member length, a failure here usually means the model was not subdivided at its real brace points rather than that the beam is deficient. The note travels with the result.
+- **E3.4a strong-column-weak-beam** — `ΣM*pc / ΣM*pb > 1.0`, SMF only, as a joint post-pass sharing `DesignRunResult.joints` with the RC check and disambiguated by a new `JointCheckResult.material`. Joint badges are now material-scoped, so an RC report never draws steel joints.
+
+No `R`, `Ωo` or `Cd`. Without overstrength load combinations the amplified column demands of D1.4a cannot be formed, so this is purely a detailing layer — it asks whether a member can hinge and whether the mechanism forms in the beams, never what force the earthquake delivers. Ductility folds into `pass` but **not** into `ratio`: D/C is a strength quantity, and inflating it would misreport why a member failed, so the canvas flags `⚠D1.1` the way RC flags `⚠Ash`. New canvas reports `stl-ductility` and `stl-scwb`.
+
+### Coefficient provenance — read this before relying on the numbers
+
+**No copy of AISC 341-16 or SNI 7860 exists in this repository.** Every numeric limit is transcribed from working knowledge and tagged `@unverified` at its definition, isolated in two constants so correcting them is a single-file edit.
+
+`steel_seismic.mts` (39, new) therefore asserts **structure, not values**: that OMF is inert, that the three classes are distinct, that every `λhd` is strictly below its `λmd` twin, that the web limit is monotonic, continuous and floored in `Ca`, that `Ca` round-trips through its own definition, that tension gives `Ca = 0`, and that SCWB responds both to axial load and to the beam-side expected-strength factor.
+
+**It found a real defect.** AISC writes the web's two `Ca` branches to meet at the break point. The moderately ductile pair closes to five decimals; the highly ductile pair leaves about 0.3 %, so one of those four constants is mis-transcribed. Recorded at the definition and bounded by the suite rather than tolerated silently.
+
+Two further gaps, both surfaced in the UI rather than hidden. `Ry` is tabulated by ASTM designation and this engine has no grade field, so it is inferred from `Fy` — a **program convention, not a code provision**. And `Muv` is omitted from `ΣM*pb` because it needs a plastic-hinge location and therefore a connection model, which makes SCWB **optimistic**.
+
+### Notes
+
+- The DSM solver and model math remain untouched.
+- **23 suites pass**, lint at the recorded 6-error / 28-warning baseline.
+- Still deferred: panel zones, continuity and doubler plates, RBS, protected zones, column splices, braced-frame systems, and D1.4a amplified demands.
+
+---
+
+## [1.1.5] — 2026-08-08
+
+**Steel design loses every input it did not need, gains a role it should never have asked for, and one clause was deleted rather than repaired.** Three changes that read as separate but share a spine: each removes something that misrepresented the code. The beam/column control advertised an effect it did not have. `Lb`, `Cb`, `K33` and `K22` implied a precision the engine cannot deliver. AISC H1.3 was implemented with two defects and no test covering either.
+
+### Member role is inferred, not chosen
+
+AISC 360 is organised by **limit state** — Chapters D, E, F, G, H — not by member type. Every steel member runs the same Chapter H check, and a beam simply arrives at it with `Pr = 0`, where H1-1b degenerates to `Mr/Mc`. There is no branch to select, so a control that appeared to select one was misleading.
+
+This was measured rather than argued. Three simply supported beams with exactly zero axial force were run through SAP2000: all three reported `RatioType = PMM`, the two closed shapes named equation `(H1-1b)`, every `PRatio` was 0, and `PcComp` was computed in full — SAP evaluates the compression capacity of a member carrying no compression. SAP does carry a beam/column designation; it selects no equation either.
+
+- **`steel/member-role.ts`** — role from geometry alone: within 15° of horizontal is a **beam**, within 15° of vertical a **column**, anything else a **brace**. It reads `|Δx|` and `|Δy|`, so which node was clicked first cannot change the answer. The tolerance is a declared convention matching SAP/ETABS design orientation, not a clause.
+- The old control was wrong twice over. Beyond advertising a phantom effect, it lived on the **per-section** input while role is a **per-member** property — one IWF serving as both a beam and a column could only hold one answer.
+- `MemberDesignResult.kind` widens to include `brace`; RC never emits it. Braces route to the column report deck, since like columns they are axial-dominated.
+
+### AISC H1.3 removed
+
+H1.3 permits in-plane instability and out-of-plane buckling to be checked separately in lieu of H1.1. It is an optional relaxation, never a requirement, so **declining it is conservative** — measured at 7–28 % higher reported D/C across a representative sweep.
+
+It was deleted rather than corrected, and the reason is worth recording. The implementation took the **minimum** of the two limit states where AISC requires **both** to be satisfied — unconservative by up to 18.9 %. Its in-plane branch then used the governing weak-axis `PcComp` where the clause calls for the in-plane value — conservative, and masking the first: correcting only the `Pc` would have taken the error at `Pr = 600 kN` from −6.2 % to −42 %. Neither defect had a single assertion covering it. Removing the clause removes the class.
+
+Gone with it: `h13ForBuiltUp`, `Mc33NoLTB` / `Mc33Cb1` / `Pcy` on the result, `FlexureResult.MnCb1`, a redundant compression evaluation per member, and the rolled-vs-built-up applicability divergence carried as an open question since the shapes landed.
+
+### No per-section steel input at all
+
+After the element type went, and `Lb`, `Cb`, `K33`, `K22` with it, `SteelSectionInput` held only its own discriminator and id — so the type is deleted. `SectionDesignInput` is now an alias for `RcSectionInput`. Each fixed value reproduces what SAP2000 itself uses by default for the same members, measured through the bridge:
+
+- **`Cb`** — computed per combination from the moment diagram (F1-1). No numerical change; the field was a pure override on a real computation. The `Lb < L ⇒ Cb = 1.0` guard became unreachable and was removed.
+- **`Lb`** — always the full member length. Conservative: a 6 m IWF400×200 really braced at third points has **27.3 % more** `φMn` than this reports. Bracing is an out-of-plane restraint and the model is 2D, so it cannot be inferred — **subdividing a member is how bracing is expressed**, since each sub-member then carries its own shorter `Lb`.
+- **`K33` / `K22` = 1.0** — the one assumption here that is **not** conservative. It is what the AISC Direct Analysis Method prescribes, but DAM also requires second-order analysis, reduced stiffness and notional loads, none of which exist here. The engine is therefore limited to **braced frames**, and that is now stated in the DESIGN CRITERIA flyout and the STEEL tool rather than left to the documentation.
+
+### Validation
+
+- **`steel_member_role.mts`** (31, new) — classification at and around both 15° boundaries, i↔j swap invariance across 360 sampled angles, translation invariance, the degenerate zero-length case. Its central assertion is that `ratio`, `equation`, `PcComp`, `PcTens`, `Mc33`, `Vc`, `shearRatio`, `Cb`, `Lb`, `slenderness`, `Fcr` and `Fe` are **identical** for one member run as beam, column and brace. If anyone ever branches the engine on role, it fails.
+- **`steel_boundary_sweep.mts`** 86 → **87** — §K rewritten to assert H1.3 cannot return: no axial level may produce an `H1-2` result.
+- **`steel_ui_smoke.mts`** 86 → **94** — asserts the element-type control is *absent*, that a 45° member routes to the brace report, and that no result ever prints `H1-2`.
+- Every capacity anchor unchanged: flexure 14/14, column 15/15, angle/tee props 68/68, clauses 80/80, pipeline 58/58, all `rc_*`. The SAP2000 bridge re-runs **8/8 stages** with the IWF/RHS/CHS design comparison still **21/21 at 0.000 %** — including `Cb` at 1.1364 and `McMajor` at 227.2018, which is what confirms the hard-coded `Lb` and `K` reproduce SAP's own defaults rather than departing from them.
+
+---
+
+## [1.1.4] — 2026-08-08
+
+**Steel design covers five shapes, has its own UI, and every disagreement with SAP2000 now has a named cause.** Tee and single angle join IWF, RHS and CHS, which means the engine has to handle two things it never had to before: a section whose strength depends on which way it bends, and a section that resists a single moment about two axes at once. The steel flyout, which until now was a section picker and four number boxes, becomes a real tool with a live cross-section and two report decks. And the four measured gaps against SAP2000 — carried since the shapes landed, one of them written up as *"not fully explained"* — were chased down by experiment rather than argument. No engine math changed to close them: where SAP2000 departs from the AISC text we follow the text and declare the difference, so all four remain, bounded and direction-checked.
+
+### The two shapes that break an assumption
+
+Every shape before these had one `Mn`. A **tee** does not. It is symmetric left-to-right but not top-to-bottom, so sagging puts the stem in tension and hogging puts it in compression, and AISC F9 gives those two cases different limit-state ladders with different caps (1.6M<sub>y</sub> against M<sub>y</sub>). `strategy.ts` therefore evaluates both branches once per load combination and picks per station. On one WT300×200 that is **60.0 kN·m sagging against 31.4 hogging** — the same steel, half the strength.
+
+A **single angle** breaks it differently. Its principal axes sit at an angle α to the geometric axis the solver bends about (exactly 45° when the legs are equal), so one geometric moment resolves into two principal components, `Mw = M33·cos α` and `Mz = −M33·sin α`. Because `Iz ≈ Iw/4`, the *minor* component usually governs. A large capacity ratio on an angle beam is correct behaviour, not a bug, and it is why angles are checked with AISC **H2** rather than H1.
+
+### Added — engine
+
+- **`sections/shapes/principal.ts`** — exact rectangle-composition geometry: area, second **and third** moments, principal axes, the monosymmetry property `βw`, and the `torsionStrip` helper that `iwf.ts` now imports too. Third moments are needed because `βw = (1/Iw)∫z(w²+z²)dA − 2z0` expands into a linear combination of them, so it comes out closed-form rather than numerically integrated. The identity `βw = 0` for equal legs then costs nothing to assert.
+- **AISC F9** (tees) and **F10** (single angles, on the principal axes) in `flexure.ts`; **G3** shear for both; **H2-1** in `interaction.ts`; **E4** torsional and flexural-torsional buckling in `compression.ts` — E4-2 for doubly symmetric shapes, E4-3 for singly symmetric, and the E4-4 cubic for unsymmetric, bracketed and bisected rather than solved in closed form.
+- **E4 is now active for the IWF as well**, which closes a previously deferred item. It enters as `min(E3, E4)`, so it can only lower `Pn`; the 15/15 column anchor re-runs unchanged.
+- **`steel/section-props.ts`** — `resolveSteelSection` + `steelFlexureInput`, the single mapping from a `Section` to Chapter E/F inputs. Both the strategy and the report decks read it, so a deck cannot quietly derive `S33` or `J` differently from the check it is drawing.
+- **`angle.ts` rewritten** on the new geometry engine (dims `{b, d, t}`, with `d` optional so sections saved as `{b, t}` still load as equal-leg); **`tee.ts` additive only** (`J`, `Cw`, shear-centre `y0`) so the concrete tee stays byte-stable. `Section.derived` gains `x0`, `y0` and an optional `principal` block.
+
+### Added — steel UI (`src/tabs/design/tools/steel/`)
+
+The tool now mirrors the RC one's shape — router, preview, then a per-kind report deck — while sharing none of its code. Only the material-agnostic pieces are common: `chart-text.tsx` moved up out of `rc/`, and `chart-utils.ts` was lifted out of the RC column deck so all four charts use the same tick spacing and number formatting.
+
+- **Element type (auto / beam / column)** — this control was missing entirely, even though `SteelSectionInput.elementType` already existed and the strategy already read it.
+- **`preview.tsx`** — live cross-section for all five shapes, drawn from `shape.dims` alone so it works before a design run. An angle also gets **its principal axes drawn at α**, which is the clearest way to show why one moment produces two components.
+- **`beam/report.tsx`** — the **`Mn` vs `Lb` curve**, which is the chart a steel engineer draws by hand: the plastic plateau, the inelastic ramp between `Lp` and `Lr`, and the elastic tail, with the zones shaded and a marker at the member's own unbraced length. It answers what a single `φMn` cannot, namely how much capacity bracing is buying. A tee draws two curves for its sign split; an angle draws `MnW` and `MnZ`.
+- **`column/report.tsx`** — the **AISC H1 interaction envelope**. Unlike the RC P–M curve this one is exact and piecewise-linear, because it is H1 rearranged: `M = (9/8)·Mc·(1 − Pr/Pc)` above `Pr/Pc = 0.2` and `M = Mc·(1 − Pr/2Pc)` below, so the kink between the two branches is visible and labelled. Every `(P, M)` pair the check actually looked at is plotted on it, plus the Chapter E ladder `KL/r → Fe vs Fez → Fcr → Ae → φPn`.
+- **No design math lives in the decks.** Curve points come from the same `flexuralStrength()` the strategy calls; the deck only chooses which `Lb` values to ask about.
+
+### Changed
+
+- **Canvas** — a **Steel group** in the report dropdown (`stl-dc`, `stl-shear-dc`, `stl-capacity`, `stl-limit`, `stl-slender`), material-scoped so a concrete member renders nothing under it. The steel branch also *honours* the dropdown at all now; it previously drew its default pills under every report.
+- **DESIGN SCHEDULE** is material-aware. Steel rows resolve through `asSteelInput` and show the governing AISC equation where RC shows its As-required/As-checked mode, because steel has no such mode — there is no rebar-style unknown to solve for, so steel is always a check of the section you assigned.
+- **`designability.ts`** gains a `steel/tee` row and flips `steel/angle` on. Its steel branch became an explicit `switch`: it used to fall through to the IWF dimension keys for anything that was not CHS or RHS, which was harmless only while every other steel shape was unimplemented.
+- **A silent refusal was fixed.** When `steelGeom` threw, the member came back `not-implemented` with no `note`, so it vanished from the results with nothing to explain it. It now carries a reason that reaches the issues card.
+
+### Fixed
+
+- **Catastrophic cancellation in AISC F9-10.** The bracket `B + √(1+B²)` loses all precision when `B ≪ 0`, which is exactly the stem-in-compression branch at short unbraced lengths, because `B` grows as `1/Lb`. Once `B²` passes `1/ε` the square root rounds to `|B|`, the bracket evaluates to zero, and the capacity collapses. On a WT300×200 at `Lb = 1 µm` the naive form returns `Mn = 0.000` against the correct `52.593 kN·m`, and `Mn(Lb)` stops decreasing monotonically. Now evaluated as the algebraically identical `1/(√(1+B²) − B)`. Found by the new UI render test, whose `Mn`-vs-`Lb` curve samples `Lb → 0`; the clause sweep had started its monotonicity scan at `Lb = 100 mm` and never reached the regime.
+- **A documented claim that turned out to be false.** `flexure.ts::angleShape` said CSI takes `Sc` over the two leg toes only, making our heel-inclusive value conservative. It does not — the manual (p. 3-68) asks for the heel *and* both tips, and SAP2000's `McMinor` reproduces our heel-governed `SzMin` to five decimal places.
+
+### The four SAP2000 divergences, resolved
+
+All four are conservative, all are enforced as bounded, direction-checked `_knownDeltas`, and all now have an identified cause. Two were settled by a designed experiment: `probe_angle_ltb.py` builds 19 variants in one SAP2000 session and **asserts** the resulting characterisation, so a version of SAP2000 that behaves differently fails the suite instead of leaving the documentation quietly wrong.
+
+| # | What | Size | Cause |
+|---|---|---|---|
+| A | Angle capacity ratio | ≤ **24.7 %** high | SAP2000's 3D analysis develops an out-of-plane `M22` that partially cancels our `Mz`. Confirmed from its own PMM row: `MrMajorDsgn` is *our* resolution formula applied to its `(M33, M22)`. A one-bending-DOF element cannot produce that moment, so this is permanent. |
+| B | Hogging tee `McMajor` | **11.6 %** low | SAP2000 does not apply AISC F9.4 stem local buckling at any slenderness. `McMajor / (φ·Fy·S33) = 1.00000` at `d/tw` = 20, 27, 30, 35, 45 and 55 — including where the clause would cut capacity by 59 %. CSI's own manual p. 3-60 prints the three-branch `Fcr` we implement. |
+| C | Equal-leg angle `McMajor` | **6.1 %** low | SAP2000 evaluates F10 on the **thin-walled two-line idealisation**; we use exact polygon geometry. Two separable effects, see below. |
+| D | `J` for tee and angle | **1.6 – 5.1 %** low | SAP2000 adds a junction term where the plates meet. For an angle it is exactly **`0.17500·t⁴`**, constant to five decimal places across `t` = 8/10/12/16, legs of 75/100/150, and both unequal orientations. Not adopted: no published closed form reproduces it, and every formula here cites a clause. The IWF matches SAP2000 exactly. |
+
+**C in full**, because it was the one recorded as unexplained. When `Mcr ∝ 1/Lb` the F10-2 ladder is exactly linear in `√Lb`, which means the intercept fixes `My` and the slope fixes `Mcr` *independently* — so the two effects could be separated without assuming either. The fit over five spans has a maximum residual of `0.003 kN·m`. It gives, first, an `My` at the leg-tip **mid-thickness** fibre (`|z| = 67.175 mm`) rather than the real outer corner at `70.711`, making SAP2000's `Sw` 5.2 % larger. And second, an `Mcr` matching `0.46·E·b²·t²·Cb/Lb`, the **AISC 360-05/10 F10-5** equation. That `0.46` is not an independent constant: it is `9/8 · 2/√24 = 0.45928`, which is F10-4's `9·A·rz·t/8` evaluated in the thin-wall limit. With the real `A` and `rz` the same equation gives `84 039` against SAP2000's `92 000 kN·m·mm`. Unequal-leg angles agree to **0.05 %**, which is why only the equal-leg case ever diverged.
+
+Also settled along the way: **`Cb` really is 1.0 in SAP2000**, not merely reported as such. The same angle at one span under three load patterns whose AISC F1-1 values are 1.136, 1.316 and 2.27→1.5 returned an identical `McMajor` to five decimal places. CSI's manual says `Cb` comes from F1-1 capped at 1.5; the program does not.
+
+### Validation
+
+- **`steel_angle_tee_props.mts`** (68) — every reference recomputed here by exact polygon contour integration (Green's theorem with 4-point Gauss–Legendre, exact for the degree-≤4 integrands), sharing no code with the engine under test.
+- **`steel_angle_tee_clauses.mts`** (80) — F9/F10/E4/G3/H2 branch and continuity sweep, now including the F9-10 cancellation assertion.
+- **`steel_ui_smoke.mts`** (86, new) — renders the preview, both charts and the tool to static markup with `react-dom/server` across all five shapes plus the degenerate inputs a user can actually produce (a section with no shape, `t ≥ leg`, zero dimensions, no result yet). `npm run build` type-checks the decks but never runs them, so this is what catches a divide-by-zero in a chart scale. It is what found the F9-10 bug.
+- **`probe_angle_ltb.py`** (23, new) — bridge stage 8, the experiment above kept as a regression.
+- **`run_all.mjs`** (new) — every `.mts`/`.mjs` suite plus build and lint in one command, `--with-sap` to chain the bridge. Lint is gated against a recorded baseline (6 errors, 28 warnings, all pre-existing `react-hooks` issues in `App.tsx` and `structural-canvas.tsx`) so a new problem still fails the suite while the old ones do not mask it.
+- Pre-existing anchors re-run unchanged: `steel_boundary_sweep` 86/86, `steel_column_verify` 15/15, `steel_flexure_verify` 14/14, `steel_pipeline_smoke` 58/58, every `rc_*`, and the bridge's IWF/RHS/CHS design stage still **21/21 at 0.000 %**.
+
+### Notes
+
+- The DSM solver and model math are untouched. Design remains a pure consumer of analysis results.
+- Design state — criteria, per-section inputs, results — still lives in the session and is not written to the JSON file, the same boundary as load cases and combinations.
+- Still deferred: AISC F4/F5 (noncompact and slender webs, refused rather than approximated), double angle, tension rupture D2-2, sway-frame `K`, second-order amplification, and AISC 341-16 seismic detailing. Torsion (H3) and out-of-plane bending are permanent limits of a 2D model, not deferrals.
+
+---
+
+## [1.1.3] — 2026-06-16
+
+**Circular RC column design; spiral confinement moved off rectangular sections.** Reinforced-concrete column design now accepts **circular sections** (P–M interaction, capacity-design shear, spiral / circular-tie confinement, detailing, slenderness — both As-checked and As-required). Spiral confinement, which was previously (and incorrectly) offered on rectangular columns with a rectangular core, is **dropped for rectangles** (now tied-only) and lives where it belongs — circular sections. The validated rectangular beam/column capacity anchors are **byte-stable**; this is additive (the `(b, h)` → `ColumnGeom` refactor reduces to the original rectangular math).
+
+### Added — engine
+- **`ColumnGeom`** (`rc/shared/types.ts`) — a `{ kind:"rect", b, h } | { kind:"circle", D }` discriminator threaded through the whole column engine, plus scalar helpers `geomAg` (πD²/4), `geomIg` (πD⁴/64), `geomLeastDim`, `geomAch` (π(D/2−cover)²), `geomShear` (circle ⇒ `bw=D, d=0.8D`, ACI 22.5.2.2).
+- **`concreteBlock`** (`rc/codes/<code>/column.ts`) — the only shape-specific mechanic in `sectionForcesAtC`: for a circle the compression zone is a **circular segment** of depth `a`, computed in closed form (segment area `R²·acos(m/R) − m·√(R²−m²)`, centroid `⅔·(R²−m²)^{3/2}/A`, with `m = R − a`). The per-bar strain-compatibility loop is unchanged, so the full interaction curve, `columnFlexuralStrengthAtP`, shear, and detailing inherit circular support automatically.
+- **Circular bar layout** (`rc/shared/column-grid.ts`) — `buildColumnBarLayout(geom, …)` places `n` bars on a single circumferential ring (`d = R − rs·cosθ`); `rowSpacing` is repurposed as the ring chord for clear-spacing checks. `representativeColumnBars` gains a ring branch for As-required ρg sizing.
+- **Circular confinement / detailing** — spiral ρs `max(0.45(Ag/Ach−1)f'c/fyt, 0.12 f'c/fyt)` (25.7.3.3 / 18.7.5.4) + spiral clear pitch 25–75 mm (25.7.3.1); circular-tie path uses the hoop spacing caps with `leastDim = D`; min bars ≥ 6 for spiral (10.7.3.1) / ≥ 4 tied.
+
+### Changed
+- **`ColumnArrangement` is now a discriminated union** (`rc/types.ts`): `RectColumnArrangement { shape?:"rect"; nx; ny }` | `CircleColumnArrangement { shape:"circle"; n }`, with `isCircle` + `defaultCircleColumnArrangement` (spiral, D19, D10@75). `shape` is optional/defaulting to `"rect"` so existing inputs keep working.
+- **Rectangular columns are tied-only** — the rectangular spiral ρs branch (which used a rectangular core, not code-correct) is removed; the tied/spiral toggle no longer appears in the rectangular editor.
+- **Designability** (`core/designability.ts`) — `rc / circle / column` flipped to `implemented: true`; `hasValidGeometry` validates `dims.d > 0` for circles. `designMemberRc` always designs a circular section as a column (no circular-beam strategy); `run-design.ts` passes the diameter safely (rect `dims.b` is undefined for a circle).
+- **Column engine signatures** — `sectionForcesAtC`, `pointAtC`, `capCrossC`, `sideControlPoints`, `pureMomentC`, `buildInteractionCurve`, `columnFlexuralStrengthAtP`, `columnShearCapacity`, `columnConfinement`, `checkColumnArrangement`, and `designColumnShear`/`designColumn` take a `ColumnGeom` in place of the bare `(b, h)` pair (both code modules, identical edits).
+
+### Added — UI
+- **`ColumnRingEditor`** (`rc/rc-design-tool.tsx`) — single ring-count `n` + bar size + spiral/tie toggle, shown for circular sections; the rectangular `ColumnGridEditor` drops its spiral toggle.
+- **Circular preview + report** (`rc/column/{preview,report}.tsx`) — circle outline, single transverse ring (spiral and circular tie draw identically), ring of bars, and a `D` diameter dimension. The P–M chart and checklists are unchanged.
+
+### Validation
+- **`validation/rc_column_circular.mts`** (new) — cross-checks the closed-form circular-segment concrete block against an **independent strip numerical integration** at three neutral-axis depths (`Mn` matches to <2%), plus `Po`, spiral ρs, `d = 0.8·D` shear depth, and the ≥6-bar rule.
+- Rectangular anchors **byte-stable** after the `ColumnGeom` refactor: `rc_column_verify.mts` (26), `rc_column_phases.mts`, `rc_column_aci_deltas.mts`, `rc_beam_verify.mjs` (25), `rc_beam_aci31825.mts`, `rc_column_scwb.mts` (call sites updated to pass `{ kind:"rect", b, h }`).
+
+---
+
+## [1.1.2] — 2026-06-16
+
+**Material-strategy + per-code restructure, real ACI 318-25 ↔ SNI 2847:2019 differentiation, full RC column design, and design-output UI.** The design engine is split along two axes — **material** (RC / Steel) and, within RC, **code edition** — the two RC code modules now genuinely **diverge** (they were byte-identical), and the column path is completed from capacity-only to a full design: **capacity-design shear, transverse confinement, strong-column-weak-beam, non-sway slenderness, and spiral columns**. Every new column check is surfaced on the canvas, in the Advanced Report, and (newly) in required mode. **SNI 2847:2019 (≡ ACI 318-14) is now the default code.** Engine math for the validated beam/column capacity anchors is byte-stable; this is additive.
+
+### Added — engine
+- **`columnFlexuralStrengthAtP`** (`rc/codes/<code>/column.ts`) — bisects the neutral axis so `Pn(c) = Pu`, returning the flexural strength at the acting axial (Mn at 1.0fy / Mpr at 1.25fy). Feeds capacity-design shear + SCWB.
+- **`columnShearVc`** — column one-way Vc with the axial-benefit form `0.17(1+Nu/14Ag)λ√f'c·bw·d` (22.5.6.1). ACI 318-25 applies the size-effect λs when there are no minimum ties; SNI keeps λs = 1.
+- **`designColumnShear`** (`rc/strategy.ts`) — Ve = 2·M/lu (IMF: Mn 18.4.3.1 / SMF: Mpr 18.7.6.1), Vc = 0 in the SMF hinge zone when `Pu < Ag·f'c/20` (18.7.6.2.1); reuses the beam shear helpers (`vMaxLimit`, `avSRequired`, `phiVnProvided`, `suggestStirrup`, spacing caps).
+- **`columnConfinement`** — frame-typed transverse detailing: SRPMB ties (25.7.2.3), SRPMM hoops over lo (18.4.3.2), SRPMK lo (18.7.5.1) + hx ≤ 350 (18.7.5.2) + so (18.7.5.3) + rectilinear `Ash/(s·bc)` (18.7.5.4). Spiral → the ρs requirement (25.7.3.3). **Code delta:** ACI 318-25 adds the third Ash equation `0.2·kf·kn·Pu/(fyt·Ach)`; SNI keeps the two-equation table.
+- **`slendernessMagnifier`** — braced (k = 1.0) in-plane non-sway δns (6.6.4), gated by `k·lu/r ≤ 34 − 12(M1/M2) ≤ 40` (6.2.5); EI = 0.4·Ec·Ig, Pc = π²EI/(k·lu)², Cm = max(0.4, 0.6 − 0.4·M1/M2). Applied per combo before the interaction check.
+- **Spiral columns** — `ColumnArrangement.confinement: "tied" | "spiral"`; `Pn,max = 0.85·Po`, φc = 0.75 threaded through `axialCapacities` / `buildInteractionCurve`.
+- **Strong-column-weak-beam** (`run-design.ts::checkStrongColumnWeakBeam`) — a joint post-pass (SMF only): at each joint with both columns and beams, ΣMnc ≥ 1.2·ΣMnb (18.7.3.2); failing columns get `scwbPass = false` and are forced red. New `DesignRunResult.joints` carries the verdicts.
+- **Beam frame-type completion** (carried over into this release) — SMF ρ ≤ 0.025 (18.6.3.1) in `checkArrangement`; `checkBeamDimensions` (ln ≥ 4d, bw ≥ min(0.3h, 250), 18.6.2.1).
+
+### Added — UI (design outputs)
+- **Canvas** — columns now colour by the **worst** of {interaction, shear} D/C and turn red on a confinement / cross-section / SCWB failure (was interaction-only). **Two pills** per column (interaction on +local-2, shear on −local-2) with `⚠Ash` / `⚠SCWB` flags. New **Columns** report-dropdown entries: Shear D/C, Confinement, Slenderness δns, Strong-column-weak-beam. SCWB renders as a **ratio badge at each joint node** (all joints under its report; failing-only under default) + the pill flag. Legend gains a pass/fail caption.
+- **Advanced Report (checked)** — the column deck gains a **shear capacity-utilization bar** (φVc / φVn / φVmax + demand marker) and a **SCWB joint sketch** (ΣMnc vs 1.2·ΣMnb), plus the confinement checklist and slenderness δns.
+- **Required mode** — a new **Column Design Results** card (previously blank post-run): required ρg + Aₛₜ, Ve + suggested hoop, δns, SCWB verdict, and the confinement checklist.
+- **Issues card** — column shear cross-section and confinement failures now surface as text under Run (SCWB already did).
+- **Tied / Spiral toggle** in the column editor; the live preview draws a spiral ring for spiral columns; the criteria note mentions column Ve / Ash / SCWB.
+
+### Changed
+- **`getRcCode` registry + `RcCriteria`** — the two RC modules (`aci318-25/`, `sni2847-19/`) now diverge: `epsTC` = εty+0.003 (Table 21.2.2) vs fixed 0.005, the `λs` one-way-shear size effect (22.5.5.1.3), and the third confinement Ash equation are ACI-only; SNI is the 318-14 baseline. The `√f'c ≤ 8.3` cap (22.5.3.1) is applied in both. **`defaultRcCriteria().code` is now `SNI2847-19`** (the project's main code), and `getRcCode`'s fallback is the SNI module.
+- **Frame-type labels** are code-dependent in the UI: SNI shows **SRPMB / SRPMM / SRPMK**, ACI 318-25 shows **OMF / IMF / SMF** (the internal `frameType` enum stays `OMF|IMF|SMF`).
+- **`ColumnDesignResult`** gained `shear`, `confinement`, `deltaNs`, `slenderness`, `scwbPass`, `Mn`; `MemberDesignResult` gained `beamMn`; `DesignReport` gained the four `col-*` ids.
+
+### Validation
+- **`validation/rc_beam_aci31825.mts`** — the three beam code-deltas (λs Vc formula (c), εty vs 0.005, √f'c cap) + frame checks.
+- **`validation/rc_column_phases.mts`** — column shear / confinement / slenderness / spiral consistency + OMF≠IMF≠SMF distinctness.
+- **`validation/rc_column_aci_deltas.mts`** — column ACI↔SNI deltas (λs shear, 3-eq vs 2-eq Ash, εt control point).
+- **`validation/rc_column_scwb.mts`** — strong-column-weak-beam + frame distinctness end-to-end on the portal.
+- Capacity anchors **byte-stable**: `rc_column_verify.mts` (Contoh 5-C, 26 assertions) and `rc_beam_verify.mjs` (25) unchanged.
+
+### Notes
+- DSM solver and model math untouched — all design work is a pure consumer of analysis results, and design state remains App-state only (not persisted by Save/Load), same boundary as v1.1.
+- Deferred: sway (δs) / computed-k slenderness, and biaxial out-of-plane bending — a permanent boundary of the 2D model.
+
+### Documentation
+- `docs/DESIGN_RULES.md`: §5b.5 (column shear/confinement/SCWB/slenderness/spiral), the per-code §9 beam tables (SNI / ACI), §5c edition deltas, and the validation table.
+- `CLAUDE.md`: status bumped to v1.1.2; new per-code differentiation + full-column-design + design-output-UI sections; stale "byte-identical" claims corrected.
+- `CHANGELOG.md`: this entry.
+
+---
+
+## [1.1.1] — 2026-06-13
+
+**Design tab — RC column axial-flexure (P–M interaction) design (ACI 318-14 / SNI 2847:2019).** The SECTION DESIGN tool gains an **Element Type** selector (Beam / Column / Auto), and columns are designed by a full **P–M interaction** capacity surface — five named points A–E plus a continuous neutral-axis sweep, radial demand/capacity ratio, in both As-required and As-checked modes. Validated against the book's Contoh 5-C (600×600, f'c 30, fy 420, 20D25). This pass covers **capacity + interaction**; column **shear** and the **SRPMK `Ash` confinement** table (Contoh 5-D) are a follow-up.
+
+### Added
+- **`src/lib/design/column.ts`** — pure interaction engine: `sectionForcesAtC` (per-bar strain compatibility about the geometric centroid, generalising `phiMnBars` to non-zero axial), `buildInteractionCurve` (sweeps `c` to trace both ±M edges → a closed loop, with the five named points A–E), `axialCapacities` (Po, φPo, `Pn,max = 0.80·φPo` tied cap, pure-tension Pnt), and `interactionDC` (radial demand/capacity against the closed φ-polygon). flexure.ts is untouched (its anchors stay byte-stable).
+- **`src/lib/design/column-layout.ts`** — `buildColumnBarLayout` (nx × ny perimeter grid, total = 2nx+2ny−4; bar inset = cover + tie + ½db), `representativeColumnBars` (As-required ring with scaled areas), and `checkColumnArrangement` (live ACI: ρg ∈ 1–8% per 10.6.1.1, ≥ 4 bars 25.7.2.1, 25.2.3 clear spacing, cover).
+- **Element Type** select in SECTION DESIGN, below Material Class. `auto` resolves per member at run: vertical → column, horizontal → beam, **promoted to column when Pu ≥ 0.1·f'c·Ag**.
+- **Column As-checked** — nx × ny grid editor, live perimeter preview (`rc-column-preview.tsx`), detailing-checks card, and an **Advanced Capacity Report** (`column-advanced-report.tsx`) that draws the **section + P–M interaction curve** (nominal + φ loops, both ±M, the A–E points, the flat `Pn,max` cap, and the run's demand markers) with a Tabel 5-19 coordinate table + summary.
+- **Column As-required** — bisects the longitudinal ratio ρg ∈ [1%, 8%] on a representative symmetric ring until the worst (P, M) lands on the curve; reports required ρg + Aₛₜ.
+- **Demands** — `collectPMPairs` (demands.ts) returns the paired (P, M) at each candidate station, since interaction needs the actual axial+moment acting together (not independently enveloped).
+- **Canvas** — column members coloured by radial interaction D/C (`designColorForDC`); a single pill (`D/C · ρ`, or `ρ req` in required mode); new "Interaction D/C" report option.
+- **Validation** — `validation/rc_column_verify.mts` (26 Contoh 5-C anchors: Po = 13050 kN, φPn,max = 6786, B/C/D/E coordinates, demand-inside check, and a cross-check that the column engine ≡ `phiMnBars` at pure bending).
+
+### Changed
+- **`runDesign()`** resolves beam vs column per member and branches to the column interaction path; the beam axial gate now only yields `axial-exceeded` for an explicitly **forced** beam carrying high axial (auto always promotes such members to columns).
+- **`MemberDesignResult`** gained `kind: "beam" | "column"` and an optional `column` result; the report dropdown gained a "Columns" group.
+
+### Notes
+- DSM solver and model math untouched — the column engine is a pure consumer of analysis results.
+- Tied columns only this pass (`Pn,max = 0.80·φPo`); spiral (0.85), column **shear**/SRPMK `Ash` confinement, and slenderness are deferred.
+- Design state remains App-state only (not persisted by Save/Load), same boundary as v1.1.
+
+### Documentation
+- `docs/DESIGN_RULES.md`: new column section (§5b) + updated extension/limitation notes.
+- `CLAUDE.md`: "RC Column Design (v1.1.1)" subsection.
+
+---
+
+## [1.1.0] — 2026-06-12
+
+**Design tab — RC beam design checks (ACI 318-14 / SNI 2847:2019).** A fourth tab adds reinforced-concrete flexural + shear design for rectangular beams across Ordinary / Intermediate / Special moment frames (OMF / IMF / SMF). It applies to every member with a concrete rectangular section (f'c > 0) regardless of orientation — a 2D plane frame has no torsion DOF, so pure M + V design is exact. The full engineering narrative, with every governing clause, lives in the new **[docs/DESIGN_RULES.md](docs/DESIGN_RULES.md)**.
+
+### Added
+- **`src/lib/design/` pure-domain engine** (no React): `types`, `rebar` (D10–D32 catalogue), `flexure` (β₁, As,min, Whitney `requiredAs`, strain-compatibility `phiMnProvided`/`phiMnBars`, φ ramp), `shear` (Vc, φVmax, Av/s, spacing caps, stirrup suggestion), `demands` (analytic zone extremes, envelope, frame minimums, gravity combo), `bar-layout` (shared bar geometry + ACI detailing checks), and `run-design` (orchestrator).
+- **Two tools** (`src/tabs/design/tools/`): **DESIGN CRITERIA** (code, frame type, fy/fyt/Es, φt/φv/φc, λ, stirrup legs) and **SECTION DESIGN** (material class, section picker, As-required / As-checked mode, per-section rebar with Support/Midspan arrangements, and a live SVG cross-section preview).
+- **Two design modes.** *As required* computes required As (top/bottom, Whitney) and Av/s per zone; *As checked* evaluates the user's bars by **per-bar strain compatibility** — side/skin bars **included** (permitted by 9.7.2.3), displaced-concrete correction, εt at the extreme tension bar, φ ramped 0.65→0.9 (21.2.2).
+- **Demands** — exact analytic per-zone extremes (polynomial roots, no sampling) enveloped across enabled combinations, with SMF (18.6.3.2) / IMF (18.4.2.2) moment minimums and a synthesized 1.2D+1.0L gravity combo for capacity-design shear.
+- **Capacity-design shear** — OMF = envelope Vu; IMF = Ve from Mn + Vg; SMF = Ve from Mpr (1.25fy) + Vg with Vc = 0 in hinge zones.
+- **Bar layout & layering** (`bar-layout.ts`) — single source of truth shared by the preview and the flexural solver. Auto-overflow into a second layer at a hard-coded 50 mm clear (≥ 25 mm of 25.2.2, for 135°-hook clearance), vertically aligned (25.2.2), max 2 layers; a lone overflow bar is promoted to two at the outer positions. Side bars distributed evenly between the innermost top/bottom rows. Bar-count inputs clamp to the geometric maximum.
+- **Live ACI detailing checks** under the preview (As-checked): longitudinal (`checkArrangement`) — 25.2.1 fit/clear spacing, 24.3.2 crack-control spacing, 20.6.1.3.1 cover ≥ 40, 18.6.3.1 (SMF ≥ 2 bars), 9.7.2.3 skin reinforcement for h > 900; transverse (`checkTransverse`) — max spacing per frame/zone, Av/s ≥ Av,min/s (9.6.3.3), SMF hx ≤ 350 (18.6.4.2), stirrup ≥ D10 (25.7.1), first-hoop ≤ 50 mm advisory.
+- **Run-time spacing fixes** — `governingSpacingMax` unifies the spacing caps: SMF hinge (18.6.4.4), IMF hinge min(d/4, 8db, 24db_hoop, 300) (18.4.2.5), and the general 9.7.6.2.2 cap tightening from min(d/2, 600) to min(d/4, 300) when Vs = Vu/φ − Vc exceeds 0.33√f'c·bw·d.
+- **Canvas** — members recoloured by worst flexural D/C (5-band `designColorForDC`); two rotated pill labels per designed member (flexure +local-2, shear −local-2); a colour legend when results exist; a floating "Run Design" button (Design tab only).
+- **Validation** — `validation/rc_beam_verify.mjs` (25 SMF anchors: As = 2224 mm², Mpr = 552.9 kN·m, Ve = 234.03 kN, Av/s → D10@100) and `validation/strain_compat_check.mts` (16 strain-compat / layering / spacing assertions).
+- **`docs/DESIGN_RULES.md`** — authoritative design-logic reference, structured so steel members and new section shapes/columns slot in as material/shape strategies.
+
+### Changed
+- **`runDesign()` solves its own cases** (`solveAllCases` + `combineResults`) rather than reusing the Analyze tab's lazy memo, so design works from any tab. Results are cleared by an invalidation effect on any change to model / load cases / combinations / criteria / section inputs / shear-deformation.
+- **App state** gained `designCriteria`, `sectionDesignInputs`, `designSelectedSectionId`, `designResult` — App-state only, not part of `StructureModel`, not persisted by Save/Load (same boundary as load cases/combinations).
+
+### Notes
+- The DSM solver and all model math are untouched — the design engine is a pure consumer of analysis results.
+- Vc uses the code coefficient 0.17√f'c; the reference's worked example used 1/6 (~2 % difference).
+- OMF/IMF share the SMF-validated engine but are not separately anchored to a published example. Columns, steel members, and non-rectangular sections are deferred — the engine is structured for them (see `docs/DESIGN_RULES.md` §12).
+
+### Documentation
+- **`docs/DESIGN_RULES.md`**: new — full design logic + clause index + extension guide.
+- `CLAUDE.md`: "Design Tab — RC Beam Design Checks (v1.1.0)" section.
+- `CHANGELOG.md`: this entry.
+
+---
+
+## [1.0.11] — 2026-06-09
+
+**Undo / Redo.** A single history stack lets users reverse and replay edits to the model — nodes, members, supports, sections, and loads (loads live inside `model`, so one stack covers everything). Two buttons sit directly below the zoom slider, with Ctrl+Z / Ctrl+Y shortcuts. Both are available only on the **Model and Load tabs** (the read-only Analyze tab has no editing history). History is reference-based: snapshots are pointers to past immutable `model` objects, not clones, so the memory cost is negligible even at the 20-deep cap.
+
+### Added
+- **`useModelHistory` hook** (`src/hooks/use-model-history.ts`) — observes `model` via an effect and pushes the previous state onto an undo stack on each change (capped at 20). Exposes `{ undo, redo, canUndo, canRedo, resetHistory }`. Two cases are guarded: changes caused by undo/redo itself (identity check), and the rapid intermediate updates of an on-screen node drag (coalesced into one entry via `draggingNodeId`, so a whole drag is a single undo).
+- **Undo / Redo buttons** in `structural-canvas.tsx`, in a card directly below the zoom overlay (rendered only on the Model/Load tabs). Navy accent, hover scale-up + bg tint, active press; greyed and unclickable when the corresponding stack is empty. Hover tooltips read "Undo (Ctrl+Z)" / "Redo (Ctrl+Y)" — no on-screen legend.
+- **Keyboard shortcuts** (`App.tsx`) — Ctrl/Cmd+Z = undo, Ctrl/Cmd+Y or Ctrl/Cmd+Shift+Z = redo, registered only while on the Model/Load tabs. The listener ignores form fields (`input`/`textarea`/`contentEditable`) so native text-undo still works while typing.
+
+### Changed
+- **`StructuralCanvas`** gained `onUndo` / `onRedo` / `canUndo` / `canRedo` props.
+- The five whole-model swap handlers (`handleNewFile`, `handleLoadFile`, `handleTemplateLoad`, `handleExampleConfirm`, `handleTemplateConfirm`) call `resetHistory()` after swapping, so undo never crosses a document boundary.
+
+### Notes
+- The solver and all model math are untouched — this is a state/UI layer only. `analysisResult` is not snapshotted; it recomputes lazily on the Analyze tab after an undo.
+- History does not persist across reload, and the on-screen shortcut legend is intentionally out of scope.
+
+### Documentation
+- `CHANGELOG.md`: this entry.
+
+---
+
+## [1.0.10] — 2026-06-09
+
+**File I/O — JSON save & load.** The File menu can now persist a model to disk and read it back, so work survives closing the tab. JSON is the native, lossless format for `StructureModel` (no CSV — it can't round-trip nested section/derived data). "New Canvas" is renamed "New File" for menu consistency. Undo/redo is a separate follow-up.
+
+### Added
+- **Save File** in the File menu — serializes the current `StructureModel` to pretty-printed JSON and downloads it as `openanstruk-structure-<YYYYMMDD-HHMM>.json` via a `Blob` + temporary anchor. Works on an empty canvas.
+- **Load File** in the File menu — opens a `.json` picker, reads the file, parses and shape-guards it, then swaps it into the app using the same reset path as New File. On a parse error or invalid/foreign file, an alert is shown and app state is left untouched.
+- **`seedIdCounter(model)`** in `lib/model.ts` — seeds the shared ID counter to the maximum numeric suffix across all loaded node/member/load/section keys, so entities created after a load never collide with loaded ones. Used by Load File instead of `resetIdCounter()`.
+- **`isStructureModel(x)`** in `lib/model.ts` — lightweight runtime shape guard for untrusted file contents; requires the five entity records and a non-empty `sections` map.
+
+### Changed
+- **"New Canvas" → "New File"** label in the File-menu dropdown (`nav-bar.tsx`). The handler (`onNewFile`) is unchanged.
+- **`NavBar`** gained `onSave` / `onLoad` props, wired in `App.tsx` to the new `handleSaveFile` / `handleLoadFile` callbacks.
+
+### Notes
+- The solver and all model math are untouched — this is purely a persistence/UI layer.
+- Load reuses the existing model-swap reset (clear selection/tool/frame-start, switch to Model tab, `setActiveSection(firstSectionId(...))`), matching the behavior of New File and the template/example paths.
+- CSV (any direction), keyboard shortcuts, File System Access API (save-in-place), and autosave are intentionally out of scope.
+
+### Documentation
+- `CHANGELOG.md`: this entry.
+
+---
+
+## [1.0.9] — 2026-06-07
+
+**Shear deformation (Timoshenko beam).** An opt-in toggle adds shear flexibility to every element's bending stiffness. Off by default and byte-identical to v1.0.8 when off; when on, deep/short members and shear-dominated frames deflect more (and, for indeterminate structures, internal forces redistribute) per Timoshenko theory. Applies to both frame and truss members. Verified against SAP2000 on Example 5 (asymmetric rafter frame, 300×500 fc25 section) — reactions, axial, and moment all match to displayed precision.
+
+### Added
+- **"Enable Shear Deformation" toggle** in the status-bar Settings panel, directly above "Adaptive View", defaulting **off**. Threaded `App.tsx → StatusBar → SettingsPanel`; flipping it live re-solves all load cases.
+- **Read-only "Shear Modulus, G" row** in the manual section form, directly below Poisson's ratio. Computed live as `G = E / (2(1+ν))` from the current E and ν fields and displayed in MPa. Display-only — not stored, validated, or parsed; the solver derives G the same way. The editable `Aκ2` (shear area) input is unchanged.
+- **`validation/shear_deformation_example5.md`** + **`shear_deformation_example5_verify.mjs`** — the SAP2000 cross-check case and its standalone regeneration script.
+
+### Changed
+- **`localStiffness(EA, EI, L, GAs = 0)`** now applies the Timoshenko shear-flexibility factor `Φ = 12·EI/(GAs·L²)`: the transverse/rotational bending block is scaled by `1/(1+Φ)`, with rotational diagonal `(4+Φ)·EI/(L(1+Φ))` and carry-over `(2−Φ)·EI/(L(1+Φ))`. Axial terms unchanged. `GAs = 0 ⇒ Φ = 0`, which reduces algebraically to the prior Euler–Bernoulli matrix — so the shear-off path is byte-stable.
+- **`condensedTrussElement(..., GAs = 0)`** forwards `GAs` to its internal `localStiffness`. Static condensation of θᵢ, θⱼ is unchanged, so trusses honor the toggle while still transmitting only axial at the joints.
+- **`analyze(model, opts?: { shearDeformation?: boolean })`** gained a per-member `GAs` resolver, applied identically at the assembly and force-recovery sites (the same K must be used for both). `As = Aκ2 · 1e-6` (mm²→m²); `G = (sec.derived?.G ?? shearModulus(E, ν ?? 0.3)) · 1000` (MPa→kN/m²); `GAs = G · As` (kN). A missing or ≤ 0 `Aκ2` yields `GAs = 0` — that member silently falls back to Euler, mirroring the existing `γ ≤ 0` self-weight skip.
+- **`solveCase` / `solveAllCases`** thread an `opts` argument down into every `analyze` call (both the self-weight and normal branches). Self-weight synthesis itself is unchanged.
+
+### Notes
+- `fixedEndForces`, `transformMatrix`, end-force sign extraction, `memberInternalForces`, and reaction recovery are untouched. Diagrams remain equilibrium-based, so SFD/BMD/AFD shapes stay correct; only the displacement field (and, for indeterminate models, the force distribution) responds to the toggle.
+- For determinate structures, enabling shear changes displacement magnitudes only — reactions and diagrams are unchanged.
+
+### Documentation
+- `CLAUDE.md`: new "Shear Deformation (v1.0.9)" section; solver "Sign Conventions" / stiffness notes mention the optional `GAs` parameter and the Euler-reduction guarantee.
+- `docs/ARCHITECTURE.md`: matching note on the toggle and the Timoshenko stiffness path.
+- `CHANGELOG.md`: this entry.
+
+---
+
+## [1.0.8] — 2026-05-26
+
+**Visibility settings.** A consolidated set of overlay toggles in the status-bar Settings panel: node IDs, member IDs, local axes, and section labels. The Analyze-tab flyouts no longer carry per-tool "show label" switches — the new global toggles cover all three tabs. IDs reflect the model's actual stored identifiers, and a fresh canvas / template / example restarts numbering at `n1` / `m1`.
+
+### Added
+- **Show Node IDs / Show Member IDs toggles** in the Settings popover (status bar → Settings), defaulting off. Render small pill labels at each node (bumped above) and each member midpoint (bumped opposite of the section label, rotated to follow diagonals). Pills scale with `s = adaptiveView ? 1/zoom : 1`, matching the existing label adaptive-size convention.
+- **Show Local Axes toggle**. Renders a per-member 1-2 axis gizmo at each member midpoint: red `1` arrow along local-1 (i→j), green `2` arrow along local-2 (in-plane perpendicular), and a small blue ⊙ glyph for local-3 (out of screen). Adaptive-sized; tunable `ARROW_LEN`, `HEAD`, `LABEL_OFF`, `LINE_WIDTH`, `MID_OFFSET` constants live at the top of `drawLocalAxes`.
+- **Show Section Labels toggle**, defaulting on. Section names on members now render across Model / Load / Analyze tabs instead of being hard-gated to Model.
+- **Pill rotation parameter** on `drawMemberIdTag(ctx, sx, sy, memberId, angle?, s?)` — pill text follows the member's screen-space angle (normalized to `[-π/2, π/2]` to keep text upright), so diagonal members get diagonal pills aligned with the member axis.
+- **`resetIdCounter()`** is now part of the public model API (was previously test-only). Called at the start of `handleNewFile`, `handleTemplateLoad`, each template modal's build function (`buildBeamModel`, `buildFrameModel`, `buildTrussModel`, `buildRoofHoweTrussModel`, `buildRoofFinkTrussModel`), and the Examples-modal confirm path. Result: a fresh canvas or template load restarts node/member IDs at `n1` / `m1`.
+
+### Changed
+- **Section-label gate.** `drawMembers` no longer hardcodes `activeTab === "Model"` for the section name; it reads the new `showSectionLabels` flag, threaded through `App.tsx → StatusBar → GridUnitsPanel → StructuralCanvas`. Visible in all three tabs by default.
+- **ID-pill helpers (`drawNodeIdTag`, `drawMemberIdTag`) gained an `s` scale parameter** — font size, padding, border width, corner radius all multiply by `s` so pills stay visually consistent with the section label and dimension labels at any zoom.
+- **Display format for IDs.** Pills render the raw internal ID verbatim (`n3`, `m5`) instead of the previous `"N" + nodeId.replace(/^\D+/, "")` and `memberId.toUpperCase()` transforms. The Analyze-tab summary lists (reaction, diagram, deformation) match. Storage IDs remain lowercase as before.
+- **JSDoc on `resetIdCounter`** relaxed from "test setup / teardown only" to "call before building a fresh model".
+
+### Removed
+- **Per-tool label toggles in the Analyze flyouts** (`Show Node Labels` on reaction-tool, `Show Member Labels` on diagram-tool, `Show Node Labels` on deformation-tool). Their state (`showReactionNodeLabels`, `showDiagramMemberLabels`, `showDeformNodeLabels`), corresponding props through `flyout-panel.tsx`, and the canvas branches that consumed them are deleted. The new global `Show Node IDs` / `Show Member IDs` toggles cover the same need across all tabs. Value labels (Rx/Ry/Mz, V/M/N, Δ) are always rendered when the analyze tool is active.
+
+### Fixed
+- **Member-ID pill orientation on diagonal members.** Previously horizontal, now rotates to follow the member axis with text kept upright via the same `[-π/2, π/2]` normalization the section label uses. Pill sits perpendicular to the member on the opposite side from the section label, so the two never overlap.
+
+### Notes
+- Solver, reactions, displacements, AFD/SFD/BMD values are byte-identical to v1.0.7. This release is overlay-only.
+- The internal ID *is* the identity used by the solver — there is no separate "label vs ID" layer. Resetting the counter on model swaps lets the user-facing IDs restart cleanly without any change to how members reference nodes.
+
+### Documentation
+- `CLAUDE.md`: "Sign Conventions" section gained an explicit **Global frame** block (+X, +Y, +Z) and a **Local ↔ global mapping** table for horizontal / vertical / diagonal members + a note on the screen-space Y-flip rule.
+- `docs/ARCHITECTURE.md`: matching updates — global frame statement, mapping table, and a one-line mention of the new Show Local Axes setting.
+- `CHANGELOG.md`: this entry.
+
+---
+
+## [1.0.7] — 2026-05-26
+
+**Adaptive selfweight on member.** The AFD now reflects the linear axial variation caused by gravity components along inclined members. Frame columns and truss diagonals carrying self-weight along their local-1 axis previously rendered as a constant axial band; they now show the true linear ramp. Reaction values, SFD, and BMD are byte-identical to v1.0.6.
+
+### Added
+- **Axial distributed-load channel in `MemberEndForces`** — `qx1, qx2: number` alongside the existing transverse `q1, q2`. Carries the local-1 (axial) component of any distributed load through assembly, recovery, combination, and envelope paths.
+- **Axial term in `memberInternalForces`** — `N(x) = N1 − qx1·x − (qx2 − qx1)·x²/(2L)`. AFD interior values are no longer assumed constant.
+- **Mirrored trapezoidal AFD rendering.** `drawAxialDiagram` now samples N(x) at 60 points per member and fills a symmetric band on both sides of the member centerline. Avoids the SAP2000-style left/right side ambiguity — the same diagram reads the same regardless of member i→j ordering. Auto-fit normalization uses the per-member peak |N| across all samples, not just `N1`.
+- **i/j stacked label for varying-N truss members.** When `|N1 − N2| > 0.01 kN`, truss-member AFD labels render as two stacked lines (`i = …` / `j = …`) parallel to the member, offset past the diagram edge. Constant-N truss members keep the single centered label. Frame-member labels unchanged (end labels + interior peak).
+
+### Changed
+- **Axial fixed-end forces in `fixedEndForces`.** Indices `[0]` and `[3]` of the local FEF vector now carry the consistent trapezoidal axial entries `L·(2·qx1 + qx2)/6` and `L·(qx1 + 2·qx2)/6`. For uniform `qx` (the selfweight case), both reduce to `qx·L/2` — the same total as the prior 50/50 lumping, but now expressed in the local FEF so `f = K·d_loc − FEF` reproduces the full element-level reaction at each end instead of half of it.
+- **`condensedTrussElement` signature.** Forwards `qx1, qx2` to `fixedEndForces`. Static condensation acts only on moment rows (s = [2, 5]); axial entries (r = [0, 3]) pass through unchanged.
+- **Assembly and recovery call sites.** Both the assembly loop and the recovery loop pass `qx1, qx2` into `fixedEndForces` / `condensedTrussElement` so FEF pairing on recovery (`f − FEF`) is consistent.
+- **AFD label placement.** Single-label truss case now offsets by `|N · BASE| + 10 px` (was `|N · BASE / 2| + 14 px`) so the label clears the actual mirrored-fill edge at any `diagramScale` instead of drifting into the fill as scale increases.
+
+### Removed
+- **Global axial-load lumping block in assembly.** The prior `F[3*ia] += axialAtA*c; F[3*ia+1] += axialAtA*s …` path (which lumped axial distributed loads directly into global F at the nodes) is deleted. The new axial-FEF entries assembled via `F += Tᵀ · FEF_local` deliver the same total nodal force globally (the 50/50 split for uniform `qx` matches the prior lumping numerically) and additionally make element-level recovery produce the correct continuous `N(x)`.
+
+### Fixed
+- **Frame member under axial body force showed constant N at half the true magnitude.** Template3 portal columns under selfweight previously rendered the AFD as a constant band at half the true integrated column weight. With the axial FEF properly routed through `f = K·d − FEF`, the base value now reads the full integrated weight (column own weight + transferred reaction from the beam above), tapering linearly to the small joint-transfer value at the top — matching the textbook fixed-base column-under-self-weight result. The fix is the same mechanism that already produced correct transverse end forces; we extended the local FEF coverage to include the axial entry that was previously zero.
+
+### Notes
+- Reactions, displacements, shear forces, and bending moments are byte-identical to v1.0.6 for every load configuration. The change is scoped to the axial channel.
+- For Warren-class truss members carrying axial self-weight (inclined members under gravity), member-end values vary linearly; small residuals against SAP2000 remain under investigation. Reactions and global equilibrium match SAP exactly. Investigation context is preserved locally — not committed.
+- `solveCase("selfweight")` synthesis (`gamma · A` → global-Y distributed load) is unchanged; the fix is downstream in solver assembly/recovery.
+
+### Documentation
+- `docs/ARCHITECTURE.md`: solver section updated to describe the new axial-FEF entries and `N(x)` interpolation; AFD-rendering section updated to mention the mirrored band and i/j stacked labels.
+- `CHANGELOG.md`: this entry.
+
+---
+
+## [1.0.6] — 2026-05-25
+
+**Analysis diagnostics, lazy solver, and a per-issue warning dialog.** The solver now runs only when the user is on the Analyze tab, and structural-validity issues surface as a focused dialog instead of being silently swallowed.
+
+### Added
+- **`src/lib/analysis-diagnostics.ts`** — new pure module performing cheap structural pre-flight checks: empty model, reaction count, connectivity (union-find over members), and γ=0 sections. Returns a typed `DiagnosticsReport` consumed by the status bar and the new dialog.
+- **Analysis Issues dialog** (`src/components/analysis-issues-dialog.tsx`). Auto-opens on Analyze-tab entry when there is at least one error-severity issue. Closable via the `×` button, backdrop click, or `Esc`. Manually re-openable by clicking the status-bar STATUS label. Lists issues sorted errors-first with dedicated messages per issue kind.
+- **Pivot tracking in `gaussSolve`.** The solver now identifies *which* DOF is singular and surfaces it via `SolverResult.singularDof`. The diagnostics layer translates it to a node + direction message in the dialog.
+- **Selfweight γ=0 inline warning.** A second amber warning is rendered in both the Load Case and Load Combination flyout tools when Selfweight is enabled but some referenced sections have γ ≤ 0. Sibling to the existing "Selfweight is deactivated" warning.
+- **Duplicate-member detection** in `runDiagnostics`. Surfaces an amber warning in the Analysis Issues dialog when any two members share the same endpoint pair — defensive guard for templates, future imports, and scripting paths that bypass the user-facing MEMBER tool's existing duplicate check.
+
+### Fixed
+- **Roof Howe truss template generated 2 duplicate members per build.** The diagonal loop emitted "diagonals" at the corner panels (i=0 and i=numDiv−1) whose endpoints coincided with the outermost top-chord segments, doubling their stiffness in K and mislabeling a textbook-determinate truss as `INDETERMINATE`. Diagonal loop now spans inner panels only (`i = 1` to `numDiv − 2`); preview renderer mirrors the fix. After: the template ships as `DETERMINATE` for every supported `numDiv` (4, 6, 8, 10, 12) with `m + r = 2j` by construction.
+- **`gaussSolve` per-DOF singularity tolerance.** The previous tolerance `1e-12 · max|diag(K)|` scaled to the *largest* diagonal entry of the entire matrix. With wildly inconsistent section properties (e.g. user authors `A = 100 m²` paired with `I = 1e-12 m⁴`), the axial diagonals dominate `maxDiag` and the bending diagonals fall below the threshold even though they're physically nonzero — the solver reported a false instability. The tolerance is now scaled per-DOF against that DOF's own original diagonal magnitude. Real mechanisms still trigger; pure ill-conditioning no longer does.
+- **Radius-of-gyration warning in the MATERIAL manual form.** When the user authors `√(I33 / A)` outside the physically reasonable range `0.1 mm – 10 m`, an amber warning surfaces inline: *"A and I33 give an unrealistic radius of gyration √(I/A). The solver may flag false instabilities."* Soft check — does not block save. Catches the authoring error early instead of letting it propagate as a confusing "Instability detected" later.
+
+### Changed
+- **Lazy solver execution.** `solveAllCases` is now gated on `activeTab === "Analyze"` in `App.tsx`. Editing in Model/Load tabs no longer triggers solves whose results would never be drawn — entering the Analyze tab functions as the implicit "Analyze" trigger. Edits while on Analyze still re-solve live, preserving the no-button UX inside the tab.
+- **Status-bar relabel: `STABILITY` → `STATUS`.** Three states replace the binary STABLE/UNSTABLE: `DETERMINATE` (green), `INDETERMINATE` (amber), `UNSTABLE` (red). The status pill is now a clickable button that opens the issues dialog. Driven by the diagnostics module — accounts for connectivity and solver singularities, not just the `3m + r vs 3j` count formula.
+- **Solver failure reasons no longer discarded.** `solveCase` returns the full `SolverResult` (including `reason` and `singularDof` on failure) instead of collapsing failures to `null`. `combineResults` and `pickDisplayedResult` narrow on `.ok` accordingly.
+- **`gaussSolve` tolerance.** Replaced the absolute `< 1e-30` pivot threshold with `1e-12 · max|diag(K)|`, catching near-mechanisms that previously slipped through as garbage solutions.
+- **`stabilityOf` removed from `model.ts`.** The `3m + r vs 3j` logic now lives inside `runDiagnostics` and is used only to distinguish determinate from indeterminate once error checks have passed.
+
+### Notes
+- Core solver math (`localStiffness`, `transformMatrix`, `fixedEndForces`, `condensedTrussElement`, end-force extraction) is unchanged. The only `solver.ts` change is `gaussSolve` itself and the new `singularDof` plumbing.
+- The connectivity check uses union-find — O((j + m) · α(j)), microseconds even on large models. The full diagnostics pass is ~1000× cheaper than a single solve.
+- **Diagnostic solve in non-Analyze tabs.** Pure-topology diagnostics can't catch every geometric mechanism (isolated nodes whose support doesn't constrain θ, collinear pins, parallel rollers). To keep the STATUS pill honest in every tab, the app runs one solve per edit on a loadless slice of the model. The result is discarded; only the `singularDof` from a failed solve upgrades the diagnostics report. Roughly N× cheaper than the Analyze-tab pipeline (N = enabled cases).
+
+### Documentation
+- `docs/USER_GUIDE.md`: Self-Weight section updated to mention the γ=0 inline warning; new "Analysis Status" section explaining the three states + dialog + lazy-solve behavior.
+- `docs/ARCHITECTURE.md`: new "Analysis Diagnostics & Lazy Solve" subsection.
+- `CLAUDE.md`: status bumped to v1.0.6 with the new diagnostics module under the solver area.
+
+---
+
+## [1.0.5] — 2026-05-24
+
+**Analyze tab UX polish — auto-fit diagrams & deformation with intuitive sliders.**
+
+### Changed
+- **Diagram scaling rewritten as peak-normalized auto-fit.** AFD/SFD/BMD scale automatically so the peak value renders at ~1 grid cell on screen, regardless of load magnitude. A 10 kN beam and a 10 MN beam now look identically sized at the default slider position — no more hunting across orders of magnitude.
+- **Deformation scaling uses true on-the-line peak.** Auto-fit reference is now the maximum displacement sampled along each member's cubic-Hermite spline (mid-span sag included), not just at end nodes. Fixes a long-standing case where simply-supported beams with ~0 transverse displacement at the nodes caused the normalization to blow up.
+- **New slider UX.** Diagram and Deformation sliders are now centered at the auto-fit "sweet spot" (default), with `−` / `+` glyphs at the ends and a snap tick at center. Drag left to suppress, right to exaggerate (up to 4× the sweet spot). Matches the zoom slider's snap-to-center behavior.
+- **Honest readout below each slider.** Diagram sliders show `Max. force: …` (peak axial/shear/moment value in the current model). Deformation slider shows `Amplification: ×N` (true factor applied to displacements) — what FEA users expect.
+- **Layout consistency.** Renamed all summary sections to just "Summary". Moved the section separator below the slider+readout block (above Member/Node Labels) on the diagram and deformation tools; removed the separator above "Summary" on the reaction tool.
+
+### Notes
+- Solver math, sign conventions, and analysis results are unchanged. This release is entirely a display/UX layer.
+- Default scale state changed from `10`/`25` to `1`/`1` — first open of an analyzed model now lands on the sweet spot rather than requiring manual adjustment.
+
+---
+
+## [1.0.4] — 2026-05-23
+
+**Load cases, code-preset combinations, and real self-weight body forces — paired with a truss element rewrite that lets self-weight (and any transverse load) flow through trusses correctly.**
+
+### Added
+- **Load cases.** Loads carry a `loadCaseId` and can be grouped into named cases (Dead, Live, Wind, Seismic, etc.). New `LoadCase` type with a `kind` field used for combination matching. New LOAD CASE tool with row-level case authoring (`src/tabs/load/tools/load-case-tool.tsx`).
+- **Load combinations.** Linear combinations of cases with user-defined factors. New LOAD COMBINATION tool (`src/tabs/load/tools/load-combination-tool.tsx`).
+- **Automatic combinations — all nations.** Code-prescribed combination presets generated by matching case `kind` (`src/lib/combinations-presets.ts`):
+  - **ASCE 7-16** § 2.3.2 LRFD strength
+  - **ASCE 7-22** (same § 2.3.2 LRFD set for this scope)
+  - **SNI 1726-2019** (Indonesia)
+  - **Eurocode** EN 1990:2002+A1 Eq. 6.10 (simple set) + EN 1998-1 § 3.2.4 seismic
+  - **GB 50068-2018** (post-2018 China reform) + GB 50011 seismic
+  - **AS/NZS 1170.0:2002** § 4.2.2 (Australia / New Zealand)
+  - **BSL/AIJ** Japan (allowable stress design — long-term / short-term)
+- **Analyze view selector** (bottom-right of canvas, `src/components/analyze-view-selector.tsx`) — switch the diagram/deformation/reaction display between single-case view and any active combination.
+- **Analysis pipeline rewrite** (`src/lib/analysis-pipeline.ts`) — `solveAllCases` solves each enabled case independently; `combineResults` linearly sums case results per combo factors. The solver itself is unchanged.
+- **Self-weight as a real load case.** The locked Selfweight LoadCase (previously a no-op placeholder) is now functional: `solveCase("selfweight")` synthesizes a global-Y distributed load per member from `γ · A` (kN/m). Synthetic loads are scoped to the case slice and never appear in `model.loads`. Members with `γ ≤ 0` (or legacy manual sections missing γ) contribute nothing — silent skip. Default: disabled.
+- **Self-weight in combos**, free. Because Selfweight has `kind: "Dead"`, any preset Dead-factor term (1.4D, 1.2D, …) automatically includes it once enabled — no manual wiring.
+- **I=0 guard** at the material input layer (manual form + advanced-panel override). Static condensation of the new truss element requires `EI > 0`.
+
+### Changed
+- **Truss element redefined** as a frame element with M3 releases at both ends, implemented via static condensation in `solver.ts::condensedTrussElement`. End moments are zero by construction at the joints, but the condensed stiffness carries transverse load (including self-weight) between end nodes — real V/M now renders on the SFD/BMD between truss joints. Matches SAP2000's truss model. Replaces the previous purely-axial truss that silently dropped distributed loads.
+- **Stability check** simplified to a single formula `3m + r ≥ 3j`. The pure-truss `m + r ≥ 2j` branch is obsolete because every member is now 3 DOF/end.
+- **Member-tool help text** for trusses updated to reflect the new semantics (transmits only axial at joints; carries transverse load locally between end nodes).
+
+### Fixed
+- Hover and selection state glitches in the load tab when working with cases.
+- Load-case flyover interaction edge cases.
+- Load tool UI refinements and button/style consistency across the case/combo flow.
+
+### Documentation
+- `docs/USER_GUIDE.md`: new SELF-WEIGHT section (how to enable, where γ comes from, combo interaction, truss behavior); MEMBER section updated for the new truss semantics.
+- `docs/ARCHITECTURE.md`: new "Truss Element (v1.0.4+)" and "Self-weight load case" sections.
+- `CLAUDE.md`: status bumped to v1.0.4 with a "Selfweight Stitches" architecture entry.
+
+### Notes
+- Pure axial-only truss elements no longer exist. Existing models load fine — the new condensed element gives identical joint behavior for axial-only load paths.
+- Verified against SAP2000: Warren truss, 3 m × 3 m bays, 10 kN/m on a top-chord member → M_max = qL²/8 = **11.25 kN·m**, end moments zero, parabolic BMD — matching exactly.
+- Self-weight calibration: IWF200 simple beam, L = 6 m → Ry ≈ 0.67 kN per support, M_mid ≈ 1.006 kN·m.
+
+---
+
+## [1.0.3] — Theory-Pure Sign Convention
+
+**Diagram rendering & distributed load convention**
+
+### Changed
+- **Single local-axis rule.** Local-2 axis is now `(-s, c)` — local-1 (i→j unit vector) rotated +90° CCW — for **every** member, with no normalization, no quadrant flips, and no `isVertical` special cases. AFD, SFD, BMD, distributed-load arrows, and the solver's `q1, q2` all use the same rule.
+- **Invert toggles are now pure user preferences.** `invertSFD` and `invertBMD` both default to **off**. They mirror the display side, swap colors, and negate label signs together — they no longer compensate for an inconsistent convention.
+- **`local-axis` distributed loads** now act consistently in the +local-2 direction regardless of member orientation. A consequence: the physical load direction depends on the member's i→j ordering. Reversing the a/b nodes of a member rotates +local-2 by 180° and flips the load direction.
+- Template 4 (Portal Lateral) `wStart`/`wEnd` value sign adjusted so the physical lateral loading is preserved under the new convention.
+- Load tool UI hint updated from "+ outward · − inward" to "+ along +local-2 (i→j rotated 90° CCW) · − opposite" — orientation-neutral phrasing.
+
+### Removed
+- `perpWorld` (`ny ≥ 0` normalized perpendicular) → replaced by `local2World` (pure local-2).
+- `isVertical` flip blocks in SFD and BMD drawers (AFD never had one).
+- `q1, q2` quadrant-flip blocks in `solver.ts` assembly and recovery — solver math (`localStiffness`, `transformMatrix`, FEF formula, end-force extraction) remains byte-stable.
+
+### Documentation
+- Rewrote sign-convention sections in `CLAUDE.md`, `docs/ARCHITECTURE.md`, `docs/visual-spec.md`, and `docs/USER_GUIDE.md` to reflect the single rule.
+
+### Notes
+- Reactions, displacements, and end-force magnitudes are unchanged on all built-in templates.
+- Diagram **side** may visually change for non-horizontal members compared to prior releases — this is the intended fix; the convention is now derivable from i→j direction alone.
+- User-saved models that use `local-axis` distributed loads on members drawn in "non-standard" orientations may render the load direction flipped after this change; review distributed-load arrows on existing models after upgrade.
+
+---
+
+## [1.0.2] — 2026-05-17
+
+**Tab-sliced project structure refactor, parametric section authoring, and one critical bug fix.**
+
+### Added
+- **Parametric section authoring** — pick a `materialClass` (concrete / steel) + `shape` + dimensions; the system computes A, I33, I22, section moduli, plastic moduli, etc. via `lib/sections/compute.ts`. Advanced panel lets users override derived values.
+- **New section shapes** — Tee (T), Angle (L), CHS (circular hollow), RHS (rectangular hollow) added to the parametric catalogue, alongside existing Rect, Circle, and I-WF.
+- Section properties verified against reference values.
+- Material catalogue cap raised from 50 → 100 entries.
+
+### Changed
+- **Tab-sliced project structure.** Source reorganized into per-tab vertical slices (`src/tabs/{model,load,analyze}/tools/`), shared canvas primitives extracted to `src/canvas/`, and pure domain logic isolated under `src/lib/`. Same app, same behavior, same UI — internal reorganization to make future features (Load Cases, design checks, self-weight) clean folder additions instead of God-file edits.
+- `flyout-panel.tsx`: 2169 → 517 lines (−76%); now a thin router on `(activeTab, activeTool)`.
+- `structural-canvas.tsx`: 2703 → 2344 lines (−13%); moved to `src/canvas/`.
+- `src/features/material/` split: pure computation → `src/lib/sections/`, React UI → `src/tabs/model/tools/material/`. `src/features/` folder removed entirely.
+- Code deduplication: `perpWorld` unified (was duplicated in canvas + drawLoads); `splitByZeroCrossings` extracted (was ~50 lines duplicated between SFD and BMD).
+- `NumericInput` and `pinIcon`/`rollerIcon`/`fixedIcon` promoted to `src/components/ui/`.
+
+### Fixed
+- **Material tool flyout rendered blank** after New Canvas or Beam/Frame/Truss template apply. Root cause: `activeSection` defaulted to `"section"` — a key present in static examples but missing from `createEmptyModel` and parametric template builders. Fix: introduced `firstSectionId(m)` helper invoked from all four model-swap paths so `activeSection` is invariant-preserving.
+- **Grid misalignment** corrected.
+- **Move-node on-screen mode** restored.
+
+### Documentation
+- `docs/ARCHITECTURE.md` rewritten for the tab-sliced structure; added import-direction rules, "Adding Features" recipes, "New section shape" recipe.
+- `REFACTOR_PLAN.md` kept in repo as historical reference for the phased migration.
+- `development.md` updated.
+
+### Notes
+- `solver.ts` was byte-identical to v1.0.1 — sign conventions and numerical output preserved through the refactor.
+- Build: PASS (~3.7s, 561 KB bundle).
+
+---
+
+## [1.0.1] — 2026-05-14
+
+**Mobile & Canvas UX**
+
+### Added
+- **Zoom** — scroll-wheel zoom on desktop; pinch-to-zoom on mobile (0.1× – 3× range)
+- **Adaptive View** — line widths, node sizes, and arrowheads scale with zoom level so the structure stays readable at any zoom
+- **Snap to Node** toggle — independently snap cursor to nearby existing nodes
+- **Snap to Grid** toggle — grid snapping is now user-controllable, not always-on
+- **Show Dimensions** toggle — live member-length label displayed while drawing
+- All four canvas toggles surfaced in the Settings popover (status bar)
+- Mobile-responsive landing page — hero, feature grid, and nav adapt to small screens
+- Touch panning on the app canvas (one-finger drag on mobile)
+- Mobile warning modal on the app shell for unsupported screen sizes
+- Cloudflare Pages deployment config (`wrangler.toml`, `.npmrc`)
+- GitHub PR template and CODEOWNERS file
+
+### Fixed
+- Flyout panel now scrollable and touch-friendly on mobile
+- Template modals (beam, frame, truss, examples) sized correctly on small screens
+- Nav bar and tool sidebar layout adjusted for narrow viewports
+- Status bar condensed for mobile
+- SPA root redirect fixed (`/` → `/html/index.html`) for Cloudflare and Netlify
+
+### Changed
+- App URL updated to `openanstruk.org`
+- Contact email updated to `team@openanstruk.org`
+- Axis gizmo and load arrows scale correctly with adaptive view zoom
+
+---
+
+## [1.0.0] — 2026-05-09
+
+**Initial public release.**
+
+- Interactive canvas — nodes, members (frame + truss), supports, snap-to-grid
+- Point loads and distributed loads (local-axis and global-axis modes)
+- Direct stiffness method (DSM) solver — runs entirely in the browser
+- Shear force, bending moment, axial force, and deformation diagrams
+- Invertible SFD/BMD; diagram scale and deformation scale sliders
+- Parametric template builder for beams, frames, and trusses
+- Five pre-built example models with SVG previews
+- Unit system settings (kN/m default)
+- MIT licensed, open source

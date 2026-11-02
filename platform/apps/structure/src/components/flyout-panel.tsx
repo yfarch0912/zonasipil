@@ -1,0 +1,866 @@
+import * as React from "react"
+import { cn } from "@/shared/utils"
+import { FLYOUT_PANEL_COLORS } from "@/shared/flyout-panel-colors"
+import type { TabType, ToolType } from "./tool-sidebar"
+import type { Section, SectionId, MultiSelection, StructureModel, SupportPick, MemberType, Load, LoadId } from "@/engine/model"
+import { MaterialFlyout } from "@/tabs/model/tools/material/material-tool"
+import type { AnalysisResult } from "@/engine/solver"
+import type { UnitSettings } from "@/engine/units"
+import { X } from "lucide-react"
+import { ModifyComponentToolContent } from "@/tabs/model/tools/select-tool"
+import { DeleteComponentToolContent } from "@/tabs/model/tools/delete-tool"
+import { MoveNodeToolContent } from "@/tabs/model/tools/move-node-tool"
+import { NodeToolContent } from "@/tabs/model/tools/node-tool"
+import { MemberToolContent } from "@/tabs/model/tools/member-tool"
+import { SupportToolContent } from "@/tabs/model/tools/support-tool"
+import { PointLoadToolContent } from "@/tabs/load/tools/point-load-tool"
+import { DistributedLoadToolContent } from "@/tabs/load/tools/dist-load-tool"
+import { ModifyLoadToolContent } from "@/tabs/load/tools/modify-load-tool"
+import { DeleteLoadToolContent } from "@/tabs/load/tools/delete-load-tool"
+import { ReactionToolContent } from "@/tabs/analyze/tools/reaction-tool"
+import { AnalyzeSelectContent } from "@/tabs/analyze/tools/select-tool"
+import { DiagramToolContent } from "@/tabs/analyze/tools/diagram-tool"
+import { DeformationToolContent } from "@/tabs/analyze/tools/deformation-tool"
+import { LoadCaseToolContent } from "@/tabs/load/tools/load-case-tool"
+import { LoadCombinationToolContent } from "@/tabs/load/tools/load-combination-tool"
+import { DesignScheduleToolContent } from "@/tabs/design/tools/design-schedule-tool"
+import { SectionDesignToolContent } from "@/tabs/design/tools/rc/rc-design-tool"
+import { SteelDesignToolContent } from "@/tabs/design/tools/steel/steel-design-tool"
+import { RcPreferencesPane, rcFrameShortLabel } from "@/tabs/design/tools/rc/preferences"
+import { SteelPreferencesPane, steelFrameShortLabel } from "@/tabs/design/tools/steel/preferences"
+import { PaneSwitch, type DesignPane } from "@/tabs/design/tools/shared/pane-switch"
+import { ContextStrip } from "@/tabs/design/tools/shared/context-strip"
+import { rcSectionIcon, steelSectionIcon } from "./tool-sidebar"
+import { RC_CODE_LABELS } from "@/engine/design/rc/codes"
+import { STEEL_CODE_LABELS } from "@/engine/design/steel/criteria"
+import { materialOf } from "@/engine/design/core/designability"
+import { asRcInput } from "@/engine/design/core/section-input"
+import type { DesignRunResult } from "@/engine/design/core/types"
+import type { DesignCriteria } from "@/engine/design/core/criteria"
+import type { SectionDesignInput, SectionDesignInputs } from "@/engine/design/core/section-input"
+import type {
+  LoadCase,
+  LoadCaseId,
+  LoadCombination,
+  LoadComboId,
+  CodePreset,
+} from "@/engine/load-cases"
+
+export type SelectedLoadType = "point" | "uniform" | "asymmetric" | null
+
+interface FlyoutPanelProps {
+  activeTab: TabType
+  activeTool: ToolType
+  onClose: () => void
+  model?: StructureModel
+  selection?: MultiSelection
+  activeSection?: SectionId
+  onSectionChange?: (id: SectionId) => void
+  activeMemberType?: MemberType
+  onMemberTypeChange?: (t: MemberType) => void
+  activeSupportType?: SupportPick
+  onSupportTypeChange?: (t: SupportPick) => void
+  onSectionPropsChange?: (id: SectionId, patch: Partial<Section>) => void
+  onDeleteSelection?: () => void
+  onModifySelection?: () => void
+  onApplySupportSelection?: (type: SupportPick) => void
+  onAddSection?: (section: Section) => void
+  onDeleteSection?: (id: SectionId) => void
+  unitSettings?: UnitSettings
+  // Load tab
+  activePtInputMode?: "principal" | "angular"
+  onPtInputModeChange?: (mode: "principal" | "angular") => void
+  activePointLoadAxis?: "x" | "y"
+  onPointLoadAxisChange?: (axis: "x" | "y") => void
+  activePtMagnitude?: number
+  onPtMagnitudeChange?: (v: number) => void
+  activePtAngle?: number
+  onPtAngleChange?: (angle: number) => void
+  activeDistType?: "uniform" | "asymmetric"
+  onDistTypeChange?: (t: "uniform" | "asymmetric") => void
+  activeDistMode?: "local-axis" | "global-axis"
+  onDistModeChange?: (m: "local-axis" | "global-axis") => void
+  activeDistAxis?: "x" | "y"
+  onDistAxisChange?: (axis: "x" | "y") => void
+  activeDistWStart?: number
+  onDistWStartChange?: (v: number) => void
+  activeDistWEnd?: number
+  onDistWEndChange?: (v: number) => void
+  activeDistWxStart?: number
+  onDistWxStartChange?: (v: number) => void
+  activeDistWxEnd?: number
+  onDistWxEndChange?: (v: number) => void
+  activeDistWyStart?: number
+  onDistWyStartChange?: (v: number) => void
+  activeDistWyEnd?: number
+  onDistWyEndChange?: (v: number) => void
+  selectedLoadId?: LoadId | null
+  selectedLoadIds?: string[]
+  onModifyLoad?: (patch: Partial<Load>) => void
+  onModifyLoadsByType?: (type: "point" | "distributed", patch: Partial<Load>) => void
+  onDeleteLoad?: () => void
+  onDeleteLoadIds?: () => void
+  diagramScale?: number
+  onDiagramScaleChange?: (v: number) => void
+  invertSFD?: boolean
+  onInvertSFDChange?: (v: boolean) => void
+  invertBMD?: boolean
+  onInvertBMDChange?: (v: boolean) => void
+  deformationScale?: number
+  onDeformationScaleChange?: (v: number) => void
+  analysisResult?: AnalysisResult | null
+  onToolSelect?: (tool: ToolType) => void
+  hoveredNodeId?: string | null
+  // Load cases & combinations
+  loadCases?: Record<LoadCaseId, LoadCase>
+  activeLoadCaseId?: LoadCaseId
+  onActiveLoadCaseChange?: (id: LoadCaseId) => void
+  onReassignLoadCase?: (newCaseId: LoadCaseId) => void
+  onAddLoadCase?: () => void
+  onDeleteLoadCase?: (id: LoadCaseId) => void
+  onPatchLoadCase?: (id: LoadCaseId, patch: Partial<LoadCase>) => void
+  combinations?: Record<LoadComboId, LoadCombination>
+  combinationsEnabled?: boolean
+  onCombinationsEnabledChange?: (v: boolean) => void
+  combinationMode?: "manual" | "code"
+  onCombinationModeChange?: (m: "manual" | "code") => void
+  selectedCodePreset?: CodePreset
+  onSelectedCodePresetChange?: (p: CodePreset) => void
+  onAddCombination?: () => void
+  onDeleteCombination?: (id: LoadComboId) => void
+  onPatchCombination?: (id: LoadComboId, patch: Partial<LoadCombination>) => void
+  onGenerateCodeCombinations?: () => void
+  editingCombinationId?: LoadComboId | null
+  onEditingCombinationIdChange?: (id: LoadComboId | null) => void
+  /** Sections with γ ≤ 0 — drives the Selfweight γ=0 inline warning. */
+  zeroGammaSectionIds?: string[]
+  // Design tab (v1.1)
+  designCriteria?: DesignCriteria
+  onDesignCriteriaChange?: (patch: Partial<DesignCriteria>) => void
+  sectionDesignInputs?: SectionDesignInputs
+  onPatchSectionDesignInput?: (id: SectionId, patch: Partial<SectionDesignInput>) => void
+  designSelectedSectionId?: SectionId | null
+  onDesignSelectedSectionChange?: (id: SectionId | null) => void
+  /** Latest design run — feeds the reports' demand markers and group verdicts. */
+  designResult?: DesignRunResult | null
+  /** Which step of the RC / Steel tools is showing. Shared by both tools. */
+  designPane?: DesignPane
+  onDesignPaneChange?: (p: DesignPane) => void
+  // Move Node tool
+  moveNodeMode?: "coordinates" | "screen"
+  onMoveNodeModeChange?: (mode: "coordinates" | "screen") => void
+  moveNodeCoordMode?: "set" | "offset"
+  onMoveNodeCoordModeChange?: (mode: "set" | "offset") => void
+  moveNodeSelectedId?: string | null
+  onMoveNodeSelectId?: (id: string | null) => void
+  onMoveNode?: (nodeId: string, x: number, y: number) => void
+}
+
+export function FlyoutPanel({
+  activeTab,
+  activeTool,
+  onClose,
+  model,
+  selection,
+  activeSection,
+  onSectionChange,
+  activeMemberType,
+  onMemberTypeChange,
+  activeSupportType,
+  onSupportTypeChange,
+  onSectionPropsChange,
+  onDeleteSelection,
+  onModifySelection,
+  onApplySupportSelection,
+  onAddSection,
+  onDeleteSection,
+  unitSettings,
+  activePtInputMode,
+  onPtInputModeChange,
+  activePointLoadAxis,
+  onPointLoadAxisChange,
+  activePtMagnitude,
+  onPtMagnitudeChange,
+  activePtAngle,
+  onPtAngleChange,
+  activeDistType,
+  onDistTypeChange,
+  activeDistMode,
+  onDistModeChange,
+  activeDistAxis,
+  onDistAxisChange,
+  activeDistWStart,
+  onDistWStartChange,
+  activeDistWEnd,
+  onDistWEndChange,
+  activeDistWxStart,
+  onDistWxStartChange,
+  activeDistWxEnd,
+  onDistWxEndChange,
+  activeDistWyStart,
+  onDistWyStartChange,
+  activeDistWyEnd,
+  onDistWyEndChange,
+  selectedLoadId,
+  selectedLoadIds,
+  onModifyLoad,
+  onModifyLoadsByType,
+  onDeleteLoad,
+  onDeleteLoadIds,
+  diagramScale = 1,
+  onDiagramScaleChange,
+  invertSFD = false,
+  onInvertSFDChange,
+  invertBMD = false,
+  onInvertBMDChange,
+  deformationScale = 1,
+  onDeformationScaleChange,
+  analysisResult,
+  onToolSelect,
+  hoveredNodeId,
+  moveNodeMode = "coordinates",
+  onMoveNodeModeChange,
+  moveNodeCoordMode = "set",
+  onMoveNodeCoordModeChange,
+  moveNodeSelectedId,
+  onMoveNodeSelectId,
+  onMoveNode,
+  loadCases,
+  activeLoadCaseId,
+  onActiveLoadCaseChange,
+  onReassignLoadCase,
+  onAddLoadCase,
+  onDeleteLoadCase,
+  onPatchLoadCase,
+  combinations,
+  combinationsEnabled,
+  onCombinationsEnabledChange,
+  combinationMode,
+  onCombinationModeChange,
+  selectedCodePreset,
+  onSelectedCodePresetChange,
+  onAddCombination,
+  onDeleteCombination,
+  onPatchCombination,
+  onGenerateCodeCombinations,
+  editingCombinationId,
+  onEditingCombinationIdChange,
+  zeroGammaSectionIds,
+  designCriteria,
+  onDesignCriteriaChange,
+  sectionDesignInputs,
+  onPatchSectionDesignInput,
+  designSelectedSectionId,
+  onDesignSelectedSectionChange,
+  designResult,
+  designPane = "preferences",
+  onDesignPaneChange,
+}: FlyoutPanelProps) {
+  if (!activeTool) return null
+
+  const wide = activeTool === "LOAD_CASE" || activeTool === "LOAD_COMBINATION" || activeTool === "DESIGN_SCHEDULE"
+  // Both design tools now hold two panes each, so both take the wider column —
+  // the preferences pane used to be 215px on its own and reflows fine.
+  const medium = activeTool === "SECTION_DESIGN" || activeTool === "STEEL_DESIGN"
+
+  return (
+    <div
+      data-flyout-root
+      className={cn(
+        "absolute top-3 left-3 right-3 bg-white rounded-xl shadow-[0_4px_24px_rgba(0,0,0,0.12)] border border-gray-100 z-20",
+        wide ? "md:right-auto md:w-[515px]" : medium ? "sm:right-auto sm:w-[355px]" : "sm:right-auto sm:w-[215px]",
+        "animate-in fade-in slide-in-from-left-2 duration-150 ease-out",
+        "flex flex-col max-h-[calc(100dvh-5rem)]"
+      )}
+    >
+      <div className="p-3 flex items-center justify-between shrink-0">
+        <span className="font-medium text-sm" style={{ color: FLYOUT_PANEL_COLORS.headerFont }}>{getToolTitle(activeTool, activeTab)}</span>
+        <button
+          onClick={onClose}
+          className="text-gray-400 hover:text-gray-600 transition-colors p-0.5 rounded hover:bg-gray-100"
+        >
+          <X size={14} />
+        </button>
+      </div>
+      <div className="mx-3" style={{ borderTopColor: FLYOUT_PANEL_COLORS.headerSeparator, borderTopWidth: 3 }} />
+      <div className="p-3 overflow-y-auto" style={{ scrollbarGutter: "stable" }}>
+        <FlyoutContent
+          activeTab={activeTab}
+          activeTool={activeTool}
+          model={model}
+          selection={selection}
+          activeSection={activeSection}
+          onSectionChange={onSectionChange}
+          activeMemberType={activeMemberType}
+          onMemberTypeChange={onMemberTypeChange}
+          activeSupportType={activeSupportType}
+          onSupportTypeChange={onSupportTypeChange}
+          onSectionPropsChange={onSectionPropsChange}
+          onDeleteSelection={onDeleteSelection}
+          onModifySelection={onModifySelection}
+          onApplySupportSelection={onApplySupportSelection}
+          hoveredNodeId={hoveredNodeId}
+          onAddSection={onAddSection}
+          onDeleteSection={onDeleteSection}
+          unitSettings={unitSettings}
+          activePtInputMode={activePtInputMode}
+          onPtInputModeChange={onPtInputModeChange}
+          activePointLoadAxis={activePointLoadAxis}
+          onPointLoadAxisChange={onPointLoadAxisChange}
+          activePtMagnitude={activePtMagnitude}
+          onPtMagnitudeChange={onPtMagnitudeChange}
+          activePtAngle={activePtAngle}
+          onPtAngleChange={onPtAngleChange}
+          activeDistType={activeDistType}
+          onDistTypeChange={onDistTypeChange}
+          activeDistMode={activeDistMode}
+          onDistModeChange={onDistModeChange}
+          activeDistAxis={activeDistAxis}
+          onDistAxisChange={onDistAxisChange}
+          activeDistWStart={activeDistWStart}
+          onDistWStartChange={onDistWStartChange}
+          activeDistWEnd={activeDistWEnd}
+          onDistWEndChange={onDistWEndChange}
+          activeDistWxStart={activeDistWxStart}
+          onDistWxStartChange={onDistWxStartChange}
+          activeDistWxEnd={activeDistWxEnd}
+          onDistWxEndChange={onDistWxEndChange}
+          activeDistWyStart={activeDistWyStart}
+          onDistWyStartChange={onDistWyStartChange}
+          activeDistWyEnd={activeDistWyEnd}
+          onDistWyEndChange={onDistWyEndChange}
+          selectedLoadId={selectedLoadId}
+          selectedLoadIds={selectedLoadIds}
+          onModifyLoad={onModifyLoad}
+          onModifyLoadsByType={onModifyLoadsByType}
+          onDeleteLoad={onDeleteLoad}
+          onDeleteLoadIds={onDeleteLoadIds}
+          diagramScale={diagramScale}
+          onDiagramScaleChange={onDiagramScaleChange}
+          invertSFD={invertSFD}
+          onInvertSFDChange={onInvertSFDChange}
+          invertBMD={invertBMD}
+          onInvertBMDChange={onInvertBMDChange}
+          deformationScale={deformationScale}
+          onDeformationScaleChange={onDeformationScaleChange}
+          analysisResult={analysisResult}
+          moveNodeMode={moveNodeMode}
+          onMoveNodeModeChange={onMoveNodeModeChange}
+          moveNodeCoordMode={moveNodeCoordMode}
+          onMoveNodeCoordModeChange={onMoveNodeCoordModeChange}
+          moveNodeSelectedId={moveNodeSelectedId}
+          onMoveNodeSelectId={onMoveNodeSelectId}
+          onMoveNode={onMoveNode}
+          onToolSelect={onToolSelect}
+          loadCases={loadCases}
+          activeLoadCaseId={activeLoadCaseId}
+          onActiveLoadCaseChange={onActiveLoadCaseChange}
+          onReassignLoadCase={onReassignLoadCase}
+          onAddLoadCase={onAddLoadCase}
+          onDeleteLoadCase={onDeleteLoadCase}
+          onPatchLoadCase={onPatchLoadCase}
+          combinations={combinations}
+          combinationsEnabled={combinationsEnabled}
+          onCombinationsEnabledChange={onCombinationsEnabledChange}
+          combinationMode={combinationMode}
+          onCombinationModeChange={onCombinationModeChange}
+          selectedCodePreset={selectedCodePreset}
+          onSelectedCodePresetChange={onSelectedCodePresetChange}
+          onAddCombination={onAddCombination}
+          onDeleteCombination={onDeleteCombination}
+          onPatchCombination={onPatchCombination}
+          onGenerateCodeCombinations={onGenerateCodeCombinations}
+          editingCombinationId={editingCombinationId}
+          onEditingCombinationIdChange={onEditingCombinationIdChange}
+          zeroGammaSectionIds={zeroGammaSectionIds}
+          designCriteria={designCriteria}
+          onDesignCriteriaChange={onDesignCriteriaChange}
+          sectionDesignInputs={sectionDesignInputs}
+          onPatchSectionDesignInput={onPatchSectionDesignInput}
+          designSelectedSectionId={designSelectedSectionId}
+          onDesignSelectedSectionChange={onDesignSelectedSectionChange}
+          designResult={designResult}
+          designPane={designPane}
+          onDesignPaneChange={onDesignPaneChange}
+        />
+      </div>
+    </div>
+  )
+}
+
+/**
+ * The section a material tool will actually land on.
+ *
+ * `designSelectedSectionId` is shared by both material tools, so it can point
+ * at the *other* material's section — matching on id alone would let the steel
+ * strip advertise a concrete section. Both section panes resolve this the same
+ * way (keep the selection only if it belongs to this material, else fall back
+ * to the first that does), and the strip has to agree with them or it promises
+ * a section the user never arrives at.
+ */
+function resolveSectionFor(
+  material: "rc" | "steel",
+  model: StructureModel | undefined,
+  selectedId: SectionId | null,
+): SectionId | null {
+  const sections = model?.sections ?? {}
+  if (selectedId && sections[selectedId] && materialOf(sections[selectedId]) === material) {
+    return selectedId
+  }
+  return Object.keys(sections).find((s) => materialOf(sections[s]) === material) ?? null
+}
+
+/** Context-strip summary of the RC SECTION pane, shown while PREFERENCES is open. */
+function rcSectionSummary(
+  model: StructureModel | undefined,
+  selectedId: SectionId | null,
+  inputs: SectionDesignInputs,
+): (string | null)[] {
+  const id = resolveSectionFor("rc", model, selectedId)
+  if (!id) return ["tidak ada penampang beton"]
+  const input = asRcInput(inputs[id], id)
+  return [
+    model!.sections[id].name,
+    input.elementType === "column" ? "Kolom" : "Balok",
+    input.mode === "checked" ? "sesuai gambar" : "sesuai kebutuhan"
+  ]
+}
+
+/** Context-strip summary of the STEEL SECTION pane. Steel has no per-section
+ *  input, so the section's own name and shape are all there is to report. */
+function steelSectionSummary(
+  model: StructureModel | undefined,
+  selectedId: SectionId | null,
+): (string | null)[] {
+  const id = resolveSectionFor("steel", model, selectedId)
+  if (!id) return ["tidak ada penampang baja"]
+  const sec = model!.sections[id]
+  return [sec.name, sec.shape?.kind?.toUpperCase() ?? null]
+}
+
+function getToolTitle(tool: ToolType, activeTab?: TabType): string {
+  if (!tool) return ""
+  if (tool === "SELECT") return "UBAH PENAMPANG"
+  if (tool === "MOVE_NODE") return "GESER SIMPUL"
+  if (tool === "DELETE") return activeTab === "Load" ? "HAPUS BEBAN" : "HAPUS KOMPONEN"
+  if (tool === "SECTION_DESIGN") return "BETON BERTULANG"
+  if (tool === "STEEL_DESIGN") return "BAJA"
+  if (tool === "DESIGN_SCHEDULE") return "JADWAL DESAIN"
+  const TOOL_TITLES: Record<string, string> = {
+    NODE: "SIMPUL",
+    MEMBER: "ELEMEN",
+    SUPPORT: "TUMPUAN",
+    MATERIAL: "MATERIAL",
+    LOAD_CASE: "KASUS BEBAN",
+    LOAD_COMBINATION: "KOMBINASI BEBAN",
+    POINT_LOAD: "BEBAN TITIK",
+    DISTRIBUTED_LOAD: "BEBAN MERATA",
+    MODIFY_LOAD: "UBAH BEBAN",
+    REACTION: "REAKSI",
+    AXIAL: "DIAGRAM AKSIAL",
+    SHEAR: "DIAGRAM GESER",
+    MOMENT: "DIAGRAM MOMEN",
+    DEFORMATION: "DEFORMASI",
+  }
+  return TOOL_TITLES[tool] ?? tool.replace(/_/g, " ")
+}
+
+type FlyoutContentProps = Omit<FlyoutPanelProps, "onClose">
+
+function FlyoutContent({
+  activeTab,
+  activeTool,
+  model,
+  selection,
+  activeSection,
+  onSectionChange,
+  activeMemberType,
+  onMemberTypeChange,
+  activeSupportType,
+  onSupportTypeChange,
+  onSectionPropsChange,
+  onDeleteSelection,
+  onModifySelection,
+  onApplySupportSelection,
+  hoveredNodeId,
+  onAddSection,
+  onDeleteSection,
+  unitSettings,
+  activePtInputMode,
+  onPtInputModeChange,
+  activePointLoadAxis,
+  onPointLoadAxisChange,
+  activePtMagnitude,
+  onPtMagnitudeChange,
+  activePtAngle,
+  onPtAngleChange,
+  activeDistType,
+  onDistTypeChange,
+  activeDistMode,
+  onDistModeChange,
+  activeDistAxis,
+  onDistAxisChange,
+  activeDistWStart,
+  onDistWStartChange,
+  activeDistWEnd,
+  onDistWEndChange,
+  activeDistWxStart,
+  onDistWxStartChange,
+  activeDistWxEnd,
+  onDistWxEndChange,
+  activeDistWyStart,
+  onDistWyStartChange,
+  activeDistWyEnd,
+  onDistWyEndChange,
+  selectedLoadId,
+  selectedLoadIds = [],
+  onModifyLoad,
+  onModifyLoadsByType,
+  onDeleteLoad: _onDeleteLoad,
+  onDeleteLoadIds,
+  diagramScale = 1,
+  onDiagramScaleChange,
+  invertSFD = false,
+  onInvertSFDChange,
+  invertBMD = false,
+  onInvertBMDChange,
+  deformationScale = 1,
+  onDeformationScaleChange,
+  analysisResult,
+  moveNodeMode = "coordinates",
+  onMoveNodeModeChange,
+  moveNodeCoordMode = "set",
+  onMoveNodeCoordModeChange,
+  moveNodeSelectedId,
+  onMoveNodeSelectId,
+  onMoveNode,
+  loadCases,
+  activeLoadCaseId,
+  onActiveLoadCaseChange,
+  onReassignLoadCase,
+  onAddLoadCase,
+  onDeleteLoadCase,
+  onPatchLoadCase,
+  combinations,
+  combinationsEnabled,
+  onCombinationsEnabledChange,
+  combinationMode,
+  onCombinationModeChange,
+  selectedCodePreset,
+  onSelectedCodePresetChange,
+  onAddCombination,
+  onDeleteCombination,
+  onPatchCombination,
+  onGenerateCodeCombinations,
+  editingCombinationId,
+  onEditingCombinationIdChange,
+  zeroGammaSectionIds,
+  designCriteria,
+  onDesignCriteriaChange,
+  sectionDesignInputs,
+  onPatchSectionDesignInput,
+  designSelectedSectionId,
+  onDesignSelectedSectionChange,
+  designResult,
+  designPane = "preferences",
+  onDesignPaneChange,
+}: FlyoutContentProps) {
+  if (activeTab === "Design") {
+    switch (activeTool) {
+      // Both material tools are two-step: PREFERENCES (the code rules for that
+      // material) then SECTION (applying them). The switch and the context
+      // strip are identical in both; only the panes differ.
+      case "SECTION_DESIGN":
+        return designCriteria && onPatchSectionDesignInput && onDesignSelectedSectionChange ? (
+          <div className="space-y-2.5">
+            <PaneSwitch
+              pane={designPane}
+              onPaneChange={onDesignPaneChange ?? (() => {})}
+              sectionIcon={rcSectionIcon}
+            />
+            <ContextStrip
+              onJump={() => onDesignPaneChange?.(designPane === "preferences" ? "section" : "preferences")}
+              target={designPane === "preferences" ? "Penampang" : "Preferensi"}
+              parts={
+                designPane === "preferences"
+                  ? rcSectionSummary(model, designSelectedSectionId ?? null, sectionDesignInputs ?? {})
+                  : [
+                      RC_CODE_LABELS[designCriteria.rc.code],
+                      rcFrameShortLabel(designCriteria.rc),
+                      `fy ${designCriteria.rc.fy}`,
+                    ]
+              }
+            />
+            {designPane === "preferences" ? (
+              <RcPreferencesPane
+                criteria={designCriteria.rc}
+                onChange={(p) =>
+                  onDesignCriteriaChange?.({ rc: { ...designCriteria.rc, ...p } })
+                }
+              />
+            ) : (
+              <SectionDesignToolContent
+                model={model}
+                selectedSectionId={designSelectedSectionId ?? null}
+                onSelectSection={onDesignSelectedSectionChange}
+                inputs={sectionDesignInputs ?? {}}
+                onPatchInput={onPatchSectionDesignInput}
+                criteria={designCriteria}
+                designResult={designResult}
+              />
+            )}
+          </div>
+        ) : null
+      case "STEEL_DESIGN":
+        // No `inputs`/`onPatchInput`: steel carries no per-section design input.
+        return model && designCriteria ? (
+          <div className="space-y-2.5">
+            <PaneSwitch
+              pane={designPane}
+              onPaneChange={onDesignPaneChange ?? (() => {})}
+              sectionIcon={steelSectionIcon}
+            />
+            <ContextStrip
+              onJump={() => onDesignPaneChange?.(designPane === "preferences" ? "section" : "preferences")}
+              target={designPane === "preferences" ? "Penampang" : "Preferensi"}
+              parts={
+                designPane === "preferences"
+                  ? steelSectionSummary(model, designSelectedSectionId ?? null)
+                  : [
+                      STEEL_CODE_LABELS[designCriteria.steel.code],
+                      steelFrameShortLabel(designCriteria.steel),
+                      `Fy ${designCriteria.steel.Fy}`,
+                    ]
+              }
+            />
+            {designPane === "preferences" ? (
+              <SteelPreferencesPane
+                criteria={designCriteria.steel}
+                onChange={(p) =>
+                  onDesignCriteriaChange?.({ steel: { ...designCriteria.steel, ...p } })
+                }
+              />
+            ) : (
+              <SteelDesignToolContent
+                model={model}
+                selectedSectionId={designSelectedSectionId ?? null}
+                onSelectSection={onDesignSelectedSectionChange ?? (() => {})}
+                designResult={designResult ?? null}
+                criteria={designCriteria}
+              />
+            )}
+          </div>
+        ) : null
+      case "DESIGN_SCHEDULE":
+        return designCriteria && onPatchSectionDesignInput ? (
+          <DesignScheduleToolContent
+            model={model}
+            inputs={sectionDesignInputs ?? {}}
+            onPatchInput={onPatchSectionDesignInput}
+            criteria={designCriteria}
+            designResult={designResult}
+          />
+        ) : null
+      default:
+        return null
+    }
+  }
+
+  if (activeTab === "Model") {
+    switch (activeTool) {
+      case "SELECT":
+        return (
+          <ModifyComponentToolContent
+            selection={selection ?? { nodeIds: [], memberIds: [], supportNodeIds: [] }}
+            sectionId={activeSection ?? "iwf150"}
+            sections={model?.sections}
+            onSectionChange={onSectionChange}
+            onModify={onModifySelection}
+          />
+        )
+      case "MOVE_NODE":
+        return (
+          <MoveNodeToolContent
+            model={model}
+            moveNodeMode={moveNodeMode}
+            onMoveNodeModeChange={onMoveNodeModeChange}
+            moveNodeCoordMode={moveNodeCoordMode}
+            onMoveNodeCoordModeChange={onMoveNodeCoordModeChange}
+            moveNodeSelectedId={moveNodeSelectedId ?? null}
+            onMoveNodeSelectId={onMoveNodeSelectId}
+            onMoveNode={onMoveNode}
+          />
+        )
+      case "DELETE":
+        return (
+          <DeleteComponentToolContent
+            selection={selection ?? { nodeIds: [], memberIds: [], supportNodeIds: [] }}
+            onDelete={onDeleteSelection}
+          />
+        )
+      case "NODE":
+        return <NodeToolContent />
+      case "MEMBER":
+        return (
+          <MemberToolContent
+            activeSection={activeSection ?? "iwf150"}
+            sections={model?.sections}
+            onSectionChange={onSectionChange}
+            activeMemberType={activeMemberType ?? "frame"}
+            onMemberTypeChange={onMemberTypeChange}
+          />
+        )
+      case "SUPPORT":
+        return (
+          <SupportToolContent
+            activeSupportType={activeSupportType ?? "pin"}
+            onSupportTypeChange={onSupportTypeChange}
+            selection={selection ?? { nodeIds: [], memberIds: [], supportNodeIds: [] }}
+            supports={model?.supports}
+            hoveredNodeId={hoveredNodeId ?? null}
+            onApply={onApplySupportSelection}
+          />
+        )
+      case "MATERIAL":
+        return (
+          <MaterialFlyout
+            model={model}
+            activeSection={activeSection ?? "iwf150"}
+            onSectionChange={onSectionChange}
+            onSectionPropsChange={onSectionPropsChange}
+            onAddSection={onAddSection}
+            onDeleteSection={onDeleteSection}
+            unitSettings={unitSettings}
+          />
+        )
+      default:
+        return null
+    }
+  }
+
+  if (activeTab === "Load") {
+    switch (activeTool) {
+      case "LOAD_CASE":
+        return (
+          <LoadCaseToolContent
+            loadCases={loadCases ?? {}}
+            onAddLoadCase={onAddLoadCase ?? (() => {})}
+            onDeleteLoadCase={onDeleteLoadCase ?? (() => {})}
+            onPatchLoadCase={onPatchLoadCase ?? (() => {})}
+            zeroGammaSectionIds={zeroGammaSectionIds ?? []}
+          />
+        )
+      case "LOAD_COMBINATION":
+        return (
+          <LoadCombinationToolContent
+            loadCases={loadCases ?? {}}
+            combinations={combinations ?? {}}
+            combinationsEnabled={combinationsEnabled ?? false}
+            onCombinationsEnabledChange={onCombinationsEnabledChange ?? (() => {})}
+            combinationMode={combinationMode ?? "code"}
+            onCombinationModeChange={onCombinationModeChange ?? (() => {})}
+            selectedCodePreset={selectedCodePreset ?? "ASCE7-22"}
+            onSelectedCodePresetChange={onSelectedCodePresetChange ?? (() => {})}
+            onAddCombination={onAddCombination ?? (() => {})}
+            onDeleteCombination={onDeleteCombination ?? (() => {})}
+            onPatchCombination={onPatchCombination ?? (() => {})}
+            onGenerateCodeCombinations={onGenerateCodeCombinations ?? (() => {})}
+            editingCombinationId={editingCombinationId ?? null}
+            onEditingCombinationIdChange={onEditingCombinationIdChange ?? (() => {})}
+            zeroGammaSectionIds={zeroGammaSectionIds ?? []}
+          />
+        )
+      case "POINT_LOAD":
+        return (
+          <PointLoadToolContent
+            inputMode={activePtInputMode ?? "principal"}
+            onInputModeChange={onPtInputModeChange}
+            axis={activePointLoadAxis ?? "y"}
+            magnitude={activePtMagnitude ?? 10}
+            onAxisChange={onPointLoadAxisChange}
+            onMagnitudeChange={onPtMagnitudeChange}
+            angle={activePtAngle ?? 90}
+            onAngleChange={onPtAngleChange}
+            loadCases={loadCases}
+            activeLoadCaseId={activeLoadCaseId}
+            onActiveLoadCaseChange={onActiveLoadCaseChange}
+          />
+        )
+      case "DISTRIBUTED_LOAD":
+        return (
+          <DistributedLoadToolContent
+            distType={activeDistType ?? "uniform"}
+            distMode={activeDistMode ?? "local-axis"}
+            activeAxis={activeDistAxis ?? "x"}
+            onActiveAxisChange={onDistAxisChange}
+            wStart={activeDistWStart ?? 5}
+            wEnd={activeDistWEnd ?? 5}
+            wxStart={activeDistWxStart ?? 5}
+            wxEnd={activeDistWxEnd ?? 5}
+            wyStart={activeDistWyStart ?? 5}
+            wyEnd={activeDistWyEnd ?? 5}
+            onDistTypeChange={onDistTypeChange}
+            onDistModeChange={onDistModeChange}
+            onWStartChange={onDistWStartChange}
+            onWEndChange={onDistWEndChange}
+            onWxStartChange={onDistWxStartChange}
+            onWxEndChange={onDistWxEndChange}
+            onWyStartChange={onDistWyStartChange}
+            onWyEndChange={onDistWyEndChange}
+            loadCases={loadCases}
+            activeLoadCaseId={activeLoadCaseId}
+            onActiveLoadCaseChange={onActiveLoadCaseChange}
+          />
+        )
+      case "MODIFY_LOAD": {
+        const selectedLoad = selectedLoadId && model?.loads ? model.loads[selectedLoadId] ?? null : null
+        return (
+          <ModifyLoadToolContent
+            selectedLoad={selectedLoad}
+            selectedLoadIds={selectedLoadIds ?? []}
+            model={model ?? null}
+            onModify={onModifyLoad}
+            onModifyByType={onModifyLoadsByType}
+            loadCases={loadCases}
+            onReassignLoadCase={onReassignLoadCase}
+          />
+        )
+      }
+      case "DELETE": {
+        return (
+          <DeleteLoadToolContent
+            selectedLoadIds={selectedLoadIds}
+            model={model}
+            onDelete={onDeleteLoadIds}
+            loadCases={loadCases}
+            activeLoadCaseId={activeLoadCaseId}
+            onActiveLoadCaseChange={onActiveLoadCaseChange}
+          />
+        )
+      }
+      default:
+        return null
+    }
+  }
+
+  if (activeTab === "Analyze") {
+    switch (activeTool) {
+      case "SELECT":
+        return <AnalyzeSelectContent analysisResult={analysisResult ?? null} unitSettings={unitSettings} />
+      case "REACTION":
+        return <ReactionToolContent analysisResult={analysisResult ?? null} unitSettings={unitSettings} />
+      case "AXIAL":
+        return <DiagramToolContent label={activeTool} scale={diagramScale} onScaleChange={onDiagramScaleChange} analysisResult={analysisResult} model={model} unitSettings={unitSettings} />
+      case "SHEAR":
+        return <DiagramToolContent label={activeTool} scale={diagramScale} onScaleChange={onDiagramScaleChange} invert={invertSFD} onInvertChange={onInvertSFDChange} analysisResult={analysisResult} model={model} unitSettings={unitSettings} />
+      case "MOMENT":
+        return <DiagramToolContent label={activeTool} scale={diagramScale} onScaleChange={onDiagramScaleChange} invert={invertBMD} onInvertChange={onInvertBMDChange} analysisResult={analysisResult} model={model} unitSettings={unitSettings} />
+      case "DEFORMATION":
+        return <DeformationToolContent scale={deformationScale} onScaleChange={onDeformationScaleChange} analysisResult={analysisResult} model={model} unitSettings={unitSettings} />
+      default:
+        return null
+    }
+  }
+
+  return null
+}

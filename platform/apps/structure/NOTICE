@@ -1,0 +1,32 @@
+STRUKTURA — Notices and Attribution
+====================================
+
+STRUKTURA is an independent structural engineering application. This
+file is STRUKTURA's attribution record for the MIT-licensed third-party
+portions incorporated into the product.
+
+Third-party foundation portions:
+
+  OpenAnstruk-2D (upstream):  https://github.com/adrianulza/OpenANSTRUK-2D
+  Fork used as the base:      https://github.com/ziyad-cpu/OpenANSTRUK-2Dtest
+                              (commit 31cc234c2a63ae1535864748e633803d6767043e)
+
+  Copyright (c) 2026 OpenAnstruk Contributors
+  Licensed under the MIT License — the full license text is in ./LICENSE.
+
+STRUKTURA v1.0.0 product scope:
+  - Product identity, dashboard and project management (localStorage,
+    versioned JSON import/export, model fingerprinting).
+  - Sample project set (7 verified samples) and an analytical benchmark
+    suite (benchmarks/) plus unit tests (tests/) that did not exist upstream.
+  - SNI 1727:2020 Pasal 2.3.2 load-combination preset.
+  - Calculation report generator (print/PDF HTML) from real solver results.
+  - GitHub Pages hosting configuration (Vite base path + workflow).
+  - Documentation set under docs/.
+
+The Direct Stiffness Method, Euler-Bernoulli beam theory and the cited
+SNI/ACI/AISC code formulas are standard engineering methods and published
+code provisions; formula implementations carry clause references in-source.
+
+No other third-party code is vendored. Runtime dependencies and their
+licenses are listed in docs/LICENSING_AUDIT.md.

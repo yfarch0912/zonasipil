@@ -1,0 +1,215 @@
+import { useState, useRef, useEffect } from "react"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+import type {
+  LoadCase,
+  LoadCaseId,
+  LoadCombination,
+  LoadComboId,
+} from "@/engine/load-cases"
+
+import type { AnalyzeViewMode } from "@/engine/analysis-pipeline"
+export type { AnalyzeViewMode }
+
+interface AnalyzeViewSelectorProps {
+  combinationsEnabled: boolean
+  loadCases: Record<LoadCaseId, LoadCase>
+  combinations: Record<LoadComboId, LoadCombination>
+  analyzeViewMode: AnalyzeViewMode
+  onAnalyzeViewModeChange: (m: AnalyzeViewMode) => void
+  selectedCaseId: LoadCaseId
+  onSelectedCaseIdChange: (id: LoadCaseId) => void
+  selectedCombinationId: LoadComboId | null
+  onSelectedCombinationIdChange: (id: LoadComboId | null) => void
+  envelopeComboIds: LoadComboId[]
+  onEnvelopeComboIdsChange: (ids: LoadComboId[]) => void
+}
+
+export function AnalyzeViewSelector({
+  combinationsEnabled,
+  loadCases,
+  combinations,
+  analyzeViewMode,
+  onAnalyzeViewModeChange,
+  selectedCaseId,
+  onSelectedCaseIdChange,
+  selectedCombinationId,
+  onSelectedCombinationIdChange,
+  envelopeComboIds,
+  onEnvelopeComboIdsChange,
+}: AnalyzeViewSelectorProps) {
+  const cases = Object.values(loadCases)
+  const combos = Object.values(combinations)
+
+  // Cases visible in the analyze view: only those marked enabled. Disabled cases
+  // (their loads are skipped by the solver) shouldn't pollute the dropdown.
+  const visibleCases = cases.filter((c) => c.enabled)
+  // Same rule for combinations: a disabled combo shouldn't be selectable in the
+  // analyze dropdown (parallel to how disabled cases are hidden above).
+  const visibleCombos = combos.filter((c) => c.enabled)
+
+  const modeOptions: { value: AnalyzeViewMode; label: string }[] = combinationsEnabled
+    ? [
+        { value: "case", label: "Kasus Beban" },
+        { value: "combination", label: "Kombinasi Beban" },
+        { value: "envelope", label: "Amplop" },
+      ]
+    : [{ value: "case", label: "Kasus Beban" }]
+
+  return (
+    <div className="absolute bottom-2 right-3 z-10 flex items-center gap-1.5 bg-white/95 backdrop-blur-sm rounded-lg shadow-[0_2px_12px_rgba(0,0,0,0.08)] border border-gray-100 px-2 py-1 pointer-events-auto">
+      <Select
+        value={analyzeViewMode}
+        onValueChange={(v) => onAnalyzeViewModeChange(v as AnalyzeViewMode)}
+      >
+        <SelectTrigger className="h-7 text-xs min-w-[80px] w-auto" size="sm">
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          {modeOptions.map((opt) => (
+            <SelectItem key={opt.value} value={opt.value} className="text-xs">
+              {opt.label}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+
+      {analyzeViewMode === "case" && (
+        <Select value={selectedCaseId} onValueChange={onSelectedCaseIdChange}>
+          <SelectTrigger className="h-7 text-xs min-w-[80px] w-auto" size="sm">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {visibleCases.length === 0 && (
+              <div className="px-2 py-1.5 text-[11px] text-gray-500 italic">
+                Tidak ada kasus aktif
+              </div>
+            )}
+            {visibleCases.map((c) => (
+              <SelectItem key={c.id} value={c.id} className="text-xs">
+                {c.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      )}
+
+      {analyzeViewMode === "combination" && (
+        <Select
+          value={selectedCombinationId ?? ""}
+          onValueChange={(v) => onSelectedCombinationIdChange(v || null)}
+        >
+          <SelectTrigger className="h-7 text-xs min-w-[120px] w-auto" size="sm">
+            <SelectValue placeholder="Pilih kombinasi…" />
+          </SelectTrigger>
+          <SelectContent>
+            {visibleCombos.length === 0 && (
+              <div className="px-2 py-1.5 text-[11px] text-gray-500 italic">
+                {combos.length === 0 ? "Belum ada kombinasi" : "Tidak ada kombinasi aktif"}
+              </div>
+            )}
+            {visibleCombos.map((c) => (
+              <SelectItem key={c.id} value={c.id} className="text-xs">
+                {c.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      )}
+
+      {analyzeViewMode === "envelope" && (
+        <EnvelopeChecklist
+          combos={combos}
+          envelopeComboIds={envelopeComboIds}
+          onChange={onEnvelopeComboIdsChange}
+        />
+      )}
+    </div>
+  )
+}
+
+function EnvelopeChecklist({
+  combos,
+  envelopeComboIds,
+  onChange,
+}: {
+  combos: LoadCombination[]
+  envelopeComboIds: LoadComboId[]
+  onChange: (ids: LoadComboId[]) => void
+}) {
+  const [open, setOpen] = useState(false)
+  const popoverRef = useRef<HTMLDivElement | null>(null)
+  const triggerRef = useRef<HTMLButtonElement | null>(null)
+
+  useEffect(() => {
+    if (!open) return
+    const handler = (e: MouseEvent) => {
+      const t = e.target as Node
+      if (popoverRef.current?.contains(t)) return
+      if (triggerRef.current?.contains(t)) return
+      setOpen(false)
+    }
+    document.addEventListener("mousedown", handler)
+    return () => document.removeEventListener("mousedown", handler)
+  }, [open])
+
+  const included = new Set(envelopeComboIds)
+  const includedCount = combos.filter((c) => included.has(c.id)).length
+
+  const toggle = (id: LoadComboId) => {
+    if (included.has(id)) onChange(envelopeComboIds.filter((x) => x !== id))
+    else onChange([...envelopeComboIds, id])
+  }
+
+  return (
+    <div className="relative">
+      <button
+        ref={triggerRef}
+        onClick={() => setOpen((v) => !v)}
+        className="h-7 px-3 text-xs rounded-md border border-gray-200 bg-white hover:bg-gray-50 min-w-[140px] w-auto text-left flex items-center justify-between gap-2"
+      >
+        <span className="text-gray-700">
+          Set amplop: {includedCount} dari {combos.length}
+        </span>
+        <span className="text-gray-400 text-[10px]">▾</span>
+      </button>
+
+      {open && (
+        <div
+          ref={popoverRef}
+          className="absolute bottom-[calc(100%+4px)] right-0 z-30 bg-white rounded-md shadow-lg border border-gray-200 p-2 min-w-[260px] max-h-[60vh] overflow-y-auto"
+        >
+          {combos.length === 0 ? (
+            <div className="px-2 py-1.5 text-[11px] text-gray-500 italic">
+              Belum ada kombinasi
+            </div>
+          ) : (
+            <div className="space-y-1">
+              {combos.map((c) => (
+                <label
+                  key={c.id}
+                  className="flex items-center gap-2 px-1.5 py-1 rounded hover:bg-gray-50 cursor-pointer"
+                >
+                  <input
+                    type="checkbox"
+                    checked={included.has(c.id)}
+                    onChange={() => toggle(c.id)}
+                    className="h-3.5 w-3.5 cursor-pointer accent-[#1a2f5e]"
+                  />
+                  <span className="text-[11px] text-gray-700 truncate" title={c.name}>
+                    {c.name}
+                  </span>
+                </label>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  )
+}

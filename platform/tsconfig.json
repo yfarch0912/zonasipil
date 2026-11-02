@@ -1,0 +1,48 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "strict": true,
+    "noEmit": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "allowImportingTsExtensions": true,
+    "baseUrl": ".",
+    "paths": {
+      "@zonasipil/engineering-core": ["packages/engineering-core/src/index.ts"],
+      "@zonasipil/application-registry": ["packages/application-registry/src/index.ts"],
+      "@zonasipil/app-calculator": ["apps/calculator/src/index.ts"],
+      "@zonasipil/app-quantity": ["apps/quantity/src/index.ts"],
+      "@zonasipil/app-concrete": ["apps/concrete/src/index.ts"],
+      "@zonasipil/app-steel": ["apps/steel/src/index.ts"],
+      "@zonasipil/app-foundation": ["apps/foundation/src/index.ts"],
+      "@zonasipil/app-rab": ["apps/rab/src/index.ts"]
+    }
+  },
+  "include": [
+    "packages/engineering-core/src/**/*",
+    "packages/engineering-core/tests/**/*",
+    "packages/application-registry/src/**/*",
+    "packages/application-registry/tests/**/*",
+    "apps/calculator/src/**/*",
+    "apps/calculator/tests/**/*",
+    "apps/concrete/src/**/*",
+    "apps/concrete/tests/**/*",
+    "apps/steel/src/**/*",
+    "apps/steel/tests/**/*",
+    "apps/foundation/src/**/*",
+    "apps/foundation/tests/**/*",
+    "apps/quantity/src/**/*",
+    "apps/quantity/tests/**/*",
+    "apps/rab/src/**/*",
+    "apps/rab/tests/**/*",
+    "apps/web/src/**/*",
+    "apps/web/tests/**/*"
+  ],
+  "exclude": ["node_modules", "dist", "apps/structure"]
+}

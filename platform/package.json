@@ -1,0 +1,25 @@
+{
+  "devDependencies": {
+    "typescript": "^5",
+    "vitest": "^2"
+  },
+  "name": "zonasipil-platform",
+  "private": true,
+  "scripts": {
+    "build": "tsc --noEmit -p tsconfig.json && npm run build --workspace @zonasipil/app-web",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit -p tsconfig.json"
+  },
+  "type": "module",
+  "version": "0.1.0",
+  "workspaces": [
+    "packages/*",
+    "apps/calculator",
+    "apps/concrete",
+    "apps/steel",
+    "apps/foundation",
+    "apps/quantity",
+    "apps/rab",
+    "apps/web"
+  ]
+}

@@ -1,0 +1,457 @@
+/**
+ * Design-run orchestrator. Solves all load cases, combines per enabled
+ * combination, builds each member's demand context, then dispatches to the
+ * material strategy (RC or Steel) keyed by the section's materialClass.
+ *
+ * A mixed concrete + steel model is designed in one run: each member uses the
+ * criteria block matching its material. The orchestrator stays material-agnostic
+ * (solve → combine → envelope → dispatch); all engineering lives in the
+ * per-material strategies (`../rc/strategy.ts`, `../steel/strategy.ts`).
+ *
+ * **Two stages, split at the solver seam.** `solveDesignCases` holds the only
+ * expensive step — one stiffness factorization per enabled load case — and
+ * depends on nothing but the model, the cases and the shear-deformation flag.
+ * `designFromCases` is linear algebra over already-solved cases plus the
+ * per-member clause work, and takes the criteria and section inputs.
+ *
+ * The Design tab recomputes on every input change with no Run button, so the
+ * split is what keeps a rebar keystroke off the solver: only stage 2 re-runs.
+ * `runDesign` composes both for callers that just want a one-shot run.
+ */
+
+import type { StructureModel, MemberId, SectionId } from "@/engine/model"
+import type { LoadCase, LoadCaseId, LoadCombination, LoadComboId } from "@/engine/load-cases"
+import { combineResults, solveAllCases } from "@/engine/analysis-pipeline"
+import type { MemberEndForces, SolverResult } from "@/engine/solver"
+import { buildGravityCombo, envelopeMemberDemands, type MemberZoneDemands } from "./demands"
+import { isSectionDesignable, materialOf } from "./designability"
+import type { DesignCriteria } from "./criteria"
+import { asRcInput, defaultSectionDesignInput, type SectionDesignInputs } from "./section-input"
+import type { DesignRunResult, JointCheckResult, MemberDesignResult } from "./types"
+import { designRunVerdict, memberVerdict } from "./verdict"
+import { designMemberRc } from "../rc/strategy"
+import { designMemberSteel } from "../steel/strategy"
+import { inferSteelRole } from "../steel/member-role"
+import { checkScwb, type ScwbBeam, type ScwbColumn } from "../steel/seismic"
+
+export interface DesignRunInput {
+  model: StructureModel
+  loadCases: Record<LoadCaseId, LoadCase>
+  combinations: Record<LoadComboId, LoadCombination>
+  criteria: DesignCriteria
+  inputs: SectionDesignInputs
+  shearDeformation: boolean
+}
+
+/** Stage-2 input: everything `runDesign` needs once the cases are solved. */
+export type DesignFromCasesInput = Omit<DesignRunInput, "shearDeformation">
+
+/**
+ * Solved load cases, ready for `designFromCases`. Cache this on
+ * `(model, loadCases, shearDeformation)` — it is the expensive half, and
+ * criteria or rebar edits do not invalidate it.
+ */
+export type DesignCaseResults = Record<LoadCaseId, SolverResult>
+
+function memberLength(model: StructureModel, memberId: MemberId): number {
+  const m = model.members[memberId]
+  const a = model.nodes[m.a]
+  const b = model.nodes[m.b]
+  return Math.hypot(b.x - a.x, b.y - a.y)
+}
+
+/**
+ * SMF/SRPMK strong-column-weak-beam joint check (18.7.3.2). At every joint where
+ * both columns and beams frame in, ΣMnc (column nominal flexural strengths at
+ * their design axial) must be ≥ 6/5·ΣMnb (beam nominal flexural strengths). Uses
+ * the section nominal capacities stored on each member result (`column.Mn`,
+ * `beamMn`). Mutates failing columns' `scwbPass`. Empty for OMF/IMF.
+ */
+function checkStrongColumnWeakBeam(
+  model: StructureModel,
+  members: Record<MemberId, MemberDesignResult>,
+  frameType: string,
+): JointCheckResult[] {
+  if (frameType !== "SMF") return []
+  // Node → member ids framing in.
+  const adj: Record<string, MemberId[]> = {}
+  for (const m of Object.values(model.members)) {
+    ;(adj[m.a] ??= []).push(m.id)
+    ;(adj[m.b] ??= []).push(m.id)
+  }
+  const joints: JointCheckResult[] = []
+  for (const [nodeId, ids] of Object.entries(adj)) {
+    const columnIds = ids.filter((id) => members[id]?.kind === "column")
+    const beamIds = ids.filter((id) => members[id]?.kind === "beam")
+    if (columnIds.length === 0 || beamIds.length === 0) continue
+    const sumMnc = columnIds.reduce((s, id) => s + (members[id].column?.Mn ?? 0), 0)
+    const sumMnb = beamIds.reduce((s, id) => s + (members[id].beamMn ?? 0), 0)
+    const pass = sumMnc >= 1.2 * sumMnb
+    const ratio = sumMnb > 0 ? sumMnc / (1.2 * sumMnb) : Infinity
+    joints.push({ nodeId, sumMnc, sumMnb, ratio, pass, columnIds })
+    if (!pass) {
+      for (const id of columnIds) {
+        if (members[id].column) {
+          members[id].column!.scwbPass = false
+          members[id].worstFlexureDC = Infinity // force red on the canvas (SCWB governs)
+        }
+      }
+    }
+  }
+  return joints
+}
+
+/**
+ * AISC 341-16 §E3.4a strong-column-weak-beam, the steel analogue of the RC pass
+ * above. SMF only — §E2 (IMF) and §E1 (OMF) impose no moment ratio.
+ *
+ * Needs each member's section, so it reads `model.sections` rather than a stored
+ * capacity: unlike RC, `M*pc` depends on the joint's axial load and `M*pb` on
+ * the beam's expected strength, neither of which the member result carries.
+ */
+function checkSteelScwb(
+  model: StructureModel,
+  members: Record<MemberId, MemberDesignResult>,
+  frameType: string,
+  criteriaFy: number,
+): JointCheckResult[] {
+  if (frameType !== "SMF") return []
+  const adj: Record<string, MemberId[]> = {}
+  for (const m of Object.values(model.members)) {
+    ;(adj[m.a] ??= []).push(m.id)
+    ;(adj[m.b] ??= []).push(m.id)
+  }
+
+  const propsOf = (id: MemberId) => {
+    const sec = model.sections[model.members[id]?.section]
+    const d = sec?.derived
+    const Z33 = d?.Z33
+    const Ag = sec?.A
+    if (!(Z33 && Z33 > 0) || !(Ag && Ag > 0)) return undefined
+    return { Z33, Ag, Fy: sec?.strength?.fy ?? criteriaFy }
+  }
+
+  const joints: JointCheckResult[] = []
+  for (const [nodeId, ids] of Object.entries(adj)) {
+    const steelIds = ids.filter((id) => members[id]?.material === "steel")
+    const columnIds = steelIds.filter((id) => members[id]?.kind === "column")
+    const beamIds = steelIds.filter((id) => members[id]?.kind === "beam")
+    if (columnIds.length === 0 || beamIds.length === 0) continue
+
+    const columns: ScwbColumn[] = []
+    for (const id of columnIds) {
+      const p = propsOf(id)
+      if (p) columns.push({ ...p, Pu: members[id].steel?.PrMax ?? 0 })
+    }
+    const beams: ScwbBeam[] = []
+    for (const id of beamIds) {
+      const p = propsOf(id)
+      if (p) beams.push({ Z33: p.Z33, Fy: p.Fy })
+    }
+
+    const res = checkScwb(columns, beams)
+    if (!res) continue
+    joints.push({
+      nodeId, sumMnc: res.sumMpc, sumMnb: res.sumMpb,
+      ratio: res.ratio, pass: res.pass, columnIds, material: "steel",
+      verification: res.verification,
+    })
+  }
+  return joints
+}
+
+// ── Main entry ───────────────────────────────────────────────────────────────
+
+/**
+ * STAGE 1 — solve every enabled load case once. The only expensive step in a
+ * design run, and the only one independent of criteria and section inputs.
+ */
+export function solveDesignCases(
+  model: StructureModel,
+  loadCases: Record<LoadCaseId, LoadCase>,
+  shearDeformation: boolean,
+): DesignCaseResults {
+  return solveAllCases(model, loadCases, { shearDeformation })
+}
+
+/**
+ * STAGE 2 — combine, envelope and design against already-solved cases. Cheap
+ * enough to re-run on every rebar keystroke; holds every criteria- and
+ * input-dependent step.
+ *
+ * Takes the raw solved cases rather than a pre-digested wrapper so the UI can
+ * hand it the very same memo the Analyze tab uses; the per-case failure
+ * messages are derived here, from the `loadCases` this input already carries.
+ */
+export function designFromCases(
+  caseResults: DesignCaseResults,
+  input: DesignFromCasesInput,
+): DesignRunResult {
+  const { model, loadCases, combinations, criteria, inputs } = input
+  const members: Record<MemberId, MemberDesignResult> = {}
+
+  const enabledCombos = Object.values(combinations).filter((c) => c.enabled !== false)
+  if (enabledCombos.length === 0) {
+    const empty: DesignRunResult = {
+      ok: false,
+      issues: ["Tidak ada kombinasi beban aktif — tentukan kombinasi di tab Beban dulu."],
+      members: {},
+    }
+    empty.verdict = designRunVerdict(empty)
+    return empty
+  }
+
+  const issues: string[] = []
+  // Structured mirrors of the issue strings (Sprint 1, R-02): the Design
+  // tab's issues panel renders these by category, and tests assert on them
+  // without string-matching prose.
+  const failedCases: NonNullable<DesignRunResult["failedCases"]> = []
+  for (const [id, r] of Object.entries(caseResults)) {
+    if (!r.ok) {
+      issues.push(`Kasus beban "${loadCases[id]?.name ?? id}" gagal diselesaikan: ${r.reason}`)
+      failedCases.push({ caseId: id, name: loadCases[id]?.name ?? id, reason: r.reason })
+    }
+  }
+
+  const perCombo: Record<LoadComboId, Record<MemberId, MemberEndForces>> = {}
+  const skippedCombos: NonNullable<DesignRunResult["skippedCombos"]> = []
+  const incompleteCombos: NonNullable<DesignRunResult["incompleteCombos"]> = []
+  for (const combo of enabledCombos) {
+    const r = combineResults(caseResults, combo, loadCases)
+    if (!r) {
+      issues.push(`Kombinasi "${combo.name}" dilewati — tidak ada kasus bebannya yang menghasilkan hasil.`)
+      skippedCombos.push({ comboId: combo.id, name: combo.name })
+      continue
+    }
+    // Sprint 1 (R-03): a PARTIAL combination still contributes its valid
+    // terms, but it is named here and every member designed from it is
+    // flagged `demandsIncomplete` below — it must not be consumed as an
+    // ordinary complete combination.
+    if (!r.combination.complete) {
+      const dropped = r.combination.droppedTerms
+        .map((t) => `"${loadCases[t.caseId]?.name ?? t.caseId}" (${t.factor}×, ${t.reason})`)
+        .join(", ")
+      issues.push(
+        `Kombinasi "${combo.name}" TIDAK LENGKAP — term ${dropped} dihilangkan, ` +
+        `jadi hasil kombinasi ini parsial dan tidak boleh dibaca sebagai kombinasi penuh.`,
+      )
+      incompleteCombos.push({ comboId: combo.id, name: combo.name, droppedTerms: r.combination.droppedTerms })
+    }
+    perCombo[combo.id] = r.memberEndForces
+  }
+  if (Object.keys(perCombo).length === 0) {
+    const aborted: DesignRunResult = {
+      ok: false,
+      issues: [...issues, "Tidak ada kombinasi yang menghasilkan hasil — desain dibatalkan."],
+      members: {},
+      failedCases, skippedCombos, incompleteCombos,
+    }
+    aborted.verdict = designRunVerdict(aborted)
+    return aborted
+  }
+
+  // Internal gravity combo for Vg (IMF/SMF capacity-design shear). Only RC uses
+  // it today; built once when the RC frame type requires it.
+  let gravityEf: Record<MemberId, MemberEndForces> | null = null
+  let gravityComboMissing = false
+  let gravityComboIncomplete = false
+  if (criteria.rc.frameType !== "OMF") {
+    const gr = combineResults(caseResults, buildGravityCombo(loadCases), loadCases)
+    if (gr) {
+      gravityEf = gr.memberEndForces
+      if (!gr.combination.complete) {
+        gravityComboIncomplete = true
+        issues.push(
+          "Kombinasi gravitasi (1.2D + 1.0L) TIDAK LENGKAP — sebagian term dihilangkan, " +
+          "jadi Vg yang dipakai untuk Ve adalah nilai parsial.",
+        )
+      }
+    } else {
+      gravityComboMissing = true
+      issues.push("Kombinasi gravitasi (1.2D + 1.0L) tidak tersedia — Ve dihitung tanpa Vg.")
+    }
+  }
+
+  for (const m of Object.values(model.members)) {
+    const sec = model.sections[m.section]
+    if (!isSectionDesignable(sec)) {
+      members[m.id] = { memberId: m.id, status: "not-designable" }
+      continue
+    }
+    const L = memberLength(model, m.id)
+    if (!(L > 0)) {
+      members[m.id] = { memberId: m.id, status: "not-designable" }
+      continue
+    }
+    const dims = sec!.shape!.dims
+    const hMm = dims.h ?? dims.d ?? 0 // zone length 2h; steel uses section depth
+
+    // Per-member, per-combo end forces → envelope per zone.
+    const efByCombo: Record<LoadComboId, MemberEndForces> = {}
+    for (const [comboId, all] of Object.entries(perCombo)) {
+      const ef = all[m.id]
+      if (ef) efByCombo[comboId] = ef
+    }
+    if (Object.keys(efByCombo).length === 0) {
+      members[m.id] = { memberId: m.id, status: "no-result" }
+      continue
+    }
+    const raw: MemberZoneDemands = envelopeMemberDemands(efByCombo, L, hMm)
+    const Pu = raw.PuMaxCompression
+
+    const na = model.nodes[m.a]
+    const nb = model.nodes[m.b]
+    const isVertical = Math.abs(nb.y - na.y) > Math.abs(nb.x - na.x)
+
+    const di = inputs[m.section as SectionId] ?? defaultSectionDesignInput(m.section)
+
+    if (materialOf(sec) === "steel") {
+      members[m.id] = designMemberSteel({
+        memberId: m.id,
+        section: sec!,
+        L,
+        cr: criteria.steel,
+        efByCombo,
+        raw,
+        Pu,
+        // Inferred from geometry, never from user input — see member-role.ts.
+        role: inferSteelRole(na.x, na.y, nb.x, nb.y),
+      })
+      continue
+    }
+
+    // RC path
+    const rcShape = sec!.shape!.kind === "circle" ? "circle" : "rect"
+    members[m.id] = designMemberRc({
+      memberId: m.id,
+      b: dims.b ?? hMm, // undefined for a circle → fall back to D (column-only)
+      h: hMm,
+      shape: rcShape,
+      fc: sec!.strength!.fc!,
+      L,
+      di: asRcInput(di, m.section),
+      cr: criteria.rc,
+      efByCombo,
+      gravityEf: gravityEf?.[m.id] ?? null,
+      raw,
+      Pu,
+      isVertical,
+    })
+  }
+
+  // Sprint 1 (R-03): flag every designed member whose demand envelope was
+  // built from a partial combination — the envelope in `envelopeMemberDemands`
+  // spans ALL combos in perCombo, so one incomplete combo taints every
+  // member it produced forces for (in practice: every designed member).
+  // A partial GRAVITY combo taints RC members' capacity-design shear (Ve via
+  // Vg) the same way.
+  if (incompleteCombos.length > 0 || gravityComboIncomplete) {
+    for (const r of Object.values(members)) {
+      if (r.status !== "designed") continue
+      if (incompleteCombos.length > 0 || (gravityComboIncomplete && r.material !== "steel")) {
+        r.demandsIncomplete = true
+      }
+    }
+  }
+
+  const anyDesigned = Object.values(members).some((r) => r.status === "designed")
+  if (!anyDesigned) {
+    issues.push(
+      "Tidak ditemukan elemen yang dapat didesain — penampang yang didukung adalah beton persegi/lingkaran, " +
+      "atau baja IWF / RHS / CHS / tee / siku tunggal dengan tegangan leleh yang ditentukan.",
+    )
+  }
+
+  // Surface steel failures as text, so they are never silent even if the user
+  // never opens the report deck.
+  // A refused member must never disappear silently — say why it was refused.
+  for (const [id, r] of Object.entries(members)) {
+    if (r.note) issues.push(`Elemen ${id}: ${r.note}`)
+  }
+
+  for (const [id, r] of Object.entries(members)) {
+    const st = r.steel
+    if (!st) continue
+    if (st.ratio > 1) {
+      issues.push(
+        `Elemen baja ${id}: rasio gaya gabungan ${st.ratio.toFixed(2)} > 1 ` +
+        `melalui ${st.equation} (AISC H1).`,
+      )
+    }
+    if (st.shearRatio > 1) {
+      issues.push(
+        `Elemen baja ${id}: rasio geser ${st.shearRatio.toFixed(2)} > 1 (AISC G).`,
+      )
+    }
+    for (const w of st.warnings) issues.push(`Elemen baja ${id}: ${w}`)
+  }
+
+  // Surface column shear / confinement failures as issues (never silent, even if
+  // the user never opens the Advanced Report deck).
+  for (const [id, r] of Object.entries(members)) {
+    const col = r.column
+    if (r.kind !== "column" || !col) continue
+    if (col.shear && !col.shear.crossSectionOk) {
+      issues.push(`Kolom ${id}: permintaan geser ${col.shear.Vdesign.toFixed(0)} kN melebihi batas penampang φVmax ${col.shear.phiVmax.toFixed(0)} kN (22.5.1.2).`)
+    } else if (col.shear && col.shear.dc !== undefined && col.shear.dc > 1) {
+      issues.push(`Kolom ${id}: D/C geser ${col.shear.dc.toFixed(2)} > 1 — perbanyak sengkang (18.7.6 / 22.5).`)
+    }
+    if (col.confinement?.some((c) => c.status === "fail")) {
+      issues.push(`Kolom ${id}: detailing pengekangan transversal gagal (18.7.5 / 25.7.2) — lihat Laporan Lanjutan.`)
+    }
+  }
+
+  // Strong-column-weak-beam joint checks (post-pass; need all members designed).
+  // Both materials run: a model may hold RC and steel frames at once, and the
+  // two rules have different ratio definitions (see JointCheckResult).
+  const joints = [
+    ...checkStrongColumnWeakBeam(model, members, criteria.rc.frameType),
+    ...checkSteelScwb(model, members, criteria.steel.frameType, criteria.steel.Fy),
+  ]
+  for (const j of joints) {
+    if (j.pass) continue
+    issues.push(
+      j.material === "steel"
+        ? `Kolom-kuat-balok-lemah di simpul ${j.nodeId}: ΣM*pc ${j.sumMnc.toFixed(0)} < ΣM*pb ${j.sumMnb.toFixed(0)} kN·m (AISC 341 E3.4a).`
+        : `Kolom-kuat-balok-lemah di simpul ${j.nodeId}: ΣMnc ${j.sumMnc.toFixed(0)} < 1.2·ΣMnb ${(1.2 * j.sumMnb).toFixed(0)} kN·m (18.7.3.2).`,
+    )
+  }
+
+  // AISC 341 member detailing failures surface as run issues too — a ductility
+  // shortfall does not show up in any D/C number.
+  for (const r of Object.values(members)) {
+    const s = r.steel?.seismic
+    if (!s || s.ductilityPass) continue
+    const bad = s.elements.filter((e) => !e.pass).map((e) => e.name).join(", ")
+    issues.push(
+      `${r.memberId}: ${s.frameType} mensyaratkan penampang ${s.level === "high" ? "sangat" : "cukup"} ` +
+      `daktil — ${bad} melebihi batas Tabel D1.1 AISC 341.`,
+    )
+  }
+
+  const result: DesignRunResult = {
+    ok: true, issues, members, joints,
+    failedCases, skippedCombos, incompleteCombos,
+    gravityComboMissing, gravityComboIncomplete,
+  }
+  // Sprint 2 (P2): unified verdicts. Member verdicts are computed AFTER
+  // the joint post-pass because the RC SCWB pass mutates failing columns
+  // (scwbPass, worstFlexureDC) — a verdict computed earlier would miss
+  // it. The run verdict then rolls up members + joints + run-level
+  // completeness under the documented precedence.
+  for (const r of Object.values(members)) r.verdict = memberVerdict(r)
+  result.verdict = designRunVerdict(result)
+  return result
+}
+
+/**
+ * One-shot run: solve, then design. The UI drives the two stages separately so
+ * it can cache the solve; this composition is for callers that hold no cache.
+ */
+export function runDesign(input: DesignRunInput): DesignRunResult {
+  return designFromCases(
+    solveDesignCases(input.model, input.loadCases, input.shearDeformation),
+    input,
+  )
+}
+

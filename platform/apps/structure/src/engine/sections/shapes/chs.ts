@@ -1,0 +1,38 @@
+import type { ShapeDef, SectionProperties } from "./types"
+
+function compute(dims: Record<string, number>): SectionProperties {
+  const { d, t } = dims
+  const di   = d - 2 * t
+  const A    = (Math.PI / 4) * (d ** 2 - di ** 2)
+  const I33  = (Math.PI / 64) * (d ** 4 - di ** 4)
+  const S33  = I33 / (d / 2)
+  const Z33  = (d ** 3 - di ** 3) / 6
+  // Shear area: κ = 0.5 per AISC 360 for hollow circular sections
+  const Aκ   = 0.5 * A
+  const r    = Math.sqrt(I33 / A)
+  // Closed circular section: J is the polar moment, = 2·I. No warping (Cw ≈ 0)
+  // and no lateral-torsional buckling limit state (AISC F8 / F11.2(c)), so
+  // rts / ho are deliberately left undefined.
+  const J = (Math.PI / 32) * (d ** 4 - di ** 4)
+
+  return {
+    A, I33, I22: I33, S33b: S33, S33t: S33, S22L: S33, S22R: S33, Z33, Z22: Z33,
+    "Aκ2": Aκ, "Aκ3": Aκ, r33: r, r22: r, yBar: d / 2,
+    J,
+  }
+}
+
+// 6-inch Schedule 40 CHS: OD = 168.3 mm, wall = 7.11 mm
+export const chs: ShapeDef = {
+  kind: "chs",
+  label: "CHS",
+  dimKeys: ["d", "t"] as const,
+  defaults: { d: 168.3, t: 7.11 },
+  validate: ({ d, t }) => {
+    if (!(d > 0)) return { ok: false, reason: "Diameter luar harus > 0" }
+    if (!(t > 0)) return { ok: false, reason: "Tebal dinding harus > 0" }
+    if (2 * t >= d) return { ok: false, reason: "Tebal dinding harus < d/2" }
+    return { ok: true }
+  },
+  compute,
+}

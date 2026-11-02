@@ -1,0 +1,14 @@
+{
+  "appId": "structure",
+  "productCode": "ZS-STRUCTURE",
+  "fixtureOnly": true,
+  "note": "DEVELOPMENT FIXTURE ONLY \u2014 not a real licence. Production entitlement is decided server-side by the ZonaSipil platform (contract \u00a73).",
+  "entitled": true,
+  "tier": "demo",
+  "expiresAt": null,
+  "features": [
+    "calculators",
+    "analysis-2d"
+  ],
+  "reason": "Demo mode (fixture)."
+}

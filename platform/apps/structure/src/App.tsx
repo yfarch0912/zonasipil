@@ -1,0 +1,1852 @@
+﻿import { useCallback, useDeferredValue, useEffect, useMemo, useRef, useState } from "react"
+import { NavBar } from "@/components/nav-bar"
+import { ToolSidebar } from "@/components/tool-sidebar"
+import { FlyoutPanel } from "@/components/flyout-panel"
+import { StructuralCanvas } from "@/canvas/structural-canvas"
+import { StatusBar } from "@/components/status-bar"
+import { announceStatus } from "@/shared/announce"
+import { DataModelEditor } from "@/components/data-model-editor"
+import { SimulationControls, type CaseComparisonRow } from "@/components/simulation-controls"
+import { MemberInspector } from "@/components/member-inspector"
+import { peakNodalDisplacement } from "@/visualization/deformation"
+import { useIsMobile } from "@/hooks/use-mobile"
+import type { TabType, ToolType } from "@/components/tool-sidebar"
+import type { UnitSettings } from "@/engine/units"
+import { DEFAULT_UNIT_SETTINGS } from "@/engine/units"
+import type {
+  NodeId,
+  Section,
+  SectionId,
+  MultiSelection,
+  StructureModel,
+  SupportPick,
+  MemberType,
+  Load,
+  LoadId,
+} from "@/engine/model"
+import {
+  solveAllCases,
+  combineResults,
+  auditCombination,
+  envelopeResults,
+  pickDisplayedResult,
+} from "@/engine/analysis-pipeline"
+import type { AnalysisResult } from "@/engine/analysis-pipeline"
+import { analyze, type SolverResult } from "@/engine/solver"
+import {
+  runDiagnostics,
+  mergeSolverFailures,
+  mergeShearFallbacks,
+  mergeNumericalDiagnostics,
+  findZeroGammaSections,
+  type DiagnosticsReport,
+} from "@/engine/analysis-diagnostics"
+import { AnalysisIssuesDialog } from "@/components/analysis-issues-dialog"
+import {
+  CombinationCompletenessBanner,
+  type CombinationAuditItem,
+} from "@/components/combination-completeness-banner"
+import { DesignIssuesPanel } from "@/components/design-issues-panel"
+import { AnalyzeViewSelector } from "@/components/analyze-view-selector"
+import { LoadViewSelector, LOAD_VIEW_ALL, type LoadViewSelection } from "@/components/load-view-selector"
+import { BeamTemplateModal } from "@/templates/beam-template-modal"
+import { FrameTemplateModal } from "@/templates/frame-template-modal"
+import { TrussTemplateModal } from "@/templates/truss-template-modal"
+import { ExamplesModal } from "@/templates/examples-modal"
+import {
+  template1SimpleBeam,
+  template2Cantilever,
+  template3Portal,
+  template4PortalLateral,
+  template5AsymmetricRafter,
+} from "@/templates/examples"
+import {
+  createEmptyModel,
+  emptySelection,
+  isEmptySelection,
+  mergeSelection,
+  removeFromSelection,
+  deleteMultiSelection,
+  deleteSection,
+  newLoadId,
+} from "@/engine/model"
+import {
+  addNode,
+  findCoincidentNode,
+  findNodeAt,
+  hitTestMember,
+  hitTestNode,
+  pointSegDist,
+  snapWorld,
+  splitMember,
+  SCALE,
+} from "@/engine/geometry"
+import { newMemberId, resetIdCounter, seedIdCounter, isStructureModel } from "@/engine/model"
+import { HIT_TOL_NODE, HIT_TOL_MEMBER, LOAD_PT_ARROW_LEN_PX, LOAD_DIST_MAX_ARROW_PX } from "@/engine/constants"
+import {
+  kindDisplayLabel,
+  type LoadCase,
+  type LoadCaseId,
+  type LoadCombination,
+  type LoadComboId,
+  type CodePreset,
+  DEFAULT_LOAD_CASES,
+  DEFAULT_COMBINATIONS,
+  newLoadCaseId,
+  newLoadComboId,
+  removeLoadsOfCase,
+} from "@/engine/load-cases"
+import { generateCodeCombinations, requiredKindsForPreset } from "@/engine/combinations-presets"
+import type { DesignReport, DesignRunResult } from "@/engine/design/core/types"
+import { defaultDesignCriteria, type DesignCriteria } from "@/engine/design/core/criteria"
+import {
+  defaultSectionDesignInput,
+  type SectionDesignInput,
+  type SectionDesignInputs,
+} from "@/engine/design/core/section-input"
+import { designFromCases } from "@/engine/design/core/run-design"
+import type { DesignPane } from "@/tabs/design/tools/shared/pane-switch"
+import type { AnalyzeViewMode } from "@/components/analyze-view-selector"
+import { useModelHistory } from "@/hooks/use-model-history"
+
+// Built once so `model` and `activeSection` initialise from the same section
+// catalogue (avoids activeSection pointing at a key absent from the model).
+const fallbackModel = template3Portal()
+
+// STRUKTURA: initial model resolution order —
+//  1. a pending model handed over by the Dashboard (project open / sample),
+//  2. the last autosaved model (safe recovery after reload, directive §13),
+//  3. the shipped portal template.
+function loadInitialModel(): StructureModel {
+  try {
+    const pending = localStorage.getItem("struktura:pending-model:v1")
+    if (pending) {
+      localStorage.removeItem("struktura:pending-model:v1")
+      const parsed: unknown = JSON.parse(pending)
+      if (isStructureModel(parsed)) {
+        seedIdCounter(parsed)
+        return parsed
+      }
+    }
+    const saved = localStorage.getItem("struktura:autosave:v1")
+    if (saved) {
+      const parsed: unknown = JSON.parse(saved)
+      if (isStructureModel(parsed)) {
+        seedIdCounter(parsed)
+        return parsed
+      }
+    }
+  } catch {
+    // Corrupt storage must never block the editor — fall through to template.
+  }
+  return fallbackModel
+}
+const initialModel = loadInitialModel()
+
+export default function App() {
+  const isMobile = useIsMobile()
+  const [activeTab, setActiveTab] = useState<TabType>("Model")
+  const [activeTool, setActiveTool] = useState<ToolType>(null)
+  const [unitSettings, setUnitSettings] = useState<UnitSettings>(DEFAULT_UNIT_SETTINGS)
+  const [snapToGrid, setSnapToGrid] = useState(true)
+  const [snapToNode, setSnapToNode] = useState(true)
+  const [adaptiveView, setAdaptiveView] = useState(true)
+  const [shearDeformation, setShearDeformation] = useState(false)
+  const [showDimensions, setShowDimensions] = useState(true)
+  const [showSectionLabels, setShowSectionLabels] = useState(true)
+  const [showNodeIds, setShowNodeIds] = useState(false)
+  const [showMemberIds, setShowMemberIds] = useState(false)
+  const [showLocalAxes, setShowLocalAxes] = useState(false)
+  const [cursorX, setCursorX] = useState(0)
+  const [cursorY, setCursorY] = useState(0)
+  const [model, setModel] = useState<StructureModel>(initialModel)
+  // STRUKTURA autosave (§13): persist every model change for safe recovery.
+  useEffect(() => {
+    try {
+      localStorage.setItem("struktura:autosave:v1", JSON.stringify(model))
+    } catch {
+      // Storage full/unavailable — editing continues in memory.
+    }
+  }, [model])
+  const [activeSection, setActiveSection] = useState<SectionId>(
+    () => Object.keys(initialModel.sections)[0],
+  )
+  const [activeMemberType, setActiveMemberType] = useState<MemberType>("frame")
+  const [activeSupportType, setActiveSupportType] = useState<SupportPick>("pin")
+  const [selection, setSelection] = useState<MultiSelection>(emptySelection)
+  const [pendingFrameStart, setPendingFrameStart] = useState<NodeId | null>(null)
+
+  const [envelopeComboIds, setEnvelopeComboIds] = useState<LoadComboId[]>([])
+  const [diagramScale, setDiagramScale] = useState(1)
+  const [invertSFD, setInvertSFD] = useState(true)
+  const [invertBMD, setInvertBMD] = useState(false)
+  const [deformationScale, setDeformationScale] = useState(1)
+  // Deformation animation progress (0 = undeformed, 1 = full solver
+  // deformation). Default 1 preserves the long-standing behaviour of
+  // showing the deformed shape when entering Analyze; the simulation
+  // controls in the Analyze view drive it down/up. It only ever
+  // scales what the canvas draws — never the model or the results.
+  const [animProgress, setAnimProgress] = useState(1)
+  // Member-inspector position (relative, 0..1 along the selected
+  // member). The selection itself is the long-standing shared
+  // `selection` state, so it persists across result views.
+  const [inspectionXi, setInspectionXi] = useState(0.5)
+  const [templateModal, setTemplateModal] = useState<"beam" | "frame" | "truss" | null>(null)
+  const [showExamplesModal, setShowExamplesModal] = useState(false)
+
+  const [activePtInputMode, setActivePtInputMode] = useState<"principal" | "angular">("principal")
+  const [activePointLoadAxis, setActivePointLoadAxis] = useState<"x" | "y">("y")
+  const [activePtMagnitude, setActivePtMagnitude] = useState(10)
+  const [activePtAngle, setActivePtAngle] = useState(90)
+  const [activeDistType, setActiveDistType] = useState<"uniform" | "asymmetric">("uniform")
+  const [activeDistMode, setActiveDistMode] = useState<"local-axis" | "global-axis">("local-axis")
+  const [activeDistAxis, setActiveDistAxis] = useState<"x" | "y">("x")
+  const [activeDistWStart, setActiveDistWStart] = useState(-1)
+  const [activeDistWEnd, setActiveDistWEnd] = useState(-5)
+  const [activeDistWxStart, setActiveDistWxStart] = useState(5)
+  const [activeDistWxEnd, setActiveDistWxEnd] = useState(5)
+  const [activeDistWyStart, setActiveDistWyStart] = useState(5)
+  const [activeDistWyEnd, setActiveDistWyEnd] = useState(5)
+  const [selectedLoadId, setSelectedLoadId] = useState<LoadId | null>(null)
+  const [selectedLoadIds, setSelectedLoadIds] = useState<string[]>([])
+
+  // ─── Load Cases & Combinations ─────────────────────────────────────────────
+  const [loadCases, setLoadCases] = useState<Record<LoadCaseId, LoadCase>>(DEFAULT_LOAD_CASES)
+  const [activeLoadCaseId, setActiveLoadCaseId] = useState<LoadCaseId>("dead")
+  const [combinations, setCombinations] = useState<Record<LoadComboId, LoadCombination>>(DEFAULT_COMBINATIONS)
+  const [combinationsEnabled, setCombinationsEnabled] = useState(true)
+  const [combinationMode, setCombinationMode] = useState<"manual" | "code">("manual")
+  const [selectedCodePreset, setSelectedCodePreset] = useState<CodePreset>("ASCE7-22")
+  const [editingCombinationId, setEditingCombinationId] = useState<LoadComboId | null>(null)
+  // Analyze view selector
+  const [analyzeViewMode, setAnalyzeViewMode] = useState<AnalyzeViewMode>("case")
+  const [selectedCaseId, setSelectedCaseId] = useState<LoadCaseId>("dead")
+  const [selectedCombinationId, setSelectedCombinationId] = useState<LoadComboId | null>(null)
+  // Load tab: which case to show on canvas (or "all loads"). Default "all".
+  const [loadViewFilter, setLoadViewFilter] = useState<LoadViewSelection>(LOAD_VIEW_ALL)
+
+  // ─── Design tab (v1.1) ─────────────────────────────────────────────────────
+  // Like loadCases/combinations, design state lives in App state only — it is
+  // not part of StructureModel and is not persisted by Save/Load.
+  const [designCriteria, setDesignCriteria] = useState<DesignCriteria>(defaultDesignCriteria)
+  const [sectionDesignInputs, setSectionDesignInputs] = useState<SectionDesignInputs>({})
+  const [designSelectedSectionId, setDesignSelectedSectionId] = useState<SectionId | null>(null)
+  const [designReport, setDesignReport] = useState<DesignReport>("default")
+  // Which pane of the RC / Steel design tools is showing. Shared by both tools
+  // so switching material keeps you on the same step of the flow.
+  const [designPane, setDesignPane] = useState<DesignPane>("preferences")
+
+  const handleDesignCriteriaChange = useCallback((patch: Partial<DesignCriteria>) => {
+    setDesignCriteria((prev) => ({ ...prev, ...patch }))
+  }, [])
+
+  const handlePatchSectionDesignInput = useCallback(
+    (id: SectionId, patch: Partial<SectionDesignInput>) => {
+      setSectionDesignInputs((prev) => {
+        const base = prev[id] ?? defaultSectionDesignInput(id)
+        return { ...prev, [id]: { ...base, ...patch } as SectionDesignInput }
+      })
+    },
+    [],
+  )
+
+  // While a placement tool is active, the flyout's active load case drives the
+  // canvas "Show Load" filter so users never place into a hidden case. Off-case
+  // loads are hidden during placement; on tool exit, snap back to "All Loads".
+  const isPlacingLoad = activeTool === "POINT_LOAD" || activeTool === "DISTRIBUTED_LOAD"
+  // Phase 7 hooks remediation: this was a setState-in-effect (the effect
+  // only mirrored derived inputs into state). It is now the documented
+  // "adjust state during render" pattern — same semantics (the filter
+  // follows the placement tool / active case, and snaps back to All on
+  // tool exit), without the extra effect-driven render pass.
+  const [prevPlacingKey, setPrevPlacingKey] = useState<string | null>(null)
+  const placingKey = `${isPlacingLoad}:${activeLoadCaseId}`
+  if (prevPlacingKey !== placingKey) {
+    setPrevPlacingKey(placingKey)
+    setLoadViewFilter(isPlacingLoad ? activeLoadCaseId : LOAD_VIEW_ALL)
+  }
+
+  // Generate (or regenerate) preset combinations on demand. Auto-creates
+  // any missing load cases the preset needs (matched by kind, not name) and
+  // then replaces all preset-sourced combinations. Custom combos are kept.
+  const handleGenerateCodeCombinations = useCallback(() => {
+    // First, ensure every required kind has a corresponding case. We compute
+    // the final case map synchronously so the combo generator sees it too.
+    const needed = requiredKindsForPreset(selectedCodePreset)
+    const finalCases: Record<LoadCaseId, LoadCase> = { ...loadCases }
+    for (const kind of needed) {
+      const exists = Object.values(finalCases).some((c) => c.kind === kind)
+      if (exists) continue
+      const id = newLoadCaseId()
+      finalCases[id] = {
+        id,
+        name: kindDisplayLabel(kind),
+        kind,
+        enabled: true,
+      }
+    }
+    setLoadCases(finalCases)
+
+    // Replace all preset combos; keep custom combos.
+    const generated = generateCodeCombinations(selectedCodePreset, finalCases)
+    setCombinations((prev) => {
+      const kept: Record<LoadComboId, LoadCombination> = {}
+      for (const [id, c] of Object.entries(prev)) {
+        if (c.source === "custom") kept[id] = c
+      }
+      for (const c of generated) kept[c.id] = c
+      return kept
+    })
+    // Drop old preset IDs from the envelope set, add the newly generated ones.
+    setEnvelopeComboIds((prev) => {
+      const presetIds = new Set(
+        Object.values(combinations)
+          .filter((c) => c.source === "preset")
+          .map((c) => c.id),
+      )
+      const kept = prev.filter((id) => !presetIds.has(id))
+      return [...kept, ...generated.map((c) => c.id)]
+    })
+  }, [selectedCodePreset, loadCases, combinations])
+
+  const handleAddLoadCase = useCallback(() => {
+    setLoadCases((prev) => {
+      const id = newLoadCaseId()
+      const count = Object.keys(prev).length
+      const newCase: LoadCase = {
+        id,
+        name: `Kasus ${count + 1}`,
+        kind: "Live",
+        enabled: true,
+      }
+      return { ...prev, [id]: newCase }
+    })
+  }, [])
+
+  const handleDeleteLoadCase = useCallback(
+    (id: LoadCaseId) => {
+      if (loadCases[id]?.locked) return
+      setLoadCases((prev) => {
+        const next = { ...prev }
+        delete next[id]
+        return next
+      })
+      // STRUKTURA Cycle-8: cascade the delete into loads. Previously only
+      // combinations were trimmed, so the deleted case's loads stayed in
+      // model.loads as orphans — silently excluded from every analysis
+      // (solveAllCases iterates cases, not loads) with no warning anywhere.
+      setModel((m) => ({ ...m, loads: removeLoadsOfCase(m.loads, id) }))
+      // If the deleted case was active, fall back to the first remaining case.
+      setActiveLoadCaseId((cur) => {
+        if (cur !== id) return cur
+        const remaining = Object.keys(loadCases).filter((k) => k !== id)
+        return remaining[0] ?? "dead"
+      })
+      // Drop any combinations referencing only this case; trim terms in others.
+      setCombinations((prev) => {
+        const next: Record<LoadComboId, LoadCombination> = {}
+        for (const [cid, combo] of Object.entries(prev)) {
+          const filteredTerms = combo.terms.filter((t) => t.caseId !== id)
+          if (filteredTerms.length === 0) continue
+          next[cid] = { ...combo, terms: filteredTerms }
+        }
+        return next
+      })
+      if (selectedCaseId === id) setSelectedCaseId("dead")
+    },
+    [loadCases, selectedCaseId]
+  )
+
+  const handlePatchLoadCase = useCallback(
+    (id: LoadCaseId, patch: Partial<LoadCase>) => {
+      setLoadCases((prev) => {
+        const existing = prev[id]
+        if (!existing) return prev
+        // Locked cases can only patch `enabled`. For Selfweight, `enabled` gates
+        // the synthetic γ·A body force computed in solveCase("selfweight").
+        if (existing.locked) {
+          const safePatch: Partial<LoadCase> = {}
+          if ("enabled" in patch) safePatch.enabled = patch.enabled
+          return { ...prev, [id]: { ...existing, ...safePatch } }
+        }
+        return { ...prev, [id]: { ...existing, ...patch } }
+      })
+    },
+    []
+  )
+
+  const handleAddCombination = useCallback(() => {
+    const id = newLoadComboId()
+    // Prefer "dead" as the seed term; fall back to any non-locked case; else first.
+    const seedCaseId =
+      loadCases["dead"]?.id ??
+      Object.values(loadCases).find((c) => !c.locked)?.id ??
+      Object.keys(loadCases)[0] ?? "dead"
+    const newCombo: LoadCombination = {
+      id,
+      name: `Kombinasi ${Object.values(combinations).filter((c) => c.source === "custom").length + 1}`,
+      terms: [{ factor: 1.0, caseId: seedCaseId }],
+      source: "custom",
+      enabled: true,
+    }
+    setCombinations((prev) => ({ ...prev, [id]: newCombo }))
+    setEnvelopeComboIds((prev) => [...prev, id])
+    setEditingCombinationId(id)
+  }, [loadCases, combinations])
+
+  const handleDeleteCombination = useCallback((id: LoadComboId) => {
+    setCombinations((prev) => {
+      const next = { ...prev }
+      delete next[id]
+      return next
+    })
+    setEnvelopeComboIds((prev) => prev.filter((x) => x !== id))
+    setEditingCombinationId((cur) => (cur === id ? null : cur))
+    setSelectedCombinationId((cur) => (cur === id ? null : cur))
+  }, [])
+
+  // Reassign every selected load (single or multi-selection) to a new case.
+  const handleReassignLoadCase = useCallback(
+    (newCaseId: LoadCaseId) => {
+      const ids = selectedLoadIds.length > 0
+        ? selectedLoadIds
+        : (selectedLoadId ? [selectedLoadId] : [])
+      if (ids.length === 0) return
+      setModel((m) => {
+        const nextLoads = { ...m.loads }
+        for (const id of ids) {
+          const l = nextLoads[id]
+          if (!l) continue
+          nextLoads[id] = { ...l, loadCaseId: newCaseId }
+        }
+        return { ...m, loads: nextLoads }
+      })
+    },
+    [selectedLoadId, selectedLoadIds],
+  )
+
+  const handlePatchCombination = useCallback(
+    (id: LoadComboId, patch: Partial<LoadCombination>) => {
+      setCombinations((prev) => {
+        const existing = prev[id]
+        if (!existing) return prev
+        return { ...prev, [id]: { ...existing, ...patch } }
+      })
+    },
+    []
+  )
+
+  const [moveNodeMode, setMoveNodeMode] = useState<"coordinates" | "screen">("coordinates")
+  const moveNodeModeRef = useRef<"coordinates" | "screen">("coordinates")
+  useEffect(() => { moveNodeModeRef.current = moveNodeMode }, [moveNodeMode])
+  const [moveNodeCoordMode, setMoveNodeCoordMode] = useState<"set" | "offset">("set")
+  const [moveNodeSelectedId, setMoveNodeSelectedId] = useState<NodeId | null>(null)
+  const [draggingNodeId, setDraggingNodeId] = useState<NodeId | null>(null)
+
+  // Undo/redo over the whole model (covers node/member/support/section/load
+  // edits, since loads live inside `model`). See use-model-history.ts.
+  const { undo, redo, canUndo, canRedo, resetHistory } = useModelHistory({
+    model,
+    setModel,
+    draggingNodeId,
+  })
+
+  // Ctrl/Cmd+Z = undo, Ctrl/Cmd+Y or Ctrl/Cmd+Shift+Z = redo. Only on the Model
+  // and Load tabs (Analyze is read-only). Ignore when the focus is in a form
+  // field so native text-undo keeps working there.
+  useEffect(() => {
+    if (activeTab !== "Model" && activeTab !== "Load") return
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (!(e.ctrlKey || e.metaKey)) return
+      const t = e.target as HTMLElement | null
+      const tag = t?.tagName
+      if (tag === "INPUT" || tag === "TEXTAREA" || t?.isContentEditable) return
+      const key = e.key.toLowerCase()
+      if (key === "z" && !e.shiftKey) {
+        e.preventDefault()
+        undo()
+      } else if (key === "y" || (key === "z" && e.shiftKey)) {
+        e.preventDefault()
+        redo()
+      }
+    }
+    window.addEventListener("keydown", onKeyDown)
+    return () => window.removeEventListener("keydown", onKeyDown)
+  }, [undo, redo, activeTab])
+
+  const [hoveredNodeId, setHoveredNodeId] = useState<NodeId | null>(null)
+  const [hoveredMemberId, setHoveredMemberId] = useState<string | null>(null)
+  const [hoveredLoadId, setHoveredLoadId] = useState<LoadId | null>(null)
+
+  const [showMobileModal, setShowMobileModal] = useState(() =>
+    /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent)
+  )
+  // Phase 8 (B2): focus management for the landscape advisory dialog —
+  // on open, remember the current focus and move focus into the
+  // dialog; on dismiss, restore focus to where the user was.
+  const mobileModalRef = useRef<HTMLDivElement>(null)
+  const focusBeforeMobileModalRef = useRef<Element | null>(null)
+  useEffect(() => {
+    if (showMobileModal) {
+      focusBeforeMobileModalRef.current = document.activeElement
+      mobileModalRef.current?.focus()
+    } else if (focusBeforeMobileModalRef.current instanceof HTMLElement) {
+      focusBeforeMobileModalRef.current.focus()
+      focusBeforeMobileModalRef.current = null
+    }
+  }, [showMobileModal])
+
+
+  // Case-aware analysis pipeline. Each enabled case solves once; combinations
+  // and envelope are derived by linear superposition. See
+  // src/engine/analysis-pipeline.ts.
+  //
+  // Lazy gate (v1.0.6): the solver only runs while a tab that draws results is
+  // active. Editing in Model/Load tabs no longer triggers solves whose results
+  // would never be drawn — entering the tab is the implicit trigger. Edits
+  // while on it still re-solve live (memo dep includes model/loadCases),
+  // preserving the no-button UX inside the tab.
+  //
+  // Design shares this memo (v1.2.0): it needs exactly the same solve, so
+  // gating both tabs here means switching Analyze ↔ Design reuses the
+  // factorization instead of repeating it.
+  const caseResults = useMemo<Record<LoadCaseId, SolverResult>>(
+    () => activeTab === "Analyze" || activeTab === "Design"
+      ? solveAllCases(model, loadCases, { shearDeformation })
+      : {},
+    [activeTab, model, loadCases, shearDeformation],
+  )
+
+  // Analyze-only: the Design tab shares `caseResults` above but combines the
+  // cases itself, per enabled combination, inside the design run. Without this
+  // gate every design keystroke would also rebuild the full display combination
+  // set — work nothing on the Design tab ever draws.
+  const comboResults = useMemo(() => {
+    const out: Record<LoadComboId, AnalysisResult | null> = {}
+    if (activeTab !== "Analyze") return out
+    for (const [id, c] of Object.entries(combinations)) {
+      out[id] = combineResults(caseResults, c, loadCases)
+    }
+    return out
+  }, [activeTab, caseResults, combinations, loadCases])
+
+  // Sprint 1 (R-03): completeness audits for whatever the Analyze view is
+  // about to display — the selected combination, or every combination
+  // feeding the envelope. The banner names any dropped term so a partial
+  // superposition is never mistaken for the full combination.
+  const comboAudits = useMemo<CombinationAuditItem[]>(() => {
+    if (activeTab !== "Analyze") return []
+    if (analyzeViewMode === "combination" && selectedCombinationId) {
+      const c = combinations[selectedCombinationId]
+      return c ? [{ name: c.name, audit: auditCombination(caseResults, c, loadCases) }] : []
+    }
+    if (analyzeViewMode === "envelope") {
+      return envelopeComboIds
+        .map((id) => combinations[id])
+        .filter((c) => c && c.enabled !== false)
+        .map((c) => ({ name: c.name, audit: auditCombination(caseResults, c, loadCases) }))
+    }
+    return []
+  }, [activeTab, analyzeViewMode, selectedCombinationId, envelopeComboIds, combinations, caseResults, loadCases])
+
+  const envelopeResult = useMemo(
+    () => envelopeResults(comboResults, envelopeComboIds, combinations),
+    [comboResults, envelopeComboIds, combinations],
+  )
+
+  const displayedResult = useMemo(
+    () => pickDisplayedResult(
+      analyzeViewMode,
+      caseResults,
+      comboResults,
+      envelopeResult,
+      selectedCaseId,
+      selectedCombinationId,
+    ),
+    [analyzeViewMode, caseResults, comboResults, envelopeResult, selectedCaseId, selectedCombinationId],
+  )
+
+  // ── Simulation (deformation animation) derived data ──────────────
+  // Read-only summaries over the same results the canvas draws.
+  const simPeak = displayedResult ? peakNodalDisplacement(displayedResult) : null
+  const simViewLabel =
+    analyzeViewMode === "case"
+      ? `Kasus: ${loadCases[selectedCaseId]?.name ?? selectedCaseId}`
+      : analyzeViewMode === "combination"
+        ? "Kombinasi terpilih"
+        : "Envelope kombinasi"
+  // Member inspector targets: exactly one selected member wins over
+  // a selected node. Selection is shared across tabs, so the
+  // inspector follows the user between Model and Analyze.
+  const inspectedMemberId = selection.memberIds.length === 1 ? selection.memberIds[0] : null
+  const inspectedNodeId =
+    !inspectedMemberId && selection.nodeIds.length === 1 ? selection.nodeIds[0] : null
+
+  const simCases: CaseComparisonRow[] = Object.values(loadCases).map((c) => {
+    const r = caseResults[c.id]
+    if (!r || !r.ok) {
+      return { id: c.id, name: c.name, status: "gagal / belum dianalisis", peakMag: null, sumRy: null }
+    }
+    return {
+      id: c.id,
+      name: c.name,
+      status: r.numerical.classification,
+      peakMag: peakNodalDisplacement(r)?.mag ?? null,
+      sumRy: Object.values(r.reactions).reduce((acc, rx) => acc + rx.Ry, 0),
+    }
+  })
+
+  // ── Design run (automatic) ─────────────────────────────────────────────────
+  // There is no Run button (v1.2.0). Entering the Design tab is the implicit
+  // trigger, and every subsequent input change re-runs the check — exactly how
+  // the Analyze tab already behaves inside its own tab.
+  //
+  // Stage 2 only: `caseResults` above is the shared solve, so a rebar or
+  // criteria edit never re-factorizes the stiffness matrix. See run-design.ts
+  // for why the stages split where they do.
+  //
+  // The two inputs a user edits at typing speed — criteria fields and rebar
+  // counts, both of which commit live — are deferred, so a keystroke paints
+  // immediately and the design pass runs behind it at lower priority. Model and
+  // load edits are NOT deferred: those arrive one commit at a time.
+  const deferredCriteria = useDeferredValue(designCriteria)
+  const deferredInputs = useDeferredValue(sectionDesignInputs)
+
+  const designResult = useMemo<DesignRunResult | null>(
+    () => activeTab === "Design"
+      ? designFromCases(caseResults, {
+          model,
+          loadCases,
+          combinations,
+          criteria: deferredCriteria,
+          inputs: deferredInputs,
+        })
+      : null,
+    [activeTab, caseResults, model, loadCases, combinations, deferredCriteria, deferredInputs],
+  )
+
+  // True while a deferred edit has not yet been folded into `designResult` —
+  // drives the canvas "Updating…" chip that took the Run button's place.
+  const designStale =
+    deferredCriteria !== designCriteria || deferredInputs !== sectionDesignInputs
+
+  // ── Diagnostics (always reactive) ──────────────────────────────────────────
+  // Cheap structural pre-flight: empty model, reaction count, connectivity,
+  // γ=0 sections. Cost is microseconds even on large models. Runs in every
+  // tab so the status-bar STATUS label stays live.
+  const diagnostics = useMemo(() => runDiagnostics(model, loadCases), [model, loadCases])
+
+  // Sections with no positive unit weight — used by Load Case + Load
+  // Combination tools to show the γ=0 inline warning.
+  const zeroGammaSectionIds = useMemo(() => findZeroGammaSections(model), [model])
+
+  // Diagnostic solve (Option B, v1.0.6+). The topology-only diagnostics above
+  // can't detect every geometric mechanism (e.g. an isolated supported node
+  // whose support doesn't constrain θ, or 3 collinear pins). To keep the
+  // STATUS pill honest in every tab — not just Analyze — we run *one* solve
+  // on a loadless slice of the model. The result itself is discarded; only
+  // the `singularDof` from a failed solve is used to upgrade the diagnostics
+  // report. Cost is one analyze() per edit, roughly N× cheaper than the full
+  // lazy pipeline that runs on Analyze entries (N = enabled cases).
+  //
+  // Skipped if topology diagnostics already returned an error — the solver
+  // would also fail and we'd just get a less specific message. Also skipped
+  // on the Analyze tab because `caseResults` already has solver outcomes for
+  // every enabled case and merging two sources would duplicate issues.
+  const diagnosticSolve = useMemo<SolverResult | null>(() => {
+    if (activeTab === "Analyze") return null
+    if (diagnostics.issues.some((i) => i.severity === "error")) return null
+    const slice: StructureModel = { ...model, loads: {} }
+    return analyze(slice)
+  }, [model, diagnostics, activeTab])
+
+  // Merge solver-side failures into the diagnostics report (Cycle 12,
+  // C10-F1: the merge lives in `mergeSolverFailures` so it is unit-testable).
+  // Singular failures become located `singular-at-dof` errors; every other
+  // failure becomes a `solver-failure` error carrying the solver's named
+  // reason, and any merge forces the STATUS pill to UNSTABLE. On the
+  // Analyze tab the source is the full `caseResults`; in other tabs the
+  // single-shot `diagnosticSolve` covers the same ground for structural
+  // validity (singular K shows up in any case since K depends only on
+  // geometry + sections, not on loads).
+  const mergedReport = useMemo<DiagnosticsReport>(() => {
+    const solverResults: SolverResult[] =
+      activeTab === "Analyze"
+        ? Object.values(caseResults)
+        : diagnosticSolve
+          ? [diagnosticSolve]
+          : []
+    if (solverResults.length === 0) return diagnostics
+    // Sprint 1 (R-07): Timoshenko fallback warnings ride the same report —
+    // they only exist on results solved with the shear-deformation flag
+    // (the Analyze/Design caseResults), which is exactly where they matter.
+    // Sprint 2 (R-11): numerical reliability rides it too — a solved case
+    // whose result is physically implausible or numerically unreliable
+    // forces the report to "unstable" so it can never present as an
+    // ordinary determinate result.
+    return mergeNumericalDiagnostics(
+      mergeShearFallbacks(
+        mergeSolverFailures(diagnostics, solverResults, Object.keys(model.nodes)),
+        solverResults,
+      ),
+      solverResults,
+    )
+  }, [diagnostics, caseResults, diagnosticSolve, activeTab, model.nodes])
+
+  // ─── Screen-reader announcements (Phase 7, F3) ───────────────────────
+  // Outcome-level only: a solver failure is announced assertively
+  // wherever it occurs; a completed analysis is announced politely when
+  // it completes on the Analyze tab (or when the user enters the tab),
+  // keyed on the classification set so continuous re-solves while
+  // modelling do not spam the live region. "Analysis started" is
+  // deliberately not announced: the solve is synchronous/derived, so a
+  // start message would be overwritten by the outcome in the same tick.
+  const announcedOutcomeRef = useRef<string | null>(null)
+  const prevTabForAnnounceRef = useRef(activeTab)
+  useEffect(() => {
+    const enteredAnalyze = activeTab === "Analyze" && prevTabForAnnounceRef.current !== "Analyze"
+    prevTabForAnnounceRef.current = activeTab
+    // An empty model has nothing to analyse; its solver failure is not
+    // an event worth interrupting a screen-reader user for.
+    if (Object.keys(model.members).length === 0) return
+    const results = Object.values(caseResults)
+    const failure = results.find((r) => !r.ok)
+    if (failure && !failure.ok) {
+      const key = `FAIL:${failure.reason}`
+      if (announcedOutcomeRef.current !== key) {
+        announcedOutcomeRef.current = key
+        announceStatus(`Analisis gagal. ${failure.reason}`, "assertive")
+      }
+      return
+    }
+    const classes = [
+      ...new Set(
+        results
+          .filter((r) => r.ok)
+          .map((r) => (r as { numerical: { classification: string } }).numerical.classification),
+      ),
+    ]
+    if (classes.length === 0) return
+    const key = `OK:${classes.join(",")}`
+    if (announcedOutcomeRef.current === key && !enteredAnalyze) return
+    announcedOutcomeRef.current = key
+    if (activeTab !== "Analyze") return
+    const label: Record<string, string> = {
+      VALID: "valid",
+      ILL_CONDITIONED: "kurang terkondisi (ILL_CONDITIONED)",
+      PHYSICALLY_IMPLAUSIBLE: "tidak masuk akal secara fisik (PHYSICALLY_IMPLAUSIBLE)",
+      NUMERICALLY_UNRELIABLE: "tidak andal secara numerik (NUMERICALLY_UNRELIABLE)",
+    }
+    const urgent = classes.some((c) => c === "PHYSICALLY_IMPLAUSIBLE" || c === "NUMERICALLY_UNRELIABLE")
+    announceStatus(
+      `Analisis selesai. Klasifikasi: ${classes.map((c) => label[c] ?? c).join(", ")}.`,
+      urgent ? "assertive" : "polite",
+    )
+  }, [caseResults, activeTab, model.members])
+
+  // Analysis-issues dialog: auto-opens once per Analyze-tab entry when the
+  // merged report contains any error-severity issue. Closable via the "×".
+  // Manually re-openable by clicking the status-bar STATUS label.
+  const [issuesDialogOpen, setIssuesDialogOpen] = useState(false)
+  // Phase 7 hooks remediation: the auto-open used to be a
+  // setState-in-effect watching activeTab edges. The trigger now lives
+  // in handleTabChange (the single UI path that enters the Analyze
+  // tab): on entry, if the current merged report contains an
+  // error-severity issue, the dialog opens once — same user-visible
+  // behaviour, no effect-driven state write.
+
+  const handleTabChange = useCallback((tab: TabType) => {
+    setActiveTab(tab)
+    setActiveTool(tab === "Analyze" ? "REACTION" : tab === "Design" ? "SECTION_DESIGN" : null)
+    // Entering Design lands on step 1: the code rules come before the section
+    // they govern. Switching material mid-session keeps whichever pane you are
+    // on — that reset lives here, on tab entry, not on tool change.
+    if (tab === "Design") setDesignPane("preferences")
+    setPendingFrameStart(null)
+    setSelection(emptySelection())
+    setSelectedLoadId(null)
+    setSelectedLoadIds([])
+    setMoveNodeSelectedId(null)
+    setHoveredNodeId(null)
+    setHoveredMemberId(null)
+    setHoveredLoadId(null)
+    // Analysis-issues dialog auto-open on Analyze entry (moved from the
+    // former effect — see the note at issuesDialogOpen above).
+    if (tab === "Analyze" && mergedReport.issues.some((i) => i.severity === "error")) {
+      setIssuesDialogOpen(true)
+    }
+  }, [mergedReport])
+
+  // Picks the first available section key, or falls back to a known default.
+  // Used after loading a new model to ensure activeSection is never stale.
+  const firstSectionId = (m: StructureModel): SectionId =>
+    Object.keys(m.sections)[0] ?? "iwf150"
+
+  const handleNewFile = useCallback(() => {
+    resetIdCounter()
+    const m = createEmptyModel()
+    setModel(m)
+    resetHistory()
+    setActiveSection(firstSectionId(m))
+    setActiveTab("Model")
+    setActiveTool(null)
+    setPendingFrameStart(null)
+    setSelection(emptySelection())
+    setSelectedLoadId(null)
+    // Design state is document-scoped: full reset on New File.
+    setDesignCriteria(defaultDesignCriteria())
+    setSectionDesignInputs({})
+    setDesignSelectedSectionId(null)
+  }, [resetHistory])
+
+  // Save the current model as a downloadable JSON file. JSON round-trips the
+  // full StructureModel losslessly (see CLAUDE.md File I/O brainstorm).
+  const handleSaveFile = useCallback(() => {
+    const json = JSON.stringify(model, null, 2)
+    const blob = new Blob([json], { type: "application/json" })
+    const url = URL.createObjectURL(blob)
+    const now = new Date()
+    const pad = (n: number) => String(n).padStart(2, "0")
+    const stamp =
+      `${now.getFullYear()}${pad(now.getMonth() + 1)}${pad(now.getDate())}` +
+      `-${pad(now.getHours())}${pad(now.getMinutes())}`
+    const a = document.createElement("a")
+    a.href = url
+    a.download = `struktura-structure-${stamp}.json`
+    a.click()
+    URL.revokeObjectURL(url)
+  }, [model])
+
+  // Load a model from a user-selected JSON file. Untrusted contents are parsed
+  // and shape-guarded before swapping. On success, the same reset pattern as
+  // New File runs, but the ID counter is seeded (not reset) so newly-created
+  // entities don't collide with the loaded ones.
+  const handleLoadFile = useCallback(() => {
+    const input = document.createElement("input")
+    input.type = "file"
+    input.accept = ".json,application/json"
+    input.onchange = () => {
+      const file = input.files?.[0]
+      if (!file) return
+      const reader = new FileReader()
+      reader.onload = () => {
+        try {
+          const parsed = JSON.parse(reader.result as string)
+          if (!isStructureModel(parsed)) {
+            window.alert("Tidak dapat memuat berkas: bukan model ZonaSipil Structure yang valid.")
+            return
+          }
+          seedIdCounter(parsed)
+          setModel(parsed)
+          resetHistory()
+          setActiveSection(firstSectionId(parsed))
+          setActiveTab("Model")
+          setActiveTool(null)
+          setPendingFrameStart(null)
+          setSelection(emptySelection())
+          setSelectedLoadId(null)
+          setSectionDesignInputs({})
+          setDesignSelectedSectionId(null)
+        } catch {
+          window.alert("Tidak dapat memuat berkas: JSON tidak valid atau rusak.")
+        }
+      }
+      reader.readAsText(file)
+    }
+    input.click()
+  }, [resetHistory])
+
+  const handleTemplateLoad = useCallback((template: 1 | 2 | 3 | 4 | 5) => {
+    const builders = {
+      1: template1SimpleBeam,
+      2: template2Cantilever,
+      3: template3Portal,
+      4: template4PortalLateral,
+      5: template5AsymmetricRafter,
+    }
+    resetIdCounter()
+    const m = builders[template]()
+    setModel(m)
+    resetHistory()
+    setActiveSection(firstSectionId(m))
+    setActiveTab("Model")
+    setActiveTool(null)
+    setPendingFrameStart(null)
+    setSelection(emptySelection())
+    setSelectedLoadId(null)
+    setSectionDesignInputs({})
+    setDesignSelectedSectionId(null)
+  }, [resetHistory])
+
+  const handleExampleConfirm = useCallback((model: StructureModel, section: Section) => {
+    const merged: StructureModel = {
+      ...model,
+      sections: { ...model.sections, [section.id]: section },
+    }
+    setModel(merged)
+    resetHistory()
+    setActiveSection(section.id)
+    setActiveTab("Model")
+    setActiveTool(null)
+    setPendingFrameStart(null)
+    setSelection(emptySelection())
+    setSelectedLoadId(null)
+    setSectionDesignInputs({})
+    setDesignSelectedSectionId(null)
+    setShowExamplesModal(false)
+  }, [resetHistory])
+
+  const handleToolSelect = useCallback((tool: ToolType) => {
+    setActiveTool(tool)
+    setPendingFrameStart(null)
+    setSelection(emptySelection())
+    setSelectedLoadId(null)
+    setSelectedLoadIds([])
+    setMoveNodeSelectedId(null)
+    setHoveredNodeId(null)
+    setHoveredMemberId(null)
+    setHoveredLoadId(null)
+  }, [])
+
+  const handleCloseFlyout = useCallback(() => {
+    setActiveTool(null)
+    setPendingFrameStart(null)
+    setSelection(emptySelection())
+    setSelectedLoadId(null)
+    setSelectedLoadIds([])
+    setMoveNodeSelectedId(null)
+    setHoveredNodeId(null)
+    setHoveredMemberId(null)
+    setHoveredLoadId(null)
+  }, [])
+
+  // Shared by all three template modals (Beam / Frame / Truss).
+  // Examples modal uses handleExampleConfirm instead because it also
+  // merges the example's section into the model.
+  const handleTemplateConfirm = useCallback((m: StructureModel) => {
+    setModel(m)
+    resetHistory()
+    setActiveSection(firstSectionId(m))
+    setActiveTab("Model")
+    setActiveTool(null)
+    setPendingFrameStart(null)
+    setSelection(emptySelection())
+    setSelectedLoadId(null)
+    setSectionDesignInputs({})
+    setDesignSelectedSectionId(null)
+    setTemplateModal(null)
+  }, [resetHistory])
+
+  const handleMouseMove = useCallback((x: number, y: number) => {
+    setCursorX(x)
+    setCursorY(y)
+
+    // Mobile: no hover state from pointer movement; click-driven selection is unaffected.
+    if (isMobile) {
+      setHoveredNodeId(null)
+      setHoveredMemberId(null)
+      setHoveredLoadId(null)
+      return
+    }
+
+    const raw = { x, y }
+
+    // Detect hover targets based on active tool
+    if (activeTab === "Model" && (activeTool === "DELETE" || activeTool === "SUPPORT" || activeTool === "MOVE_NODE")) {
+      // DELETE / SUPPORT / MOVE_NODE all hover nodes; SELECT does NOT (it operates on members + supports only).
+      const nodeId = hitTestNode(model, raw, HIT_TOL_NODE)
+      setHoveredNodeId(nodeId)
+      if (!nodeId && activeTool === "DELETE") {
+        const memberId = hitTestMember(model, raw, HIT_TOL_MEMBER)
+        setHoveredMemberId(memberId)
+      }
+    } else if (activeTab === "Model" && activeTool === "SELECT") {
+      // MODIFY SECTION — members only.
+      setHoveredNodeId(null)
+      const memberId = hitTestMember(model, raw, HIT_TOL_MEMBER)
+      setHoveredMemberId(memberId)
+    } else if (activeTab === "Load" && activeTool === "POINT_LOAD") {
+      // Placement: hover the candidate node so the user sees what they'll target.
+      setHoveredMemberId(null)
+      setHoveredLoadId(null)
+      const nodeId = hitTestNode(model, raw, HIT_TOL_NODE)
+      setHoveredNodeId(nodeId)
+    } else if (activeTab === "Load" && activeTool === "DISTRIBUTED_LOAD") {
+      // Placement: hover the candidate member so the user sees what they'll target.
+      setHoveredNodeId(null)
+      setHoveredLoadId(null)
+      const memberId = hitTestMember(model, raw, HIT_TOL_MEMBER)
+      setHoveredMemberId(memberId)
+    } else if (activeTab === "Load" && (activeTool === "MODIFY_LOAD" || activeTool === "DELETE" || activeTool === null)) {
+      // Hover applies on Modify, Delete, or when no tool is picked in the Load tab.
+      setHoveredNodeId(null)
+      setHoveredMemberId(null)
+      const loads = Object.values(model.loads).filter(
+        (l) => loadViewFilter === LOAD_VIEW_ALL || l.loadCaseId === loadViewFilter
+      )
+      const ARROW_W = LOAD_PT_ARROW_LEN_PX / SCALE
+
+      // Pass 1: point loads â€” always take priority
+      for (const load of loads) {
+        if (load.type !== "point") continue
+        const node = model.nodes[load.nodeId]
+        if (!node) continue
+        const mag = Math.sqrt(load.fx * load.fx + load.fy * load.fy)
+        if (mag < 1e-12) continue
+        const sdx = load.fx / mag
+        const sdy = load.fy / mag
+        const baseX = node.x - sdx * ARROW_W
+        const baseY = node.y - sdy * ARROW_W
+        const { d } = pointSegDist(raw.x, raw.y, baseX, baseY, node.x, node.y)
+        if (d < HIT_TOL_MEMBER) {
+          setHoveredLoadId(load.id)
+          return
+        }
+      }
+
+      // Pass 2: distributed loads
+      for (const load of loads) {
+        if (load.type !== "distributed") continue
+        const member = model.members[load.memberId]
+        if (!member) continue
+        const A = model.nodes[member.a], B = model.nodes[member.b]
+        if (!A || !B) continue
+        const dx = B.x - A.x, dy = B.y - A.y
+        const len2 = dx * dx + dy * dy
+        if (len2 < 1e-12) continue
+        const len = Math.sqrt(len2)
+        const t = ((raw.x - A.x) * dx + (raw.y - A.y) * dy) / len2
+        if (t < 0 || t > 1) continue
+        let nx = -dy / len, ny = dx / len
+        if (ny < 0 || (ny === 0 && nx < 0)) { nx = -nx; ny = -ny }
+        const mx = A.x + t * dx, my = A.y + t * dy
+        const perpDist = (raw.x - mx) * nx + (raw.y - my) * ny
+        const wDominant = Math.abs(load.wStart ?? 0) >= Math.abs(load.wEnd ?? 0) ? (load.wStart ?? 0) : (load.wEnd ?? 0)
+        const loadDir = wDominant <= 0 ? 1 : -1
+        const maxArrowWorldLen = LOAD_DIST_MAX_ARROW_PX / SCALE
+        const inLoadDir = perpDist * loadDir
+        if (inLoadDir >= -HIT_TOL_MEMBER && inLoadDir <= maxArrowWorldLen + HIT_TOL_MEMBER) {
+          setHoveredLoadId(load.id)
+          return
+        }
+      }
+
+      setHoveredLoadId(null)
+    } else {
+      setHoveredNodeId(null)
+      setHoveredMemberId(null)
+      setHoveredLoadId(null)
+    }
+  }, [activeTab, activeTool, model, isMobile, loadViewFilter])
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        // Phase 6 a11y fix: Escape also closes the tool flyout
+        // (previously it only cleared the selection, stranding
+        // keyboard users in an open panel). handleCloseFlyout already
+        // includes the former selection/pending-frame clearing.
+        handleCloseFlyout()
+        // Phase 7: Escape also dismisses the analysis-issues dialog
+        // from here. The dialog registers its own listener too, but
+        // Phase 7 E2E found real keydowns reaching window listeners
+        // registered in App while the dialog's own subscription was
+        // not reliably live (listener churn from its inline onClose
+        // dep) — this App-level path is the dependable one.
+        if (issuesDialogOpen) setIssuesDialogOpen(false)
+        // Phase 8 (B2): Escape dismisses the landscape advisory too —
+        // dismissal is its only action ("Tetap Lanjutkan"), so Escape
+        // is consistent with its intended behaviour. Handled here to
+        // avoid a second window listener.
+        if (showMobileModal) setShowMobileModal(false)
+      }
+    }
+    window.addEventListener("keydown", onKey)
+    return () => window.removeEventListener("keydown", onKey)
+  }, [handleCloseFlyout, issuesDialogOpen, showMobileModal])
+
+  const ensureNodeAt = useCallback(
+    (m: StructureModel, w: { x: number; y: number }): { model: StructureModel; id: NodeId } => {
+      const existing = findNodeAt(m, w)
+      if (existing) return { model: m, id: existing }
+      const onMember = hitTestMember(m, w)
+      const added = addNode(m, w)
+      if (onMember) {
+        return { model: splitMember(added.model, onMember, added.id), id: added.id }
+      }
+      return added
+    },
+    []
+  )
+
+  const handleSelectItems = useCallback(
+    (items: MultiSelection) => {
+      setSelection((prev) => mergeSelection(prev, items))
+      if (items.memberIds.length === 1) {
+        const mem = model.members[items.memberIds[0]]
+        if (mem) setActiveSection(mem.section)
+      }
+    },
+    [model]
+  )
+
+  const handleDeselectItems = useCallback((items: MultiSelection) => {
+    setSelection((prev) => removeFromSelection(prev, items))
+  }, [])
+
+  // Analyze-view inspector: a canvas click targets exactly one
+  // member/node, replacing any previous selection.
+  const handleReplaceSelection = useCallback((items: MultiSelection) => {
+    setSelection(items)
+  }, [])
+
+  const handleCanvasClick = useCallback(
+    (wx: number, wy: number) => {
+      const raw = { x: wx, y: wy }
+
+      const resolveSnap = (m: StructureModel, p: { x: number; y: number }) => {
+        if (snapToNode) {
+          const nodeId = hitTestNode(m, p, HIT_TOL_NODE)
+          if (nodeId) return m.nodes[nodeId]
+        }
+        return snapToGrid ? snapWorld(p, unitSettings.gridSpacing) : p
+      }
+
+      if (activeTab === "Model" && activeTool) {
+        if (activeTool === "NODE") {
+          const snapped = resolveSnap(model, raw)
+          setModel((m) => {
+            if (findNodeAt(m, snapped)) return m
+            const memberHit = hitTestMember(m, snapped)
+            const { model: m2, id } = addNode(m, snapped)
+            return memberHit ? splitMember(m2, memberHit, id) : m2
+          })
+          return
+        }
+
+        if (activeTool === "MEMBER") {
+          const snapped = resolveSnap(model, raw)
+          const { model: m2, id } = ensureNodeAt(model, snapped)
+
+          if (!pendingFrameStart) {
+            setModel(m2)
+            setPendingFrameStart(id)
+            return
+          }
+
+          if (pendingFrameStart === id) return
+
+          const duplicate = Object.values(m2.members).some(
+            (mm) =>
+              (mm.a === pendingFrameStart && mm.b === id) ||
+              (mm.a === id && mm.b === pendingFrameStart)
+          )
+          if (!duplicate) {
+            const mid = newMemberId()
+            setModel({
+              ...m2,
+              members: {
+                ...m2.members,
+                [mid]: { id: mid, a: pendingFrameStart, b: id, section: activeSection, memberType: activeMemberType },
+              },
+            })
+          } else {
+            setModel(m2)
+          }
+          setPendingFrameStart(null)
+          return
+        }
+
+        if (activeTool === "SUPPORT") {
+          const nodeId = hitTestNode(model, raw, HIT_TOL_NODE)
+          if (!nodeId) {
+            // Click on empty canvas → clear any pending support selection
+            if (!isEmptySelection(selection)) setSelection(emptySelection())
+            return
+          }
+          if (model.supports[nodeId]) {
+            // Existing support → toggle into selection; Apply commits the change.
+            const item: MultiSelection = { nodeIds: [], memberIds: [], supportNodeIds: [nodeId] }
+            if (selection.supportNodeIds.includes(nodeId)) handleDeselectItems(item)
+            else handleSelectItems(item)
+            return
+          }
+          // Bare node, type = "none" → no-op (nothing to remove or assign)
+          if (activeSupportType === "none") return
+          // Bare node → immediate assignment (fast path)
+          setModel((m) => ({
+            ...m,
+            supports: { ...m.supports, [nodeId]: { nodeId, type: activeSupportType } },
+          }))
+          return
+        }
+
+        if (activeTool === "MOVE_NODE" && moveNodeModeRef.current === "coordinates") {
+          const nodeId = hitTestNode(model, raw, HIT_TOL_NODE)
+          if (nodeId) setMoveNodeSelectedId(nodeId)
+          else setMoveNodeSelectedId(null)
+          return
+        }
+      }
+
+      if (activeTab === "Load" && activeTool) {
+        if (activeTool === "POINT_LOAD") {
+          const nodeId = hitTestNode(model, raw, HIT_TOL_NODE)
+          if (!nodeId) return
+          const existingLoad = Object.values(model.loads).find(
+            (l) => l.type === "point" && l.nodeId === nodeId && l.loadCaseId === activeLoadCaseId
+          )
+          const id = existingLoad?.id ?? newLoadId()
+
+          // Start with existing load values (if any) or zeros
+          let fx = existingLoad?.type === "point" ? existingLoad.fx : 0
+          let fy = existingLoad?.type === "point" ? existingLoad.fy : 0
+
+          if (activePtInputMode === "principal") {
+            // Principal mode: replace the selected axis, keep the other
+            if (activePointLoadAxis === "x") {
+              fx = activePtMagnitude
+            } else {
+              fy = activePtMagnitude
+            }
+          } else {
+            // Angular mode: replace both fx and fy with new angle-based values
+            const rad = activePtAngle * (Math.PI / 180)
+            fx = activePtMagnitude * Math.cos(rad)
+            fy = -activePtMagnitude * Math.sin(rad)  // Flip for world Y-up
+          }
+
+          setModel((m) => ({
+            ...m,
+            loads: {
+              ...m.loads,
+              [id]: { id, type: "point" as const, nodeId, loadCaseId: activeLoadCaseId, fx, fy },
+            },
+          }))
+          return
+        }
+
+        if (activeTool === "DISTRIBUTED_LOAD") {
+          const memberId = hitTestMember(model, raw, HIT_TOL_MEMBER)
+          if (!memberId) return
+          const existing = Object.values(model.loads).find(
+            (l) => l.type === "distributed" && l.memberId === memberId && l.loadCaseId === activeLoadCaseId
+          )
+          const id = existing?.id ?? newLoadId()
+
+          if (activeDistMode === "local-axis") {
+            const wEnd = activeDistType === "uniform" ? activeDistWStart : activeDistWEnd
+            setModel((m) => ({
+              ...m,
+              loads: {
+                ...m.loads,
+                [id]: { id, type: "distributed" as const, memberId, loadCaseId: activeLoadCaseId, mode: "local-axis", wStart: activeDistWStart, wEnd },
+              },
+            }))
+          } else {
+            // Global-axis: only set the selected axis, zero the other
+            if (activeDistAxis === "x") {
+              const wxEnd = activeDistType === "uniform" ? activeDistWxStart : activeDistWxEnd
+              setModel((m) => ({
+                ...m,
+                loads: {
+                  ...m.loads,
+                  [id]: { id, type: "distributed" as const, memberId, loadCaseId: activeLoadCaseId, mode: "global-axis", wxStart: activeDistWxStart, wxEnd, wyStart: 0, wyEnd: 0 },
+                },
+              }))
+            } else {
+              const wyEnd = activeDistType === "uniform" ? activeDistWyStart : activeDistWyEnd
+              setModel((m) => ({
+                ...m,
+                loads: {
+                  ...m.loads,
+                  [id]: { id, type: "distributed" as const, memberId, loadCaseId: activeLoadCaseId, mode: "global-axis", wxStart: 0, wxEnd: 0, wyStart: activeDistWyStart, wyEnd },
+                },
+              }))
+            }
+          }
+          return
+        }
+
+        if (activeTool === "MODIFY_LOAD" || (activeTab === "Load" && activeTool === "DELETE")) {
+          const loads = Object.values(model.loads).filter(
+            (l) => loadViewFilter === LOAD_VIEW_ALL || l.loadCaseId === loadViewFilter
+          )
+          const ARROW_W = LOAD_PT_ARROW_LEN_PX / SCALE
+          const isDeleteTool = activeTool === "DELETE"
+
+          const selectLoad = (id: string) => {
+            if (isDeleteTool) setSelectedLoadIds([id])
+            else { setSelectedLoadId(id); setSelectedLoadIds([]) }
+          }
+          const clearLoad = () => {
+            if (isDeleteTool) setSelectedLoadIds([])
+            else { setSelectedLoadId(null); setSelectedLoadIds([]) }
+          }
+
+          // Pass 1: point loads â€” always take priority over distributed loads
+          for (const load of loads) {
+            if (load.type !== "point") continue
+            const node = model.nodes[load.nodeId]
+            if (!node) continue
+            const mag = Math.sqrt(load.fx * load.fx + load.fy * load.fy)
+            if (mag < 1e-12) continue
+            const sdx = load.fx / mag
+            const sdy = load.fy / mag
+            const baseX = node.x - sdx * ARROW_W
+            const baseY = node.y - sdy * ARROW_W
+            const { d } = pointSegDist(raw.x, raw.y, baseX, baseY, node.x, node.y)
+            if (d < HIT_TOL_MEMBER) {
+              selectLoad(load.id)
+              return
+            }
+          }
+
+          // Pass 2: distributed loads
+          for (const load of loads) {
+            if (load.type !== "distributed") continue
+            const member = model.members[load.memberId]
+            if (!member) continue
+            const A = model.nodes[member.a], B = model.nodes[member.b]
+            if (!A || !B) continue
+            const dx = B.x - A.x, dy = B.y - A.y
+            const len2 = dx * dx + dy * dy
+            if (len2 < 1e-12) continue
+            const len = Math.sqrt(len2)
+            const t = ((raw.x - A.x) * dx + (raw.y - A.y) * dy) / len2
+            if (t < 0 || t > 1) continue
+            let nx = -dy / len, ny = dx / len
+            if (ny < 0 || (ny === 0 && nx < 0)) { nx = -nx; ny = -ny }
+            const mx = A.x + t * dx, my = A.y + t * dy
+            const perpDist = (raw.x - mx) * nx + (raw.y - my) * ny
+            const wDominant = Math.abs(load.wStart ?? 0) >= Math.abs(load.wEnd ?? 0) ? (load.wStart ?? 0) : (load.wEnd ?? 0)
+            const loadDir = wDominant <= 0 ? 1 : -1
+            const maxArrowWorldLen = LOAD_DIST_MAX_ARROW_PX / SCALE
+            const inLoadDir = perpDist * loadDir
+            if (inLoadDir >= -HIT_TOL_MEMBER && inLoadDir <= maxArrowWorldLen + HIT_TOL_MEMBER) {
+              selectLoad(load.id)
+              return
+            }
+          }
+
+          clearLoad()
+          return
+        }
+      }
+    },
+    [
+      activeTab, activeTool, activeSection, activeMemberType, activeSupportType,
+      activePtInputMode, activePointLoadAxis, activePtMagnitude, activePtAngle, activeDistType, activeDistWStart, activeDistWEnd,
+      activeDistMode, activeDistAxis, activeDistWxStart, activeDistWxEnd, activeDistWyStart, activeDistWyEnd,
+      activeLoadCaseId,
+      model, pendingFrameStart, ensureNodeAt, unitSettings.gridSpacing, snapToGrid, snapToNode,
+      loadViewFilter, selection, handleSelectItems, handleDeselectItems,
+    ]
+  )
+
+  const handleMoveNode = useCallback((nodeId: NodeId, x: number, y: number) => {
+    setModel((m) => {
+      // Coincidence guard (Cycle 12, C10-F1): never drop a node exactly onto
+      // another node — that would create a zero-length member. The move is
+      // rejected wholesale (the node stays where it was); models that arrive
+      // already coincident via import are still caught downstream by the
+      // solver's named error, now surfaced via `mergeSolverFailures`.
+      if (findCoincidentNode(m.nodes, nodeId, x, y)) return m
+      return {
+        ...m,
+        nodes: { ...m.nodes, [nodeId]: { ...m.nodes[nodeId], x, y } },
+      }
+    })
+  }, [])
+
+  const handleDragNodeStart = useCallback((nodeId: NodeId) => setDraggingNodeId(nodeId), [])
+  const handleDragNodeEnd = useCallback(() => setDraggingNodeId(null), [])
+
+  const handleMoveNodeModeChange = useCallback((mode: "coordinates" | "screen") => {
+    setMoveNodeMode(mode)
+    if (mode === "screen") setMoveNodeSelectedId(null)
+  }, [])
+
+  const handleClearSelection = useCallback(() => {
+    setSelection(emptySelection())
+    setSelectedLoadId(null)
+    setSelectedLoadIds([])
+  }, [])
+
+  const handleDeleteSelection = useCallback(() => {
+    if (isEmptySelection(selection)) return
+    setModel((m) => deleteMultiSelection(m, selection)
+    )
+    setSelection(emptySelection())
+  }, [selection])
+
+  const handleModifySelection = useCallback(() => {
+    if (selection.memberIds.length === 0) return
+    setModel((m) => {
+      const members = { ...m.members }
+      for (const id of selection.memberIds) {
+        if (members[id]) members[id] = { ...members[id], section: activeSection }
+      }
+      return { ...m, members }
+    })
+  }, [selection, activeSection])
+
+  const handleApplySupportSelection = useCallback((type: SupportPick) => {
+    if (selection.supportNodeIds.length === 0 && selection.nodeIds.length === 0) return
+    setModel((m) => {
+      const supports = { ...m.supports }
+      if (type === "none") {
+        // Remove supports from any selected support nodes; bare nodes are ignored.
+        for (const nodeId of selection.supportNodeIds) {
+          delete supports[nodeId]
+        }
+      } else {
+        for (const nodeId of selection.supportNodeIds) {
+          if (supports[nodeId]) supports[nodeId] = { ...supports[nodeId], type }
+        }
+        for (const nodeId of selection.nodeIds) {
+          supports[nodeId] = { nodeId, type }
+        }
+      }
+      return { ...m, supports }
+    })
+    setSelection(emptySelection())
+  }, [selection.supportNodeIds, selection.nodeIds])
+
+  const handleModifyLoad = useCallback(
+    (patch: Partial<Load>) => {
+      if (!selectedLoadId) return
+      setModel((m) => ({
+        ...m,
+        loads: { ...m.loads, [selectedLoadId]: { ...m.loads[selectedLoadId], ...patch } as Load },
+      }))
+    },
+    [selectedLoadId]
+  )
+
+  const handleModifyLoadsByType = useCallback(
+    (type: "point" | "distributed", patch: Partial<Load>) => {
+      const ids = selectedLoadIds.length > 0 ? selectedLoadIds : (selectedLoadId ? [selectedLoadId] : [])
+      if (ids.length === 0) return
+      setModel((m) => {
+        const loads = { ...m.loads }
+        for (const id of ids) {
+          if (loads[id]?.type === type) {
+            loads[id] = { ...loads[id], ...patch } as Load
+          }
+        }
+        return { ...m, loads }
+      })
+    },
+    [selectedLoadIds, selectedLoadId]
+  )
+
+  const handleDeleteLoad = useCallback(() => {
+    if (!selectedLoadId) return
+    setModel((m) => {
+      const loads = { ...m.loads }
+      delete loads[selectedLoadId]
+      return { ...m, loads }
+    })
+    setSelectedLoadId(null)
+  }, [selectedLoadId])
+
+  const handleDeleteLoadIds = useCallback(() => {
+    if (selectedLoadIds.length === 0) return
+    setModel((m) => {
+      const loads = { ...m.loads }
+      for (const id of selectedLoadIds) delete loads[id]
+      return { ...m, loads }
+    })
+    setSelectedLoadIds([])
+  }, [selectedLoadIds])
+
+  const handleSelectLoadIds = useCallback((ids: string[]) => {
+    setSelectedLoadIds(ids)
+    if (activeTool === "MODIFY_LOAD") {
+      setSelectedLoadId(ids[0] ?? null)
+    }
+  }, [activeTool])
+
+  const handleSectionPropsChange = useCallback(
+    (id: SectionId, patch: Partial<Section>) => {
+      setModel((m) => ({
+        ...m,
+        sections: { ...m.sections, [id]: { ...m.sections[id], ...patch } },
+      }))
+    },
+    []
+  )
+
+  const handleAddSection = useCallback((section: Section) => {
+    setModel((m) => ({ ...m, sections: { ...m.sections, [section.id]: section } }))
+    setActiveSection(section.id)
+  }, [])
+
+  const handleDeleteSection = useCallback(
+    (sectionId: SectionId) => {
+      const sectionCount = Object.keys(model.sections).length
+      if (sectionCount <= 1) return
+      const fallback = Object.keys(model.sections).find((id) => id !== sectionId)!
+      setModel((m) => deleteSection(m, sectionId))
+      if (sectionId === activeSection) setActiveSection(fallback)
+      // Keep design state consistent: drop the deleted section's rebar input.
+      setSectionDesignInputs((prev) => {
+        if (!(sectionId in prev)) return prev
+        const next = { ...prev }
+        delete next[sectionId]
+        return next
+      })
+      setDesignSelectedSectionId((cur) => (cur === sectionId ? null : cur))
+    },
+    [model.sections, activeSection]
+  )
+
+  const nodeCount = Object.keys(model.nodes).length
+  const memberCount = Object.keys(model.members).length
+
+  return (
+    <div className="relative h-full w-full flex flex-col overflow-hidden bg-[#F0F2F5]">
+      {showMobileModal && (
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50">
+          <div
+            ref={mobileModalRef}
+            role="dialog"
+            aria-modal="true"
+            aria-label="Saran tampilan layar"
+            tabIndex={-1}
+            className="bg-white rounded-2xl shadow-2xl px-8 py-10 flex flex-col items-center text-center outline-none"
+            style={{ width: '92vw' }}
+          >
+            <div className="flex items-center mb-5 text-[#0b2550] opacity-80">
+              <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="2" y="3" width="20" height="14" rx="2" />
+                <path d="M8 21h8M12 17v4" />
+              </svg>
+            </div>
+            <h2 className="text-[#0b2550] font-semibold text-1xl mb-3 tracking-tight">
+              Lebih Baik di Layar Lanskap atau PC Desktop
+            </h2>
+            <p className="text-gray-500 text-1xl leading-relaxed mb-2">
+              Untuk pengalaman terbaik, putar perangkat Anda ke <strong>lanskap</strong> atau buka aplikasi ini di <strong>browser desktop PC atau Mac</strong>.
+            </p>
+            <p className="text-gray-400 text-1xl leading-relaxed mb-8">
+              ZonaSipil Structure dirancang untuk layar yang lebih besar.
+            </p>
+            <button
+              onClick={() => setShowMobileModal(false)}
+              className="w-full bg-[#0b2550] text-white text-1xl font-medium py-3 rounded-xl hover:bg-[#0e2d60] transition-colors"
+            >
+              Tetap Lanjutkan
+            </button>
+          </div>
+        </div>
+      )}
+      <NavBar
+        activeTab={activeTab}
+        onTabChange={handleTabChange}
+        onTemplateLoad={handleTemplateLoad}
+        onNewFile={handleNewFile}
+        onSave={handleSaveFile}
+        onLoad={handleLoadFile}
+        onOpenBeamTemplate={() => setTemplateModal("beam")}
+        onOpenFrameTemplate={() => setTemplateModal("frame")}
+        onOpenTrussTemplate={() => setTemplateModal("truss")}
+        onOpenExamplesModal={() => setShowExamplesModal(true)}
+      />
+
+      <div className="flex-1 flex overflow-hidden">
+        <ToolSidebar
+          activeTab={activeTab}
+          activeTool={activeTool}
+          onToolSelect={handleToolSelect}
+        />
+
+        <main className="flex-1 relative overflow-hidden">
+          {activeTab === "Load" && (
+            <LoadViewSelector
+              loadCases={loadCases}
+              loads={model.loads}
+              value={loadViewFilter}
+              onChange={setLoadViewFilter}
+              disabled={isPlacingLoad}
+            />
+          )}
+          {activeTab === "Analyze" && (
+            <AnalyzeViewSelector
+              combinationsEnabled={combinationsEnabled}
+              loadCases={loadCases}
+              combinations={combinations}
+              analyzeViewMode={analyzeViewMode}
+              onAnalyzeViewModeChange={setAnalyzeViewMode}
+              selectedCaseId={selectedCaseId}
+              onSelectedCaseIdChange={setSelectedCaseId}
+              selectedCombinationId={selectedCombinationId}
+              onSelectedCombinationIdChange={setSelectedCombinationId}
+              envelopeComboIds={envelopeComboIds}
+              onEnvelopeComboIdsChange={setEnvelopeComboIds}
+            />
+          )}
+          {activeTab === "Analyze" && (
+            <CombinationCompletenessBanner items={comboAudits} />
+          )}
+          {activeTab === "Design" && (
+            <DesignIssuesPanel result={designResult} />
+          )}
+          <FlyoutPanel
+            activeTab={activeTab}
+            activeTool={activeTool}
+            onClose={handleCloseFlyout}
+            onToolSelect={handleToolSelect}
+            model={model}
+            selection={selection}
+            activeSection={activeSection}
+            onSectionChange={setActiveSection}
+            activeMemberType={activeMemberType}
+            onMemberTypeChange={setActiveMemberType}
+            activeSupportType={activeSupportType}
+            onSupportTypeChange={setActiveSupportType}
+            onSectionPropsChange={handleSectionPropsChange}
+            onAddSection={handleAddSection}
+            onDeleteSection={handleDeleteSection}
+            onDeleteSelection={handleDeleteSelection}
+            onModifySelection={handleModifySelection}
+            onApplySupportSelection={handleApplySupportSelection}
+            hoveredNodeId={hoveredNodeId}
+            unitSettings={unitSettings}
+            activePtInputMode={activePtInputMode}
+            onPtInputModeChange={setActivePtInputMode}
+            activePointLoadAxis={activePointLoadAxis}
+            onPointLoadAxisChange={setActivePointLoadAxis}
+            activePtMagnitude={activePtMagnitude}
+            onPtMagnitudeChange={setActivePtMagnitude}
+            activePtAngle={activePtAngle}
+            onPtAngleChange={setActivePtAngle}
+            activeDistType={activeDistType}
+            onDistTypeChange={setActiveDistType}
+            activeDistMode={activeDistMode}
+            onDistModeChange={setActiveDistMode}
+            activeDistAxis={activeDistAxis}
+            onDistAxisChange={setActiveDistAxis}
+            activeDistWStart={activeDistWStart}
+            onDistWStartChange={setActiveDistWStart}
+            activeDistWEnd={activeDistWEnd}
+            onDistWEndChange={setActiveDistWEnd}
+            activeDistWxStart={activeDistWxStart}
+            onDistWxStartChange={setActiveDistWxStart}
+            activeDistWxEnd={activeDistWxEnd}
+            onDistWxEndChange={setActiveDistWxEnd}
+            activeDistWyStart={activeDistWyStart}
+            onDistWyStartChange={setActiveDistWyStart}
+            activeDistWyEnd={activeDistWyEnd}
+            onDistWyEndChange={setActiveDistWyEnd}
+            selectedLoadId={selectedLoadId}
+            selectedLoadIds={selectedLoadIds}
+            onModifyLoad={handleModifyLoad}
+            onModifyLoadsByType={handleModifyLoadsByType}
+            onDeleteLoad={handleDeleteLoad}
+            onDeleteLoadIds={handleDeleteLoadIds}
+            diagramScale={diagramScale}
+            onDiagramScaleChange={setDiagramScale}
+            invertSFD={invertSFD}
+            onInvertSFDChange={setInvertSFD}
+            invertBMD={invertBMD}
+            onInvertBMDChange={setInvertBMD}
+            deformationScale={deformationScale * animProgress}
+            onDeformationScaleChange={setDeformationScale}
+            analysisResult={displayedResult}
+            moveNodeMode={moveNodeMode}
+            onMoveNodeModeChange={handleMoveNodeModeChange}
+            moveNodeCoordMode={moveNodeCoordMode}
+            onMoveNodeCoordModeChange={setMoveNodeCoordMode}
+            moveNodeSelectedId={moveNodeSelectedId}
+            onMoveNodeSelectId={setMoveNodeSelectedId}
+            onMoveNode={handleMoveNode}
+            loadCases={loadCases}
+            activeLoadCaseId={activeLoadCaseId}
+            onActiveLoadCaseChange={setActiveLoadCaseId}
+            onReassignLoadCase={handleReassignLoadCase}
+            onAddLoadCase={handleAddLoadCase}
+            onDeleteLoadCase={handleDeleteLoadCase}
+            onPatchLoadCase={handlePatchLoadCase}
+            combinations={combinations}
+            combinationsEnabled={combinationsEnabled}
+            onCombinationsEnabledChange={setCombinationsEnabled}
+            combinationMode={combinationMode}
+            onCombinationModeChange={setCombinationMode}
+            selectedCodePreset={selectedCodePreset}
+            onSelectedCodePresetChange={setSelectedCodePreset}
+            onAddCombination={handleAddCombination}
+            onDeleteCombination={handleDeleteCombination}
+            onPatchCombination={handlePatchCombination}
+            onGenerateCodeCombinations={handleGenerateCodeCombinations}
+            editingCombinationId={editingCombinationId}
+            onEditingCombinationIdChange={setEditingCombinationId}
+            zeroGammaSectionIds={zeroGammaSectionIds}
+            designCriteria={designCriteria}
+            onDesignCriteriaChange={handleDesignCriteriaChange}
+            sectionDesignInputs={sectionDesignInputs}
+            onPatchSectionDesignInput={handlePatchSectionDesignInput}
+            designSelectedSectionId={designSelectedSectionId}
+            onDesignSelectedSectionChange={setDesignSelectedSectionId}
+            designResult={designResult}
+            designPane={designPane}
+            onDesignPaneChange={setDesignPane}
+          />
+
+          {activeTab === "Analyze" && (
+            <SimulationControls
+              resultOk={!!displayedResult}
+              viewLabel={simViewLabel}
+              peak={simPeak}
+              progress={animProgress}
+              onProgressChange={setAnimProgress}
+              scale={deformationScale}
+              onScaleChange={setDeformationScale}
+              cases={simCases}
+            />
+          )}
+
+          {activeTab === "Analyze" && (inspectedMemberId || inspectedNodeId) && (
+            <MemberInspector
+              model={model}
+              result={displayedResult}
+              memberId={inspectedMemberId}
+              nodeId={inspectedNodeId}
+              xi={inspectionXi}
+              onXiChange={setInspectionXi}
+            />
+          )}
+
+          {activeTab === "Data" ? (
+            <DataModelEditor
+              model={model}
+              onModelChange={(next) => setModel(next)}
+              loadCases={loadCases}
+              onLoadCasesChange={(next) => setLoadCases(next)}
+              combinations={combinations}
+            />
+          ) : (
+          <StructuralCanvas
+            activeTab={activeTab}
+            activeTool={activeTool}
+            showDimensions={showDimensions}
+            model={model}
+            selection={selection}
+            pendingFrameStart={pendingFrameStart}
+            gridSpacing={unitSettings.gridSpacing}
+            snapToGrid={snapToGrid}
+            snapToNode={snapToNode}
+            lengthUnit={unitSettings.length}
+            forceUnit={unitSettings.force}
+            adaptiveView={adaptiveView}
+            onMouseMove={handleMouseMove}
+            onCanvasClick={handleCanvasClick}
+            onSelectItems={handleSelectItems}
+            onReplaceSelection={handleReplaceSelection}
+            onDeselectItems={handleDeselectItems}
+            onClearSelection={handleClearSelection}
+            onSelectLoadIds={handleSelectLoadIds}
+            selectedLoadId={selectedLoadId}
+            selectedLoadIds={selectedLoadIds}
+            analysisResult={displayedResult}
+            diagramScale={diagramScale}
+            invertSFD={invertSFD}
+            invertBMD={invertBMD}
+            deformationScale={deformationScale * animProgress}
+            inspectionPoint={inspectedMemberId ? { memberId: inspectedMemberId, xi: inspectionXi } : null}
+            showSectionLabels={showSectionLabels}
+            showNodeIds={showNodeIds}
+            showMemberIds={showMemberIds}
+            showLocalAxes={showLocalAxes}
+            hoveredNodeId={hoveredNodeId}
+            hoveredMemberId={hoveredMemberId}
+            hoveredLoadId={hoveredLoadId}
+            activeSupportType={activeSupportType}
+            loadCases={loadCases}
+            loadViewFilter={loadViewFilter === LOAD_VIEW_ALL ? null : loadViewFilter}
+            moveNodeMode={moveNodeMode}
+            moveNodeSelectedId={moveNodeSelectedId}
+            draggingNodeId={draggingNodeId}
+            onMoveNode={handleMoveNode}
+            onDragNodeStart={handleDragNodeStart}
+            onDragNodeEnd={handleDragNodeEnd}
+            onUndo={undo}
+            onRedo={redo}
+            canUndo={canUndo}
+            canRedo={canRedo}
+            designResult={designResult}
+            designStale={designStale}
+            designReport={designReport}
+            onDesignReportChange={setDesignReport}
+          />
+          )}
+        </main>
+      </div>
+
+      {/* Template modals */}
+      {templateModal === "beam" && (
+        <BeamTemplateModal
+          onConfirm={handleTemplateConfirm}
+          onClose={() => setTemplateModal(null)}
+        />
+      )}
+      {templateModal === "frame" && (
+        <FrameTemplateModal
+          onConfirm={handleTemplateConfirm}
+          onClose={() => setTemplateModal(null)}
+        />
+      )}
+      {templateModal === "truss" && (
+        <TrussTemplateModal
+          onConfirm={handleTemplateConfirm}
+          onClose={() => setTemplateModal(null)}
+        />
+      )}
+
+      {/* Examples modal â€” loaded from examples library with customizable properties */}
+      {showExamplesModal && (
+        <ExamplesModal
+          onConfirm={handleExampleConfirm}
+          onClose={() => setShowExamplesModal(false)}
+          unitSettings={unitSettings}
+        />
+      )}
+
+      <StatusBar
+        nodes={nodeCount}
+        members={memberCount}
+        status={mergedReport.status}
+        onStatusClick={() => setIssuesDialogOpen(true)}
+        unitSettings={unitSettings}
+        showDimensions={showDimensions}
+        cursorX={cursorX}
+        cursorY={cursorY}
+        snapToGrid={snapToGrid}
+        onSnapToGridChange={setSnapToGrid}
+        snapToNode={snapToNode}
+        onSnapToNodeChange={setSnapToNode}
+        adaptiveView={adaptiveView}
+        onAdaptiveViewChange={setAdaptiveView}
+        shearDeformation={shearDeformation}
+        onShearDeformationChange={setShearDeformation}
+        onUnitSettingsChange={setUnitSettings}
+        onToggleDimensions={() => setShowDimensions(!showDimensions)}
+        showSectionLabels={showSectionLabels}
+        onToggleSectionLabels={() => setShowSectionLabels(!showSectionLabels)}
+        showNodeIds={showNodeIds}
+        onToggleNodeIds={() => setShowNodeIds(!showNodeIds)}
+        showMemberIds={showMemberIds}
+        onToggleMemberIds={() => setShowMemberIds(!showMemberIds)}
+        showLocalAxes={showLocalAxes}
+        onToggleLocalAxes={() => setShowLocalAxes(!showLocalAxes)}
+      />
+
+      <AnalysisIssuesDialog
+        open={issuesDialogOpen}
+        onClose={() => setIssuesDialogOpen(false)}
+        report={mergedReport}
+      />
+    </div>
+  )
+}

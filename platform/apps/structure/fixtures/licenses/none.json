@@ -1,0 +1,11 @@
+{
+  "appId": "structure",
+  "productCode": "ZS-STRUCTURE",
+  "fixtureOnly": true,
+  "note": "DEVELOPMENT FIXTURE ONLY \u2014 not a real licence. Production entitlement is decided server-side by the ZonaSipil platform (contract \u00a73).",
+  "entitled": false,
+  "tier": "none",
+  "expiresAt": null,
+  "features": [],
+  "reason": "Authenticated user without Structure entitlement (fixture)."
+}
