@@ -76,8 +76,12 @@ snapshot `push_files` konektor GitHub (hanya file teks UTF-8).
   `apps/web/dist/` dan `apps/structure/dist/`), `coverage/`,
   `*.tsbuildinfo`.
 
-SHA commit hasil push dicatat pada commit lokal lanjutan setelah push
-dan di laporan eksekusi; catatan sinkronisasi snapshot disimpan di
+**Hasil push:** commit `8992aabce08c49758b500a7e48893c873cebf445`
+di `main` — **386 file teks (2,93 MiB)** ter-push di bawah `platform/`,
+di atas head situs yang tidak berubah (`0a5a6fd2…`). Terverifikasi
+balik via API: `platform/` terbaca, `platform/apps/web/package.json`
+ada, dan kedua font `.woff2` memang **tidak ada** di remote. Catatan
+sinkronisasi snapshot disimpan di
 `~/workspace/zonasipil-platform-push.muse-github-snapshot-sync.json`.
 
 ## Terblokir oleh faktor eksternal (di luar wewenang eksekusi otonom)
