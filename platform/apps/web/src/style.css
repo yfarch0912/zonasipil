@@ -37,6 +37,8 @@ body {
   letter-spacing: -0.02em;
 }
 .brand-sub { color: var(--amber); font-size: 0.95rem; }
+.auth-chip { margin-left: auto; display: inline-flex; align-items: center; gap: 0.5rem; font-size: 0.92rem; }
+.tombol-chip { padding: 0.25rem 0.7rem; font-size: 0.88rem; }
 
 .main-nav {
   background: var(--navy);

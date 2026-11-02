@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { APPS, appsByStatus, getApp, listApps } from "../src/index";
+import { APPS, appsByAccess, appsByStatus, getApp, listApps } from "../src/index";
 
 describe("application-registry", () => {
   it("memiliki tepat 17 entri", () => {
@@ -115,6 +115,42 @@ describe("application-registry", () => {
     expect(getApp("structure")?.status).toBe("beta");
     expect(getApp("concrete")?.status).toBe("in-development");
     expect(appsByStatus("coming-soon")).toHaveLength(14);
+  });
+
+  it("access: setiap entri punya access yang valid", () => {
+    for (const app of listApps()) {
+      expect(["public", "protected", "planned"]).toContain(app.access);
+    }
+  });
+
+  it("access: protected tepat untuk 7 alat nyata (6 app hitung + structure)", () => {
+    const terlindungi = appsByAccess("protected").map((a) => a.slug).sort();
+    expect(terlindungi).toEqual(
+      ["calculator", "concrete", "foundation", "quantity", "rab", "steel", "structure"].sort(),
+    );
+  });
+
+  it("access: protected selalu berarti logic dan ui ada (alat benar-benar bisa dibuka)", () => {
+    for (const app of appsByAccess("protected")) {
+      expect(app.implementation.logic).toBe(true);
+      expect(app.implementation.ui).toBe(true);
+      expect(app.logicCore).toBe(true);
+    }
+  });
+
+  it("access: 10 app tanpa alat adalah planned, tidak ada entri public di registry", () => {
+    expect(appsByAccess("planned")).toHaveLength(10);
+    expect(appsByAccess("public")).toHaveLength(0);
+    for (const app of appsByAccess("planned")) {
+      expect(app.implementation.logic).toBe(false);
+      expect(app.implementation.ui).toBe(false);
+    }
+  });
+
+  it("access: field access tidak mengubah status publik maupun deployed", () => {
+    expect(getApp("calculator")?.status).toBe("available");
+    expect(getApp("structure")?.status).toBe("beta");
+    for (const app of listApps()) expect(app.implementation.deployed).toBe(false);
   });
 
   it("setiap entri punya nama, kategori, dan deskripsi non-kosong", () => {

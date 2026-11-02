@@ -15,6 +15,7 @@ export default defineConfig({
         root,
         "packages/application-registry/src/index.ts",
       ),
+      "@zonasipil/auth": path.resolve(root, "packages/auth/src/index.ts"),
       "@zonasipil/app-calculator": path.resolve(root, "apps/calculator/src/index.ts"),
       "@zonasipil/app-quantity": path.resolve(root, "apps/quantity/src/index.ts"),
       "@zonasipil/app-concrete": path.resolve(root, "apps/concrete/src/index.ts"),

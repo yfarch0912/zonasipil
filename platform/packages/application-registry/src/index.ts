@@ -10,6 +10,23 @@
 
 export type AppStatus = "available" | "beta" | "in-development" | "coming-soon";
 
+/**
+ * Tingkat akses sebuah aplikasi untuk gate autentikasi (paket
+ * `@zonasipil/auth`). Field ini SENGAJA terpisah dari `status` dan
+ * `implementation`, dan TIDAK mengubah keduanya:
+ * - `public`    — boleh dibuka tanpa sesi. Di registry ini TIDAK ada
+ *                 entri public: yang public adalah katalog/landing
+ *                 (halaman beranda shell web), yang bukan entri registry.
+ * - `protected` — alat kerja yang nyata di monorepo (inti logika + UI
+ *                 tersedia): wajib sesi login. Tepat 7 entri: enam app
+ *                 hitung di shell web + `structure` (UI mandiri penuh
+ *                 di `apps/structure`).
+ * - `planned`   — belum punya alat/UI yang bisa dibuka di monorepo;
+ *                 ditampilkan sebagai "Segera Hadir", tidak bisa dibuka
+ *                 sebagai alat, sesi atau bukan.
+ */
+export type AppAccess = "public" | "protected" | "planned";
+
 export type AppCategory =
   | "structural"
   | "construction"
@@ -50,6 +67,8 @@ export interface AppEntry {
   logicCore: boolean;
   /** Keadaan implementasi di monorepo ini — lihat AppImplementation. */
   implementation: AppImplementation;
+  /** Tingkat akses untuk gate autentikasi — lihat AppAccess. */
+  access: AppAccess;
 }
 
 const LOGIC_CORE_SLUGS = new Set([
@@ -225,6 +244,12 @@ export const APPS: readonly AppEntry[] = RAW_APPS.map((app) => ({
     ui: UI_SLUGS.has(app.slug),
     deployed: false,
   },
+  // protected tepat untuk slug yang punya logika DAN UI nyata di
+  // monorepo (tujuh slug inti); sisanya planned. `deployed` dan
+  // `status` tidak ikut berubah oleh field ini.
+  access: (LOGIC_CORE_SLUGS.has(app.slug) && UI_SLUGS.has(app.slug)
+    ? "protected"
+    : "planned") as AppAccess,
 }));
 
 export function listApps(): AppEntry[] {
@@ -237,4 +262,8 @@ export function getApp(slug: string): AppEntry | undefined {
 
 export function appsByStatus(status: AppStatus): AppEntry[] {
   return APPS.filter((app) => app.status === status);
+}
+
+export function appsByAccess(access: AppAccess): AppEntry[] {
+  return APPS.filter((app) => app.access === access);
 }

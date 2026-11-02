@@ -11,6 +11,7 @@ export default defineConfig({
     alias: {
       "@zonasipil/engineering-core": path.resolve(repoRoot, "packages/engineering-core/src/index.ts"),
       "@zonasipil/application-registry": path.resolve(repoRoot, "packages/application-registry/src/index.ts"),
+      "@zonasipil/auth": path.resolve(repoRoot, "packages/auth/src/index.ts"),
       "@zonasipil/app-calculator": path.resolve(repoRoot, "apps/calculator/src/index.ts"),
       "@zonasipil/app-quantity": path.resolve(repoRoot, "apps/quantity/src/index.ts"),
       "@zonasipil/app-concrete": path.resolve(repoRoot, "apps/concrete/src/index.ts"),

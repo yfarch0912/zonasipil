@@ -16,6 +16,7 @@
     "paths": {
       "@zonasipil/engineering-core": ["packages/engineering-core/src/index.ts"],
       "@zonasipil/application-registry": ["packages/application-registry/src/index.ts"],
+      "@zonasipil/auth": ["packages/auth/src/index.ts"],
       "@zonasipil/app-calculator": ["apps/calculator/src/index.ts"],
       "@zonasipil/app-quantity": ["apps/quantity/src/index.ts"],
       "@zonasipil/app-concrete": ["apps/concrete/src/index.ts"],
@@ -29,6 +30,8 @@
     "packages/engineering-core/tests/**/*",
     "packages/application-registry/src/**/*",
     "packages/application-registry/tests/**/*",
+    "packages/auth/src/**/*",
+    "packages/auth/tests/**/*",
     "apps/calculator/src/**/*",
     "apps/calculator/tests/**/*",
     "apps/concrete/src/**/*",
