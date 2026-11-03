@@ -7,6 +7,8 @@ const repoRoot = path.resolve(webRoot, "../..");
 
 /** Konsumsi sumber TypeScript paket @zonasipil/* langsung, seperti pola monorepo. */
 export default defineConfig({
+  // Shell tayang di rute /apps/web/ situs live (aset relatif ke rute itu).
+  base: "/apps/web/",
   resolve: {
     alias: {
       "@zonasipil/engineering-core": path.resolve(repoRoot, "packages/engineering-core/src/index.ts"),

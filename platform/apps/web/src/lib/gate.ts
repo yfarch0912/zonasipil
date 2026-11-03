@@ -37,6 +37,18 @@ export function hashLogin(next: string): string {
 }
 
 /**
+ * URL halaman masuk LIVE ZonaSipil (/login/) dengan `?next=` kembali ke
+ * rute shell ini (/apps/web/#/…). Shell TIDAK punya formulir login
+ * sendiri: autentikasi selalu terjadi di halaman live, memakai sesi
+ * cookie yang sama. `next` divalidasi dulu oleh validasiNextWeb; sisi
+ * live (apps/gate.js) memvalidasi ulang path + jangkarnya.
+ */
+export function urlLoginLive(next: string): string {
+  const tujuan = validasiNextWeb(next);
+  return `/login/?next=${encodeURIComponent(`/apps/web/${tujuan}`)}`;
+}
+
+/**
  * Validasi `?next=` untuk shell ini: harus rute hash internal yang
  * dikenal; apa pun selain itu jatuh ke beranda `#/`.
  */

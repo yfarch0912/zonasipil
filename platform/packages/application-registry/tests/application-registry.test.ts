@@ -35,17 +35,23 @@ describe("application-registry", () => {
     expect(listApps().map((a) => a.slug).sort()).toEqual([...expected].sort());
   });
 
-  it("calculator berstatus available dan structure beta", () => {
+  // Status publik per rilis live 2026-11-03: structure available (aplikasi
+  // interaktifnya live & ter-gate di /apps/structure/), calculator available,
+  // dan lima tool shell web (concrete, steel, foundation, quantity, rab)
+  // beta di /apps/web/; 10 app lain tetap coming-soon.
+  it("calculator dan structure berstatus available", () => {
     expect(getApp("calculator")?.status).toBe("available");
-    expect(getApp("structure")?.status).toBe("beta");
+    expect(getApp("structure")?.status).toBe("available");
   });
 
-  it("concrete in-development dan 14 lainnya coming-soon", () => {
-    expect(getApp("concrete")?.status).toBe("in-development");
-    expect(appsByStatus("available")).toHaveLength(1);
-    expect(appsByStatus("beta")).toHaveLength(1);
-    expect(appsByStatus("in-development")).toHaveLength(1);
-    expect(appsByStatus("coming-soon")).toHaveLength(14);
+  it("lima tool shell beta dan 10 lainnya coming-soon", () => {
+    for (const slug of ["concrete", "steel", "foundation", "quantity", "rab"]) {
+      expect(getApp(slug)?.status).toBe("beta");
+    }
+    expect(appsByStatus("available")).toHaveLength(2);
+    expect(appsByStatus("beta")).toHaveLength(5);
+    expect(appsByStatus("in-development")).toHaveLength(0);
+    expect(appsByStatus("coming-soon")).toHaveLength(10);
   });
 
   it("semua route berawalan /apps/ dan sama dengan /apps/<slug>", () => {
@@ -112,9 +118,9 @@ describe("application-registry", () => {
 
   it("status publik tidak berubah oleh field implementation", () => {
     expect(getApp("calculator")?.status).toBe("available");
-    expect(getApp("structure")?.status).toBe("beta");
-    expect(getApp("concrete")?.status).toBe("in-development");
-    expect(appsByStatus("coming-soon")).toHaveLength(14);
+    expect(getApp("structure")?.status).toBe("available");
+    expect(getApp("concrete")?.status).toBe("beta");
+    expect(appsByStatus("coming-soon")).toHaveLength(10);
   });
 
   it("access: setiap entri punya access yang valid", () => {
@@ -149,7 +155,7 @@ describe("application-registry", () => {
 
   it("access: field access tidak mengubah status publik maupun deployed", () => {
     expect(getApp("calculator")?.status).toBe("available");
-    expect(getApp("structure")?.status).toBe("beta");
+    expect(getApp("structure")?.status).toBe("available");
     for (const app of listApps()) expect(app.implementation.deployed).toBe(false);
   });
 

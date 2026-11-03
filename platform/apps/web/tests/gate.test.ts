@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { RUTE_HASH_SAH, SLUG_ALAT, hashAlat, hashLogin, uraiHash, validasiNextWeb } from "../src/lib/gate";
+import { RUTE_HASH_SAH, SLUG_ALAT, hashAlat, hashLogin, uraiHash, urlLoginLive, validasiNextWeb } from "../src/lib/gate";
 
 describe("gate: uraiHash", () => {
   it("hash kosong dan #/ berarti beranda", () => {
@@ -33,6 +33,17 @@ describe("gate: validasiNextWeb", () => {
     expect(validasiNextWeb(null)).toBe("#/");
     expect(validasiNextWeb("")).toBe("#/");
   });
+  it("urlLoginLive menuju /login/ live dengan next kembali ke shell", () => {
+    expect(urlLoginLive("#/concrete")).toBe(
+      `/login/?next=${encodeURIComponent("/apps/web/#/concrete")}`,
+    );
+    expect(urlLoginLive("#/")).toBe(`/login/?next=${encodeURIComponent("/apps/web/#/")}`);
+    // next tak sah divalidasi dulu -> jatuh ke beranda shell, bukan diteruskan mentah
+    expect(urlLoginLive("https://evil.example")).toBe(
+      `/login/?next=${encodeURIComponent("/apps/web/#/")}`,
+    );
+  });
+
   it("hashLogin mengenkode next dan uraiHash membacanya kembali", () => {
     const hash = hashLogin("#/steel");
     expect(hash.startsWith("#/login?next=")).toBe(true);

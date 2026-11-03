@@ -101,7 +101,7 @@ const RAW_APPS: RawApp[] = [
     slug: "structure",
     name: "Zona Structure",
     category: "structural",
-    status: "beta",
+    status: "available",
     description:
       "Analisis struktur rangka 2D: simpul–batang, tumpuan, beban titik & merata, reaksi, gaya N/V/M, dan deformasi.",
   },
@@ -109,7 +109,7 @@ const RAW_APPS: RawApp[] = [
     slug: "concrete",
     name: "Zona Concrete",
     category: "structural",
-    status: "in-development",
+    status: "beta",
     description:
       "Perancangan elemen beton bertulang — balok, kolom, pelat — dengan alur hitung yang terbuka langkah demi langkah.",
   },
@@ -117,7 +117,7 @@ const RAW_APPS: RawApp[] = [
     slug: "steel",
     name: "Zona Steel",
     category: "structural",
-    status: "coming-soon",
+    status: "beta",
     description:
       "Perancangan elemen baja: profil, tekuk, dan sambungan — pendamping Zona Structure di keluarga struktur.",
   },
@@ -125,7 +125,7 @@ const RAW_APPS: RawApp[] = [
     slug: "foundation",
     name: "Zona Foundation",
     category: "structural",
-    status: "coming-soon",
+    status: "beta",
     description:
       "Daya dukung tanah, fondasi dangkal & dalam, dan penurunan — dari parameter tanah ke dimensi pondasi.",
   },
@@ -133,7 +133,7 @@ const RAW_APPS: RawApp[] = [
     slug: "rab",
     name: "Zona RAB",
     category: "construction",
-    status: "coming-soon",
+    status: "beta",
     description:
       "Rencana Anggaran Biaya: volume, analisa harga satuan, dan rekap yang tertelusur kembali ke gambar.",
   },
@@ -141,7 +141,7 @@ const RAW_APPS: RawApp[] = [
     slug: "quantity",
     name: "Zona Quantity",
     category: "construction",
-    status: "coming-soon",
+    status: "beta",
     description:
       "Take-off kuantitas dari gambar kerja: beton, bekisting, tulangan, dan tanah dalam satu daftar rapi.",
   },

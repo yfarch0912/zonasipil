@@ -2,7 +2,7 @@ import "./style.css";
 import { getApp, listApps } from "@zonasipil/application-registry";
 import { SessionClient, classifyAccess, type Session } from "@zonasipil/auth";
 import { el } from "./lib/ui.ts";
-import { hashAlat, hashLogin, uraiHash, validasiNextWeb } from "./lib/gate.ts";
+import { hashAlat, uraiHash, urlLoginLive, validasiNextWeb } from "./lib/gate.ts";
 import { renderCalculator } from "./pages/calculator.ts";
 import { renderQuantity } from "./pages/quantity.ts";
 import { renderConcrete } from "./pages/concrete.ts";
@@ -26,7 +26,7 @@ if (!appRoot) throw new Error("Elemen #app tidak ditemukan.");
 const header = el("header", "site-header");
 const brand = el("a", "brand", "zonasipil");
 brand.href = "#/";
-const headerSub = el("span", "brand-sub", "Apps — pratinjau lokal monorepo");
+const headerSub = el("span", "brand-sub", "Apps — aplikasi hitung ZonaSipil");
 const authChip = el("span", "auth-chip");
 header.append(brand, headerSub, authChip);
 
@@ -53,7 +53,7 @@ async function segarkanChipAuth(): Promise<void> {
     return;
   }
   const masuk = el("a", "nav-link", "Masuk");
-  masuk.href = hashLogin("#/");
+  masuk.href = urlLoginLive("#/");
   authChip.append(masuk);
 }
 
@@ -63,7 +63,7 @@ const main = el("main", "container");
 const footer = el(
   "footer",
   "site-footer",
-  "Pratinjau lokal dari monorepo zonasipil-platform. Implementasi di sini belum berjalan di situs live zonasipil.web.id (situs live masih menjalankan kode statis lama). Tanpa klaim kepatuhan terhadap SNI atau standar apa pun.",
+  "ZonaSipil Apps di zonasipil.web.id/apps/web/ — dibangun dari monorepo zonasipil-platform. Hasil hitung adalah estimasi konseptual untuk belajar dan pemeriksaan awal, bukan pengganti perhitungan desain oleh insinyur yang berwenang. Tanpa klaim kepatuhan terhadap SNI atau standar apa pun.",
 );
 appRoot.append(header, nav, main, footer);
 
@@ -86,7 +86,7 @@ function renderBeranda(): void {
     el(
       "p",
       "lead",
-      "Shell web tipis untuk enam inti logika yang sudah teruji di monorepo: Calculator, Quantity, Concrete, Steel, Foundation, dan RAB. Semua perhitungan di halaman-halamannya memanggil fungsi dari paket logika — tidak ada rumus yang ditulis ulang di UI.",
+      "Enam alat hitung ZonaSipil yang inti logikanya sudah teruji: Calculator, Quantity, Concrete, Steel, Foundation, dan RAB. Semua perhitungan memanggil fungsi dari paket logika yang sama — tidak ada rumus yang ditulis ulang di UI. Membuka alat memerlukan akun ZonaSipil.",
     ),
   );
   const grid = el("div", "app-grid");
@@ -105,12 +105,12 @@ function renderBeranda(): void {
 
   const belum = apps.filter((a) => !(a.slug in HALAMAN));
   const section = el("section", "card");
-  section.append(el("h3", "", "Belum tersedia di pratinjau lokal ini"));
+  section.append(el("h3", "", "Belum tersedia di shell ini"));
   section.append(
     el(
       "p",
       "",
-      "Aplikasi berikut terdaftar di registry tetapi tidak punya halaman di shell web ini. Zona Structure punya aplikasi mandiri penuh di monorepo (apps/structure) dan tidak termasuk shell ini; aplikasi lain belum punya inti logika maupun UI di monorepo.",
+      "Aplikasi berikut terdaftar di registry tetapi tidak punya halaman di shell web ini. Zona Structure punya aplikasi mandiri penuh dan berjalan di rute /apps/structure/; aplikasi lain belum punya inti logika maupun UI.",
     ),
   );
   const ul = el("ul", "");
@@ -120,7 +120,7 @@ function renderBeranda(): void {
     const label =
       app.access === "planned"
         ? "Segera Hadir"
-        : "tersedia sebagai aplikasi mandiri di monorepo (apps/structure), perlu masuk di sana";
+        : "tersedia sebagai aplikasi mandiri di /apps/structure/, perlu masuk di sana";
     ul.append(el("li", "", `${app.name} — ${label} (status publik: ${app.status})`));
   }
   section.append(ul);
@@ -143,12 +143,12 @@ function renderGateLogin(slug: string, namaApp: string, layananBermasalah: boole
       el(
         "p",
         "form-error",
-        "Layanan sesi tidak dapat dihubungi dari pratinjau lokal ini (API auth hanya berjalan di domain live). Tombol masuk tetap menuju formulir yang sama.",
+        "Layanan sesi tidak dapat dihubungi saat ini. Tombol masuk tetap menuju halaman masuk ZonaSipil.",
       ),
     );
   }
   const masuk = el("a", "btn-primary tautan-tombol", "Masuk");
-  masuk.href = hashLogin(hashAlat(slug));
+  masuk.href = urlLoginLive(hashAlat(slug));
   const kembali = el("a", "btn-secondary tautan-tombol", "Kembali ke katalog");
   kembali.href = "#/";
   const aksi = el("p", "aksi-rab");
@@ -157,65 +157,11 @@ function renderGateLogin(slug: string, namaApp: string, layananBermasalah: boole
   main.append(kartu);
 }
 
-/** Formulir masuk: POST ke SessionClient (API live), lalu kembali ke `next` tervalidasi. */
-function renderLogin(next: string): void {
-  if (sesiAktif) {
-    window.location.hash = next;
-    return;
-  }
-  main.append(el("h2", "", "Masuk"));
-  const kartu = el("section", "card");
-  const form = el("form", "form-grid");
-  form.noValidate = true;
-
-  const buatField = (id: string, label: string, tipe: string, autocomplete: HTMLInputElement["autocomplete"]) => {
-    const wrap = el("div", "field");
-    const lab = el("label", "", label);
-    lab.htmlFor = id;
-    const input = document.createElement("input");
-    input.id = id;
-    input.type = tipe;
-    input.autocomplete = autocomplete;
-    input.required = true;
-    wrap.append(lab, input);
-    form.append(wrap);
-    return input;
-  };
-  const email = buatField("login-email", "Email", "email", "username");
-  const sandi = buatField("login-sandi", "Kata sandi", "password", "current-password");
-
-  const galat = el("p", "form-error");
-  galat.setAttribute("role", "alert");
-  galat.hidden = true;
-
-  const tombol = el("button", "btn-primary", "Masuk");
-  tombol.type = "submit";
-  form.append(tombol);
-  kartu.append(form, galat);
-  kartu.append(
-    el("p", "", "Belum punya akun? Pendaftaran memakai endpoint yang sama di situs live (zonasipil.web.id/register)."),
-  );
-  main.append(kartu);
-
-  form.addEventListener("submit", (ev) => {
-    ev.preventDefault();
-    galat.hidden = true;
-    tombol.disabled = true;
-    void sesiKlien
-      .login(email.value.trim(), sandi.value)
-      .then((sesi) => {
-        sesiAktif = sesi;
-        void segarkanChipAuth();
-        window.location.hash = validasiNextWeb(next);
-      })
-      .catch((err: unknown) => {
-        galat.textContent = err instanceof Error ? err.message : "Gagal masuk. Coba lagi.";
-        galat.hidden = false;
-      })
-      .finally(() => {
-        tombol.disabled = false;
-      });
-  });
+/** Rute #/login shell: TIDAK ada formulir lokal — alihkan ke halaman
+ * masuk live ZonaSipil dengan `next` tervalidasi kembali ke shell ini. */
+function alihkanKeLoginLive(next: string): void {
+  main.append(el("p", "", "Mengalihkan ke halaman masuk ZonaSipil…"));
+  window.location.href = urlLoginLive(next);
 }
 
 let nomorRute = 0;
@@ -231,13 +177,13 @@ async function rute(): Promise<void> {
     return;
   }
   if (slug === "login") {
-    renderLogin(validasiNextWeb(params.get("next")));
+    alihkanKeLoginLive(validasiNextWeb(params.get("next")));
     return;
   }
   const halaman = HALAMAN[slug];
   if (!halaman) {
     main.append(el("h2", "", "Halaman tidak ditemukan"));
-    main.append(el("p", "", "Aplikasi tersebut belum tersedia di pratinjau lokal ini."));
+    main.append(el("p", "", "Aplikasi tersebut belum tersedia di shell ini."));
     const kembali = el("a", "btn-primary tautan-tombol", "Kembali ke beranda");
     kembali.href = "#/";
     main.append(kembali);
